@@ -1,0 +1,6 @@
+node_modules/
+dist/
+.DS_Store
+yarn-error.log
+temp.js
+package-lock.json

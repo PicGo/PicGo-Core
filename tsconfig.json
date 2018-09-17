@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "sourceMap": false,
+    "target": "es2017",
+    "declaration": true,
+    "outDir": "dist",
+    // It's shit.
+    // "baseUrl": "src",
+    // "paths": {
+    //   "@core/*": ["core/*"],
+    //   "@lib/*": ["lib/*"],
+    //   "@plugins/*": ["plugins/*"],
+    //   "@utils/*": ["utils/*"]
+    // },
+    "lib": [
+      "es2017",
+      "es2015",
+      "es6"
+    ]
+  },
+  "include": [
+    "./src/**/*",
+    "./package.json"
+  ]
+}

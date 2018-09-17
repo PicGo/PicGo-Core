@@ -1,0 +1,67 @@
+{
+  "name": "picgo",
+  "version": "1.0.10",
+  "description": "A tool for picture uploading",
+  "main": "dist/src/index.js",
+  "bin": {
+    "picgo": "./bin/picgo"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc -p .",
+    "dev": "tsc -w -p .",
+    "patch": "npm version patch && git push origin master && git push origin --tags",
+    "minor": "npm version minor && git push origin master && git push origin --tags",
+    "major": "npm version major && git push origin master && git push origin --tags"
+  },
+  "keywords": [
+    "picture",
+    "upload",
+    "util"
+  ],
+  "author": "Molunerfinn",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/cross-spawn": "^6.0.0",
+    "@types/fs-extra": "^5.0.4",
+    "@types/image-size": "^0.0.29",
+    "@types/inquirer": "^0.0.42",
+    "@types/lowdb": "^1.0.4",
+    "@types/md5": "^2.1.32",
+    "@types/node": "^10.5.2",
+    "@types/request-promise-native": "^1.0.15",
+    "@types/resolve": "^0.0.8",
+    "eslint": "^5.0.1",
+    "eslint-config-standard": "^11.0.0",
+    "eslint-plugin-import": "^2.13.0",
+    "eslint-plugin-node": "^6.0.1",
+    "eslint-plugin-promise": "^3.8.0",
+    "eslint-plugin-standard": "^3.1.0",
+    "tslint": "^5.10.0",
+    "tslint-config-standard": "^7.1.0",
+    "typescript": "^3.0.3"
+  },
+  "dependencies": {
+    "chalk": "^2.4.1",
+    "commander": "^2.17.0",
+    "cross-spawn": "^6.0.5",
+    "dayjs": "^1.7.4",
+    "fs-extra": "^6.0.1",
+    "image-size": "^0.6.3",
+    "inquirer": "^6.0.0",
+    "lodash-id": "^0.14.0",
+    "lowdb": "^1.0.0",
+    "md5": "^2.2.1",
+    "qiniu": "^7.2.1",
+    "request": "^2.87.0",
+    "request-promise-native": "^1.0.5",
+    "resolve": "^1.8.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PicGo/PicGo-Core.git"
+  }
+}
