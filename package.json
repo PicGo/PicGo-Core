@@ -1,6 +1,6 @@
 {
   "name": "picgo",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "A tool for picture uploading",
   "main": "dist/src/index.js",
   "bin": {
