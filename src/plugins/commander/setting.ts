@@ -64,7 +64,7 @@ export default {
                 ]
                 let answer = await ctx.cmd.inquirer.prompt(prompts)
                 if (ctx.pluginLoader.getPlugin(answer['plugin']).handleConfig) {
-                  await ctx.pluginLoader.getPlugin(answer['plugin']).handleConfig()
+                  await ctx.pluginLoader.getPlugin(answer['plugin']).handleConfig(ctx)
                 }
               }
               break
