@@ -48,7 +48,7 @@ export default {
                 }
                 if (Object.keys(ctx.config.plugins).includes(name)) {
                   if (ctx.pluginLoader.getPlugin(name).handleConfig) {
-                    await ctx.pluginLoader.getPlugin(name).handleConfig()
+                    await ctx.pluginLoader.getPlugin(name).handleConfig(ctx)
                   }
                 } else {
                   return ctx.log.error(`No plugin named ${name}`)
