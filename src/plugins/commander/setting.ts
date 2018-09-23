@@ -70,7 +70,7 @@ export default {
               break
             default:
               ctx.log.warn(`No module named ${module}`)
-              return ctx.log.warn('Available modules are uploader|transformer|plugins')
+              return ctx.log.warn('Available modules are uploader|transformer|plugin')
           }
           ctx.log.success('Configure config successfully!')
         } catch (e) {
