@@ -97,7 +97,7 @@ class PicGo extends EventEmitter {
 
   async upload (input?: any[]) {
     // upload from clipboard
-    if (input.length === 0) {
+    if (input === undefined || input.length === 0) {
       try {
         const imgPath = await getClipboardImage(this)
         if (imgPath === 'no image') {
