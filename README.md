@@ -59,7 +59,7 @@ $ picgo -h
     uninstall|rm <plugins...>     uninstall picgo plugin
     update <plugins...>           update picgo plugin
     set|config <module> [name]    configure config of picgo modules
-    upload|u <input...>           upload, go go go
+    upload|u [input...]           upload, go go go
     choose|ch [options] [module]  choose modules of picgo
 ```
 
@@ -69,13 +69,27 @@ $ picgo -h
 picgo upload /xxx/xx/xx.jpg
 ```
 
+#### Upload a picture from clipboard
+
+> picture from clipboard will be converted to `png`
+
+```bash
+picgo upload
+```
+
+Thanks to [vs-picgo](https://github.com/Spades-S/vs-picgo) && [Spades-S](https://github.com/Spades-S) for providing the method to upload picture from clipboard.
+
 ### Use in node project
 
 ```js
 const PicGo = require('picgo')
 const picgo = new PicGo()
 
+// upload a picture from path
 picgo.upload(['/xxx/xxx.jpg'])
+
+// upload a picture from clipboard
+picgo.upload()
 ```
 
 ## Documentation
