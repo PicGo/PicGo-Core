@@ -1,5 +1,5 @@
 import chalk from 'chalk'
-import PicGo from './PicGo'
+import PicGo from '../core/PicGo'
 
 class Logger {
   level: {}

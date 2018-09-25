@@ -1,8 +1,8 @@
 import PicGo from '../core/PicGo'
 import program from 'commander'
 import inquirer from 'inquirer'
-import pkg from '../../package.json'
 import { Plugin } from '../utils/interfaces'
+const pkg = require('../../package.json')
 
 class Commander {
   list: {}

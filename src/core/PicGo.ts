@@ -3,10 +3,9 @@ import path from 'path'
 import { EventEmitter } from 'events'
 import { homedir } from 'os'
 import Commander from '../lib/Commander'
-import Logger from './Logger'
+import Logger from '../lib/Logger'
 import Lifecycle from './Lifecycle'
 import LifecyclePlugins from '../lib/LifecyclePlugins'
-// plugin loaders
 import uploaders from '../plugins/uploader'
 import transformers from '../plugins/transformer'
 import commanders from '../plugins/commander'
@@ -14,6 +13,7 @@ import { saveConfig, getConfig } from '../utils/config'
 import PluginLoader from '../lib/PluginLoader'
 import { get, set } from 'lodash'
 import { Helper, ImgInfo, Config } from '../utils/interfaces'
+import getClipboardImage from '../utils/getClipboardImage'
 
 class PicGo extends EventEmitter {
   configPath: string
@@ -95,8 +95,31 @@ class PicGo extends EventEmitter {
     })
   }
 
-  async upload (input: any[]) {
-    await this.lifecycle.start(input)
+  async upload (input?: any[]) {
+    // upload from clipboard
+    if (input.length === 0) {
+      try {
+        const imgPath = await getClipboardImage(this)
+        if (imgPath === 'no image') {
+          this.emit('notification', {
+            title: 'image not found in clipboard',
+            body: 'copy image first'
+          })
+          this.log.warn('no image to upload')
+        } else {
+          this.once('finished', async () => {
+            await fs.remove(imgPath)
+          })
+          await this.lifecycle.start([imgPath])
+        }
+      } catch (e) {
+        this.log.error(e)
+        throw e
+      }
+    } else {
+      // upload from path
+      await this.lifecycle.start(input)
+    }
   }
 }
 

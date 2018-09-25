@@ -11,7 +11,8 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc -p .",
+    "build": "tsc -p . && npm run copy",
+    "copy": "copyfiles -f src/utils/clipboard/* dist/utils/clipboard",
     "dev": "tsc -w -p .",
     "patch": "npm version patch && git push origin master && git push origin --tags",
     "minor": "npm version minor && git push origin master && git push origin --tags",
@@ -34,6 +35,7 @@
     "@types/node": "^10.5.2",
     "@types/request-promise-native": "^1.0.15",
     "@types/resolve": "^0.0.8",
+    "copyfiles": "^2.1.0",
     "eslint": "^5.0.1",
     "eslint-config-standard": "^11.0.0",
     "eslint-plugin-import": "^2.13.0",

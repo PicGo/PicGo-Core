@@ -6,7 +6,7 @@ let configPath = argv.c || argv.config || ''
 if (configPath) {
   configPath = path.resolve(configPath)
 }
-const PicGo = require('../dist/src/index')
+const PicGo = require('../dist/index')
 const picgo = new PicGo(configPath)
 
 try {
