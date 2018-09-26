@@ -46,7 +46,7 @@ const handle = async (ctx: PicGo) => {
         if (customUrl) {
           imgList[i]['imgUrl'] = `${customUrl}/${path}${imgList[i].fileName}`
         } else {
-          imgList[i]['imgUrl'] = `https://${aliYunOptions.bucket}.${aliYunOptions.area}.aliyuncs.com/${path}${imgList[0].fileName}`
+          imgList[i]['imgUrl'] = `https://${aliYunOptions.bucket}.${aliYunOptions.area}.aliyuncs.com/${path}${imgList[i].fileName}`
         }
         imgList[i]['type'] = 'aliyun'
       } else {
