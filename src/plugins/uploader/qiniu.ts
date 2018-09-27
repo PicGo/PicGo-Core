@@ -40,7 +40,6 @@ const handle = async (ctx: PicGo) => {
   }
   try {
     const imgList = ctx.output
-    const length = imgList.length
     for (let i in imgList) {
       const options = postOptions(qiniuOptions, imgList[i].fileName, getToken(qiniuOptions), imgList[i].base64Image)
       const res = await request(options)

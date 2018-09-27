@@ -1,5 +1,7 @@
 {
   "compilerOptions": {
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "module": "commonjs",
     "moduleResolution": "node",
     "resolveJsonModule": true,
