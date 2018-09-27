@@ -1,8 +1,7 @@
-import sizeOf from 'image-size'
+import probe from 'probe-image-size'
 import path from 'path'
 import fs from 'fs-extra'
 import PicGo from '../../core/PicGo'
-import { ImgSize } from '../../utils/interfaces'
 
 const handle = async (ctx: PicGo) => {
   let results = ctx.output
@@ -10,7 +9,7 @@ const handle = async (ctx: PicGo) => {
     let fileName = path.basename(item)
     let buffer = await fs.readFile(item)
     let base64Image = Buffer.from(buffer).toString('base64')
-    let imgSize: ImgSize = sizeOf(item)
+    let imgSize = probe.sync(buffer)
     results.push({
       base64Image,
       fileName,
