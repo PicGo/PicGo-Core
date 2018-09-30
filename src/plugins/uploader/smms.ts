@@ -31,6 +31,10 @@ const handle = async (ctx: PicGo) => {
       delete imgList[i].base64Image
       imgList[i]['imgUrl'] = body.data.url
     } else {
+      ctx.emit('notification', {
+        title: '上传失败！',
+        body: '当前网络状态不佳，请稍后再试'
+      })
       throw new Error('Upload failed')
     }
   }
