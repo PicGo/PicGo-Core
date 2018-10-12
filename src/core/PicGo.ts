@@ -61,7 +61,6 @@ class PicGo extends EventEmitter {
       this.pluginLoader = new PluginLoader(this)
       uploaders(this)
       transformers(this)
-      commanders(this)
       // load third-party plugins
       this.pluginLoader.load()
       this.lifecycle = new Lifecycle(this)
@@ -71,6 +70,18 @@ class PicGo extends EventEmitter {
       Promise.reject(e)
     }
   }
+
+  // register commandline commands
+  // please mannually remove listeners for avoiding listeners memory leak
+  registerCommands () {
+    this.cmd.init()
+    return commanders(this)
+  }
+
+  // remove listeners for avoiding listeners memory leak
+  // removeListeners () {
+  //   this.cmd.program.removeAllListeners()
+  // }
 
   // get config
   getConfig (name: string = '') {

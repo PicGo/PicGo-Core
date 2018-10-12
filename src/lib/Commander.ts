@@ -15,7 +15,6 @@ class Commander {
     this.program = program
     this.inquirer = inquirer
     this.ctx = ctx
-    this.init()
   }
 
   init () {
