@@ -1,5 +1,14 @@
 {
   "extends": "tslint-config-standard",
+  "rules": {
+    "class-name": true,
+    "no-unused-variable": true,
+    "typedef": [
+      true,
+      "call-signature",
+      "property-declaration"
+    ]
+  },
   "compilerOptions": {
     "module": "commonjs",
     "sourceMap": true,

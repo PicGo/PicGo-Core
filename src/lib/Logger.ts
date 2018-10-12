@@ -2,8 +2,10 @@ import chalk from 'chalk'
 import PicGo from '../core/PicGo'
 
 class Logger {
-  level: {}
-  ctx
+  level: {
+    [propName: string]: string
+  }
+  ctx: PicGo
   constructor (ctx: PicGo) {
     this.level = {
       success: 'green',
@@ -24,19 +26,19 @@ class Logger {
     }
   }
 
-  success (msg) {
+  success (msg: string | Error): string | Error | undefined {
     return this.handleLog('success', msg)
   }
 
-  info (msg) {
+  info (msg): string | Error | undefined {
     return this.handleLog('info', msg)
   }
 
-  error (msg) {
+  error (msg): string | Error | undefined {
     return this.handleLog('error', msg)
   }
 
-  warn (msg) {
+  warn (msg): string | Error | undefined {
     return this.handleLog('warn', msg)
   }
 }

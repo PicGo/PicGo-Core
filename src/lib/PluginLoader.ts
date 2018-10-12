@@ -13,7 +13,7 @@ class PluginLoader {
   }
 
   // get plugin entry
-  resolvePlugin (ctx: PicGo, name: string) {
+  resolvePlugin (ctx: PicGo, name: string): string {
     try {
       return resolve.sync(name, { basedir: ctx.baseDir })
     } catch (err) {
@@ -22,7 +22,7 @@ class PluginLoader {
   }
 
   // load all third party plugin
-  load () {
+  load (): void | boolean {
     const packagePath = path.join(this.ctx.baseDir, 'package.json')
     const pluginDir = path.join(this.ctx.baseDir, 'node_modules/')
     try {
@@ -58,7 +58,7 @@ class PluginLoader {
   }
 
   // get plugin by name
-  getPlugin (name: string) {
+  getPlugin (name: string): any {
     const pluginDir = path.join(this.ctx.baseDir, 'node_modules/')
     return require(pluginDir + name)(this.ctx)
   }

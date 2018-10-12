@@ -1,7 +1,9 @@
 import { Plugin } from '../utils/interfaces'
 
 class LifecyclePlugins {
-  list: {}
+  list: {
+    [propName: string]: Plugin
+  }
   name: string
 
   constructor (name: string) {
@@ -17,7 +19,7 @@ class LifecyclePlugins {
     this.list[name] = plugin
   }
 
-  get (name: string) {
+  get (name: string): Plugin {
     return this.list[name]
   }
 

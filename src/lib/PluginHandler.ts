@@ -11,7 +11,7 @@ class PluginHandler {
     this.ctx = ctx
     this.init()
   }
-  init () {
+  init (): void {
     const packagePath = path.join(this.ctx.baseDir, 'package.json')
     if (!fs.existsSync(packagePath)) {
       const pkg = {
@@ -24,7 +24,7 @@ class PluginHandler {
     }
   }
 
-  install (plugins: string[]) {
+  install (plugins: string[]): Promise<void> {
     return this.execCommand('install', plugins, this.ctx.baseDir).then((result: Result) => {
       if (!result.code) {
         this.ctx.log.success('插件安装成功')
@@ -42,7 +42,7 @@ class PluginHandler {
       }
     })
   }
-  uninstall (plugins: string[]) {
+  uninstall (plugins: string[]): Promise<void> {
     return this.execCommand('uninstall', plugins, this.ctx.baseDir).then((result: Result) => {
       if (!result.code) {
         this.ctx.log.success('插件卸载成功')
@@ -60,7 +60,7 @@ class PluginHandler {
       }
     })
   }
-  update (plugins: string[]) {
+  update (plugins: string[]): Promise<void> {
     return this.execCommand('update', plugins, this.ctx.baseDir).then((result: Result) => {
       if (!result.code) {
         this.ctx.log.success('插件更新成功')
@@ -78,7 +78,7 @@ class PluginHandler {
       }
     })
   }
-  execCommand (cmd: string, modules: string[], where: string) {
+  execCommand (cmd: string, modules: string[], where: string): Promise<Result> {
     const registry = this.ctx.config.registry
     const proxy = this.ctx.config.proxy
     return new Promise((resolve, reject) => {

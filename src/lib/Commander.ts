@@ -5,7 +5,9 @@ import { Plugin } from '../utils/interfaces'
 const pkg = require('../../package.json')
 
 class Commander {
-  list: {}
+  list: {
+    [propName: string]: Plugin
+  }
   program: typeof program
   inquirer: typeof inquirer
   private ctx: PicGo
@@ -17,7 +19,7 @@ class Commander {
     this.ctx = ctx
   }
 
-  init () {
+  init (): void {
     this.program
       .version(pkg.version, '-v, --version')
       .option('-d, --debug', 'debug mode', () => {
@@ -32,7 +34,7 @@ class Commander {
       })
   }
 
-  register (name: string, plugin: Plugin) {
+  register (name: string, plugin: Plugin): void {
     if (!name) throw new TypeError('name is required!')
     if (typeof plugin.handle !== 'function') throw new TypeError('plugin.handle must be a function!')
     if (this.list[name]) throw new TypeError('duplicate name!')
@@ -41,7 +43,7 @@ class Commander {
     this.list[name].handle(this.ctx)
   }
 
-  get (name: string) {
+  get (name: string): Plugin {
     return this.list[name]
   }
 

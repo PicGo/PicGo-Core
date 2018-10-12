@@ -107,7 +107,7 @@ const config = (ctx: PicGo): PluginConfig[] => {
       name: 'username',
       type: 'input',
       default: userConfig.username || '',
-      when (answer) {
+      when (answer): boolean {
         return !answer.chooseCookie
       },
       required: false
@@ -116,7 +116,7 @@ const config = (ctx: PicGo): PluginConfig[] => {
       name: 'password',
       type: 'password',
       default: userConfig.password || '',
-      when (answer) {
+      when (answer): boolean {
         return !answer.chooseCookie
       },
       required: false
@@ -132,7 +132,7 @@ const config = (ctx: PicGo): PluginConfig[] => {
       name: 'cookie',
       type: 'input',
       default: userConfig.cookie || '',
-      when (answer) {
+      when (answer): boolean {
         return answer.chooseCookie
       },
       required: false
