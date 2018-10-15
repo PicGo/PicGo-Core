@@ -36,15 +36,9 @@
     "@types/request-promise-native": "^1.0.15",
     "@types/resolve": "^0.0.8",
     "copyfiles": "^2.1.0",
-    "eslint": "^5.0.1",
-    "eslint-config-standard": "^11.0.0",
-    "eslint-plugin-import": "^2.13.0",
-    "eslint-plugin-node": "^6.0.1",
-    "eslint-plugin-promise": "^3.8.0",
-    "eslint-plugin-standard": "^3.1.0",
     "tslint": "^5.10.0",
     "tslint-config-standard": "^8.0.1",
-    "typescript": "^3.0.3"
+    "typescript": "3.0.3"
   },
   "dependencies": {
     "chalk": "^2.4.1",
