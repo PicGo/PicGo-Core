@@ -3,7 +3,11 @@ import lodashId from 'lodash-id'
 import FileSync from 'lowdb/adapters/FileSync'
 
 const getConfig = (configPath: string): lowdb.LowdbSync<any> => {
-  const adapter = new FileSync(configPath)
+  const adapter = new FileSync(configPath, {
+    deserialize: function (data) { 
+      return (new Function(`return ${data}`))()
+    }
+  })
   const db = lowdb(adapter)
   db._.mixin(lodashId)
 
