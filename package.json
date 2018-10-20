@@ -1,6 +1,6 @@
 {
   "name": "picgo",
-  "version": "1.1.9",
+  "version": "1.1.10",
   "description": "A tool for picture uploading",
   "main": "dist/index.js",
   "bin": {
@@ -25,7 +25,10 @@
     "upload",
     "util"
   ],
-  "precommit": ["precommit-msg", "lint"],
+  "precommit": [
+    "precommit-msg",
+    "lint"
+  ],
   "author": "Molunerfinn",
   "license": "MIT",
   "devDependencies": {
