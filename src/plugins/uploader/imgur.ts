@@ -2,7 +2,7 @@ import PicGo from '../../core/PicGo'
 import request from 'request-promise-native'
 import { PluginConfig } from '../../utils/interfaces'
 
-const postOptions = (options, fileName: string, imgBase64: string) => {
+const postOptions = (options: any, fileName: string, imgBase64: string): any => {
   const clientId = options.clientId
   let obj = {
     method: 'POST',
@@ -24,7 +24,7 @@ const postOptions = (options, fileName: string, imgBase64: string) => {
   return obj
 }
 
-const handle = async (ctx: PicGo) => {
+const handle = async (ctx: PicGo): Promise<PicGo> => {
   const imgurOptions = ctx.getConfig('picBed.imgur')
   if (!imgurOptions) {
     throw new Error('Can\'t find imgur config')
@@ -76,7 +76,7 @@ const config = (ctx: PicGo): PluginConfig[] => {
   return config
 }
 
-const handleConfig = async (ctx: PicGo) => {
+const handleConfig = async (ctx: PicGo): Promise<void> => {
   const prompts = config(ctx)
   const answer = await ctx.cmd.inquirer.prompt(prompts)
   ctx.saveConfig({

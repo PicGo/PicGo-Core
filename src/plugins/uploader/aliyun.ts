@@ -5,7 +5,7 @@ import crypto from 'crypto'
 import mime from 'mime-types'
 
 // generate OSS signature
-const generateSignature = (options, fileName: string) => {
+const generateSignature = (options: any, fileName: string): string => {
   const date = new Date().toUTCString()
   const signString = `PUT\n\n${mime.lookup(fileName)}\n${date}\n/${options.bucket}/${options.path}${fileName}`
 
@@ -13,7 +13,7 @@ const generateSignature = (options, fileName: string) => {
   return `OSS ${options.accessKeyId}:${signature}`
 }
 
-const postOptions = (options, fileName: string, signature: string, imgBase64: string) => {
+const postOptions = (options: any, fileName: string, signature: string, imgBase64: string): any => {
   return {
     method: 'PUT',
     url: `https://${options.bucket}.${options.area}.aliyuncs.com/${encodeURI(options.path)}${encodeURI(fileName)}`,
@@ -28,7 +28,7 @@ const postOptions = (options, fileName: string, signature: string, imgBase64: st
   }
 }
 
-const handle = async (ctx: PicGo) => {
+const handle = async (ctx: PicGo): Promise<PicGo> => {
   const aliYunOptions = ctx.getConfig('picBed.aliyun')
   if (!aliYunOptions) {
     throw new Error('Can\'t find aliYun OSS config')
@@ -116,7 +116,7 @@ const config = (ctx: PicGo): PluginConfig[] => {
   return config
 }
 
-const handleConfig = async (ctx: PicGo) => {
+const handleConfig = async (ctx: PicGo): Promise<void> => {
   const prompts = config(ctx)
   const answer = await ctx.cmd.inquirer.prompt(prompts)
   ctx.saveConfig({

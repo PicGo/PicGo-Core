@@ -2,7 +2,7 @@ import PicGo from '../../core/PicGo'
 import request from 'request-promise-native'
 import { PluginConfig } from '../../utils/interfaces'
 
-const postOptions = (fileName, options, data) => {
+const postOptions = (fileName: string, options: any, data: any): any => {
   const path = options.path || ''
   const { token, repo } = options
   return {
@@ -17,7 +17,7 @@ const postOptions = (fileName, options, data) => {
   }
 }
 
-const handle = async (ctx: PicGo) => {
+const handle = async (ctx: PicGo): Promise<PicGo> => {
   const githubOptions = ctx.getConfig('picBed.github')
   if (!githubOptions) {
     throw new Error('Can\'t find github config')
@@ -95,7 +95,7 @@ const config = (ctx: PicGo): PluginConfig[] => {
   return config
 }
 
-const handleConfig = async (ctx: PicGo) => {
+const handleConfig = async (ctx: PicGo): Promise<void> => {
   const prompts = config(ctx)
   const answer = await ctx.cmd.inquirer.prompt(prompts)
   ctx.saveConfig({

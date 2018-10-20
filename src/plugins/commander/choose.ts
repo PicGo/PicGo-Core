@@ -1,7 +1,7 @@
 import PicGo from '../../core/PicGo'
 
 export default {
-  handle: (ctx: PicGo) => {
+  handle: (ctx: PicGo): void => {
     const cmd: typeof ctx.cmd = ctx.cmd
     cmd.program
       .command('choose')
@@ -9,7 +9,7 @@ export default {
       .arguments('[module]')
       .option('-l, --list', 'Display config')
       .description('choose modules of picgo')
-      .action(async (module: string, list) => {
+      .action(async (module: string, list: any) => {
         try {
           if (list.list) {
             return console.log(ctx.config)
@@ -37,7 +37,7 @@ export default {
               name: 'plugins',
               message: 'Choose plugins',
               choices: ctx.pluginLoader.getList(),
-              default: Object.keys(ctx.config.plugins).filter(item => ctx.config.plugins[item])
+              default: Object.keys(ctx.config.plugins).filter((item: string) => ctx.config.plugins[item])
             }
           }
           // if an option is specific, then just set this option in config
@@ -49,14 +49,14 @@ export default {
               return ctx.log.warn('Available modules are uploader|transformer|plugins')
             }
           } else {
-            prompts = Object.keys(config).map(item => config[item])
+            prompts = Object.keys(config).map((item: string) => config[item])
           }
           const answer = await cmd.inquirer.prompt(prompts)
 
           // handle for plugins option from Array to object
           if (answer['plugins']) {
             let plugins = ctx.getConfig('plugins')
-            Object.keys(plugins).map(item => {
+            Object.keys(plugins).map((item: string) => {
               if (answer['plugins'].includes(item)) {
                 plugins[item] = true
               } else {

@@ -4,9 +4,9 @@ import { spawn } from 'child_process'
 import dayjs from 'dayjs'
 
 // Thanks to vs-picgo: https://github.com/Spades-S/vs-picgo/blob/master/src/extension.ts
-const getClipboardImage = (ctx: PicGo): Promise<string> => {
+const getClipboardImage = (ctx: PicGo): Promise<tring> => {
   const imagePath = path.join(ctx.baseDir, `${dayjs().format('YYYYMMDDHHmmss')}.png`)
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve: any, reject: any): any => {
     let platform: string = process.platform
     let execution = null
     const platformPaths: {

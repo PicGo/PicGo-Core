@@ -5,7 +5,7 @@ const j = request.jar()
 const rp = request.defaults({ jar: j })
 const UPLOAD_URL = 'http://picupload.service.weibo.com/interface/pic_upload.php?ori=1&mime=image%2Fjpeg&data=base64&url=0&markpos=1&logo=&nick=0&marks=1&app=miniblog'
 
-const postOptions = (formData) => {
+const postOptions = (formData: any): any => {
   return {
     method: 'POST',
     url: 'https://passport.weibo.cn/sso/login',
@@ -19,7 +19,7 @@ const postOptions = (formData) => {
   }
 }
 
-const handle = async (ctx: PicGo) => {
+const handle = async (ctx: PicGo): Promise<PicGo> => {
   const weiboOptions = ctx.getConfig('picBed.weibo')
   if (!weiboOptions) {
     throw new Error('Can\'t find weibo config')
@@ -107,7 +107,7 @@ const config = (ctx: PicGo): PluginConfig[] => {
       name: 'username',
       type: 'input',
       default: userConfig.username || '',
-      when (answer): boolean {
+      when (answer: any): boolean {
         return !answer.chooseCookie
       },
       required: false
@@ -116,7 +116,7 @@ const config = (ctx: PicGo): PluginConfig[] => {
       name: 'password',
       type: 'password',
       default: userConfig.password || '',
-      when (answer): boolean {
+      when (answer: any): boolean {
         return !answer.chooseCookie
       },
       required: false
@@ -132,7 +132,7 @@ const config = (ctx: PicGo): PluginConfig[] => {
       name: 'cookie',
       type: 'input',
       default: userConfig.cookie || '',
-      when (answer): boolean {
+      when (answer: any): boolean {
         return answer.chooseCookie
       },
       required: false
@@ -141,7 +141,7 @@ const config = (ctx: PicGo): PluginConfig[] => {
   return config
 }
 
-const handleConfig = async (ctx: PicGo) => {
+const handleConfig = async (ctx: PicGo): Promise<void> => {
   const prompts = config(ctx)
   const answer = await ctx.cmd.inquirer.prompt(prompts)
   ctx.saveConfig({

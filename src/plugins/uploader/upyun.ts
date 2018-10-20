@@ -5,7 +5,7 @@ import crypto from 'crypto'
 import MD5 from 'md5'
 
 // generate COS signature string
-const generateSignature = (options, fileName: string) => {
+const generateSignature = (options: any, fileName: string): string => {
   const path = options.path || ''
   const operator = options.operator
   const password = options.password
@@ -17,7 +17,7 @@ const generateSignature = (options, fileName: string) => {
   return `UPYUN ${operator}:${sign}`
 }
 
-const postOptions = (options, fileName: string, signature: string, imgBase64: string) => {
+const postOptions = (options: any, fileName: string, signature: string, imgBase64: string): any => {
   const bucket = options.bucket
   const path = options.path || ''
   return {
@@ -32,7 +32,7 @@ const postOptions = (options, fileName: string, signature: string, imgBase64: st
   }
 }
 
-const handle = async (ctx: PicGo) => {
+const handle = async (ctx: PicGo): Promise<PicGo> => {
   const upyunOptions = ctx.getConfig('picBed.upyun')
   if (!upyunOptions) {
     throw new Error('Can\'t find upYun config')
@@ -117,7 +117,7 @@ const config = (ctx: PicGo): PluginConfig[] => {
   return config
 }
 
-const handleConfig = async (ctx: PicGo) => {
+const handleConfig = async (ctx: PicGo): Promise<void> => {
   const prompts = config(ctx)
   const answer = await ctx.cmd.inquirer.prompt(prompts)
   ctx.saveConfig({

@@ -81,7 +81,7 @@ class PluginHandler {
   execCommand (cmd: string, modules: string[], where: string): Promise<Result> {
     const registry = this.ctx.config.registry
     const proxy = this.ctx.config.proxy
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve: any, reject: any): void => {
       let args = [cmd].concat(modules).concat('--color=always').concat('--save')
       if (registry) {
         args = args.concat(`--registry=${registry}`)
@@ -93,15 +93,15 @@ class PluginHandler {
       const npm = spawn('npm', args, { cwd: where })
 
       let output = ''
-      npm.stdout.on('data', (data) => {
+      npm.stdout.on('data', (data: string) => {
         output += data
       }).pipe(process.stdout)
 
-      npm.stderr.on('data', (data) => {
+      npm.stderr.on('data', (data: string) => {
         output += data
       }).pipe(process.stderr)
 
-      npm.on('close', (code) => {
+      npm.on('close', (code: number) => {
         if (!code) {
           resolve({ code: 0, data: output })
         } else {

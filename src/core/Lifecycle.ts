@@ -86,7 +86,7 @@ class Lifecycle extends EventEmitter {
   }
 
   async handlePlugins (plugins: Plugin[], ctx: PicGo): Promise<PicGo> {
-    await Promise.all(plugins.map(async plugin => {
+    await Promise.all(plugins.map(async (plugin: Plugin) => {
       await plugin.handle(ctx)
     }))
     return ctx

@@ -3,7 +3,7 @@ import request from 'request-promise-native'
 import qiniu from 'qiniu'
 import { PluginConfig } from '../../utils/interfaces'
 
-function postOptions (options, fileName: string, token: string, imgBase64: string): any {
+function postOptions (options: any, fileName: string, token: string, imgBase64: string): any {
   const area = selectArea(options.area || 'z0')
   const path = options.path || ''
   const base64FileName = Buffer.from(path + fileName, 'utf-8').toString('base64').replace(/\+/g, '-').replace(/\//g, '_')
@@ -18,11 +18,11 @@ function postOptions (options, fileName: string, token: string, imgBase64: strin
   }
 }
 
-function selectArea (area): string {
+function selectArea (area: string): string {
   return area === 'z0' ? '' : '-' + area
 }
 
-function getToken (qiniuOptions): string {
+function getToken (qiniuOptions: any): string {
   const accessKey = qiniuOptions.accessKey
   const secretKey = qiniuOptions.secretKey
   const mac = new qiniu.auth.digest.Mac(accessKey, secretKey)
@@ -33,7 +33,7 @@ function getToken (qiniuOptions): string {
   return putPolicy.uploadToken(mac)
 }
 
-const handle = async (ctx: PicGo) => {
+const handle = async (ctx: PicGo): Promise<PicGo> => {
   const qiniuOptions = ctx.getConfig('picBed.qiniu')
   if (!qiniuOptions) {
     throw new Error('Can\'t find qiniu config')
@@ -123,7 +123,7 @@ const config = (ctx: PicGo): PluginConfig[] => {
   return config
 }
 
-const handleConfig = async (ctx: PicGo) => {
+const handleConfig = async (ctx: PicGo): Promise<void> => {
   const prompts = config(ctx)
   const answer = await ctx.cmd.inquirer.prompt(prompts)
   ctx.saveConfig({

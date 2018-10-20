@@ -4,7 +4,7 @@ import FileSync from 'lowdb/adapters/FileSync'
 
 const getConfig = (configPath: string): lowdb.LowdbSync<any> => {
   const adapter = new FileSync(configPath, {
-    deserialize: function (data) { 
+    deserialize: (data: string): Function => {
       return (new Function(`return ${data}`))()
     }
   })
@@ -23,9 +23,9 @@ const getConfig = (configPath: string): lowdb.LowdbSync<any> => {
   return db
 }
 
-const saveConfig = (configPath: string, config) => {
+const saveConfig = (configPath: string, config: any): void => {
   const db = getConfig(configPath)
-  Object.keys(config).forEach(name => {
+  Object.keys(config).forEach((name: string) => {
     db.read().set(name, config[name]).write()
   })
 }

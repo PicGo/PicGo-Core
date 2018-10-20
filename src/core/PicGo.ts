@@ -44,7 +44,7 @@ class PicGo extends EventEmitter {
     this.init()
   }
 
-  init () {
+  init (): void {
     if (this.configPath === '') {
       this.configPath = homedir() + '/.picgo/config.json'
     }
@@ -73,7 +73,7 @@ class PicGo extends EventEmitter {
 
   // register commandline commands
   // please mannually remove listeners for avoiding listeners memory leak
-  registerCommands () {
+  registerCommands (): void {
     this.cmd.init()
     return commanders(this)
   }
@@ -84,7 +84,7 @@ class PicGo extends EventEmitter {
   // }
 
   // get config
-  getConfig (name: string = '') {
+  getConfig (name: string = ''): any {
     if (name) {
       return get(this.config, name)
     } else {
@@ -93,20 +93,20 @@ class PicGo extends EventEmitter {
   }
 
   // save to db
-  saveConfig (config) {
+  saveConfig (config: any): void {
     saveConfig(this.configPath, config)
     this.setConfig(config)
   }
 
   // set config for ctx but will not be saved to db
   // it's more lightweight
-  setConfig (config) {
-    Object.keys(config).forEach(name => {
+  setConfig (config: any): void {
+    Object.keys(config).forEach((name: string) => {
       set(this.config, name, config[name])
     })
   }
 
-  async upload (input?: any[]) {
+  async upload (input?: any[]): Promise<void> {
     // upload from clipboard
     if (input === undefined || input.length === 0) {
       try {

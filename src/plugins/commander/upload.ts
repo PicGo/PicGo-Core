@@ -3,7 +3,7 @@ import path from 'path'
 import fs from 'fs-extra'
 
 export default {
-  handle: (ctx: PicGo) => {
+  handle: (ctx: PicGo): void => {
     const cmd = ctx.cmd
     cmd.program
       .command('upload')
@@ -12,8 +12,8 @@ export default {
       .alias('u')
       .action(async (input: string[]) => {
         const inputList = input
-            .map(item => path.resolve(item))
-            .filter(item => {
+            .map((item: string) => path.resolve(item))
+            .filter((item: string) => {
               const exist = fs.existsSync(item)
               if (!exist) {
                 ctx.log.warn(`${item} is not existed.`)

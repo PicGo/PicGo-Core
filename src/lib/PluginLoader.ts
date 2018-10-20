@@ -7,7 +7,7 @@ class PluginLoader {
 
   ctx: PicGo
   list: string[]
-  constructor (ctx) {
+  constructor (ctx: PicGo) {
     this.ctx = ctx
     this.list = []
   }
@@ -35,7 +35,7 @@ class PluginLoader {
       const json = require(packagePath)
       const deps = Object.keys(json.dependencies || {})
       const devDeps = Object.keys(json.devDependencies || {})
-      const modules = deps.concat(devDeps).filter(name => {
+      const modules = deps.concat(devDeps).filter((name: string) => {
         if (!/^picgo-plugin-|^@[^/]+\/picgo-plugin-/.test(name)) return false
         const path = this.resolvePlugin(this.ctx, name)
         return fs.existsSync(path)

@@ -30,15 +30,15 @@ class Logger {
     return this.handleLog('success', msg)
   }
 
-  info (msg): string | Error | undefined {
+  info (msg: string | Error): string | Error | undefined {
     return this.handleLog('info', msg)
   }
 
-  error (msg): string | Error | undefined {
+  error (msg: string | Error): string | Error | undefined {
     return this.handleLog('error', msg)
   }
 
-  warn (msg): string | Error | undefined {
+  warn (msg: string | Error): string | Error | undefined {
     return this.handleLog('warn', msg)
   }
 }

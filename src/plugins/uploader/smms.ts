@@ -1,7 +1,7 @@
 import PicGo from '../../core/PicGo'
 import request from 'request-promise-native'
 
-const postOptions = (fileName: string, imgBase64: string) => {
+const postOptions = (fileName: string, imgBase64: string): any => {
   return {
     method: 'POST',
     url: `https://sm.ms/api/upload`,
@@ -21,7 +21,7 @@ const postOptions = (fileName: string, imgBase64: string) => {
   }
 }
 
-const handle = async (ctx: PicGo) => {
+const handle = async (ctx: PicGo): Promise<PicGo> => {
   const imgList = ctx.output
   for (let i in imgList) {
     const postConfig = postOptions(imgList[i].fileName, imgList[i].base64Image)

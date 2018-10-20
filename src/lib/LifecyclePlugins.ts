@@ -24,7 +24,7 @@ class LifecyclePlugins {
   }
 
   getList (): Plugin[] {
-    return Object.keys(this.list).map(item => this.list[item])
+    return Object.keys(this.list).map((item: string) => this.list[item])
   }
 
   getNameList (): string[] {

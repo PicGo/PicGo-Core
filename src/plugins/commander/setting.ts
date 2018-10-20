@@ -1,7 +1,7 @@
 import PicGo from '../../core/PicGo'
 
 export default {
-  handle: (ctx: PicGo) => {
+  handle: (ctx: PicGo): void => {
     const cmd: typeof ctx.cmd = ctx.cmd
     cmd.program
       .command('set')

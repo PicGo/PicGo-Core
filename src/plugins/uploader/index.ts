@@ -8,7 +8,7 @@ import imgurUploader from './imgur'
 import aliYunUploader from './aliyun'
 import upYunUploader from './upyun'
 
-export default (ctx: PicGo) => {
+export default (ctx: PicGo): void => {
   ctx.helper.uploader.register('smms', SMMSUploader)
   ctx.helper.uploader.register('tcyun', tcYunUploader)
   ctx.helper.uploader.register('weibo', weiboUploader)

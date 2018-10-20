@@ -10,20 +10,22 @@
     "access": "public"
   },
   "scripts": {
-    "lint": "tslint src/**/*.ts",
+    "lint": "tslint src/**/*.ts --fix",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc -p . && npm run copy",
     "copy": "copyfiles -f src/utils/clipboard/* dist/utils/clipboard",
     "dev": "tsc -w -p .",
     "patch": "npm version patch && git push origin master && git push origin --tags",
     "minor": "npm version minor && git push origin master && git push origin --tags",
-    "major": "npm version major && git push origin master && git push origin --tags"
+    "major": "npm version major && git push origin master && git push origin --tags",
+    "precommit-msg": "echo \"Start to lint your code...\" && exit 0"
   },
   "keywords": [
     "picture",
     "upload",
     "util"
   ],
+  "precommit": ["precommit-msg", "lint"],
   "author": "Molunerfinn",
   "license": "MIT",
   "devDependencies": {
@@ -37,6 +39,7 @@
     "@types/request-promise-native": "^1.0.15",
     "@types/resolve": "^0.0.8",
     "copyfiles": "^2.1.0",
+    "pre-commit": "^1.2.2",
     "tslint": "^5.10.0",
     "tslint-config-standard": "^8.0.1",
     "typescript": "3.0.3"

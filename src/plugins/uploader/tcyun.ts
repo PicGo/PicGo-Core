@@ -6,7 +6,7 @@ import { PluginConfig } from '../../utils/interfaces'
 
 // generate COS signature string
 
-const generateSignature = (options, fileName: string) => {
+const generateSignature = (options: any, fileName: string): any => {
   const secretId = options.secretId
   const secretKey = options.secretKey
   const appId = options.appId
@@ -42,7 +42,7 @@ const generateSignature = (options, fileName: string) => {
   }
 }
 
-const postOptions = (options, fileName, signature, imgBase64) => {
+const postOptions = (options: any, fileName: string, signature: any, imgBase64: string): any => {
   const area = options.area
   const path = options.path
   if (!options.version || options.version === 'v4') {
@@ -74,7 +74,7 @@ const postOptions = (options, fileName, signature, imgBase64) => {
   }
 }
 
-const handle = async (ctx: PicGo) => {
+const handle = async (ctx: PicGo): Promise<PicGo | boolean> => {
   const tcYunOptions = ctx.getConfig('picBed.tcyun')
   if (!tcYunOptions) {
     throw new Error('Can\'t find tencent COS config')
@@ -91,8 +91,8 @@ const handle = async (ctx: PicGo) => {
       }
       const options = postOptions(tcYunOptions, imgList[i].fileName, signature, imgList[i].base64Image)
       const res = await request(options)
-        .then(res => res)
-        .catch(err => {
+        .then((res: any) => res)
+        .catch((err: Error) => {
           console.log(err)
           return {
             statusCode: 400,
@@ -215,7 +215,7 @@ const config = (ctx: PicGo): PluginConfig[] => {
   return config
 }
 
-const handleConfig = async (ctx: PicGo) => {
+const handleConfig = async (ctx: PicGo): Promise<void> => {
   const prompts = config(ctx)
   const answer = await ctx.cmd.inquirer.prompt(prompts)
   ctx.saveConfig({
