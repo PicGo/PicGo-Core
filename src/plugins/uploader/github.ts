@@ -40,7 +40,6 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
         } else {
           imgList[i]['imgUrl'] = body.content.download_url
         }
-        imgList[i]['type'] = 'github'
       } else {
         throw new Error('Server error, please try again')
       }

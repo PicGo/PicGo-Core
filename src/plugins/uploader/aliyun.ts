@@ -48,7 +48,6 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
         } else {
           imgList[i]['imgUrl'] = `https://${aliYunOptions.bucket}.${aliYunOptions.area}.aliyuncs.com/${path}${imgList[i].fileName}`
         }
-        imgList[i]['type'] = 'aliyun'
       } else {
         throw new Error('Upload failed')
       }

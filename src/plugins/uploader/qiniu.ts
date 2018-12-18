@@ -49,7 +49,6 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
         const baseUrl = qiniuOptions.url
         const options = qiniuOptions.options
         imgList[i]['imgUrl'] = `${baseUrl}/${body.key}${options}`
-        imgList[i]['type'] = 'qiniu'
       } else {
         ctx.emit('notification', {
           title: '上传失败！',

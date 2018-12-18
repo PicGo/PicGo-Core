@@ -47,7 +47,6 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
       if (body.statusCode === 200) {
         delete imgList[i].base64Image
         imgList[i]['imgUrl'] = `${upyunOptions.url}/${path}${imgList[i].fileName}${upyunOptions.options}`
-        imgList[i]['type'] = 'upyun'
       } else {
         throw new Error('Upload failed')
       }

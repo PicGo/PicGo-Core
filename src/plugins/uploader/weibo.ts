@@ -68,7 +68,6 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
         } else {
           const extname = imgList[i].extname === '.gif' ? '.gif' : '.jpg'
           imgList[i]['imgUrl'] = `https://ws1.sinaimg.cn/${quality}/${resTextJson.data.pics.pic_1.pid}${extname}`
-          imgList[i]['type'] = 'weibo'
         }
         delete imgList[i].extname
       }

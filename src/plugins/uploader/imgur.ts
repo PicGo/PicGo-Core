@@ -38,7 +38,6 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
       if (body.success) {
         delete imgList[i].base64Image
         imgList[i]['imgUrl'] = `${body.data.link}`
-        imgList[i]['type'] = 'imgur'
       } else {
         throw new Error('Server error, please try again')
       }

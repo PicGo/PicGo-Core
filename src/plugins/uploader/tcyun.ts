@@ -117,7 +117,6 @@ const handle = async (ctx: PicGo): Promise<PicGo | boolean> => {
         } else {
           imgList[i]['imgUrl'] = body.data.source_url
         }
-        imgList[i]['type'] = 'tcyun'
       } else if (!useV4 && body && body.statusCode === 200) {
         delete imgList[i].base64Image
         if (customUrl) {
@@ -125,7 +124,6 @@ const handle = async (ctx: PicGo): Promise<PicGo | boolean> => {
         } else {
           imgList[i]['imgUrl'] = `https://${tcYunOptions.bucket}.cos.${tcYunOptions.area}.myqcloud.com/${path}${imgList[i].fileName}`
         }
-        imgList[i]['type'] = 'tcyun'
       } else {
         ctx.emit('notification', {
           title: '上传失败！',

@@ -66,10 +66,14 @@ class Lifecycle extends EventEmitter {
     let type = ctx.config.picBed.uploader || ctx.config.picBed.current || 'smms'
     let uploader = this.ctx.helper.uploader.get(type)
     if (!uploader) {
+      type = 'smms'
       uploader = this.ctx.helper.uploader.get('smms')
       ctx.log.warn(`Can't find uploader - ${type}, swtich to default uploader - smms`)
     }
     await uploader.handle(ctx)
+    for (let i in ctx.output) {
+      ctx.output[i].type = type
+    }
     return ctx
   }
   async afterUpload (ctx: PicGo): Promise<PicGo> {

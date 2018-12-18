@@ -10,6 +10,7 @@
     "access": "public"
   },
   "scripts": {
+    "start": "node ./bin/picgo",
     "lint": "tslint src/**/*.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc -p . && npm run copy",
