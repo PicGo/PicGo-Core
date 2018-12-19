@@ -30,9 +30,7 @@ class PluginLoader {
       if (!fs.existsSync(pluginDir)) {
         return false
       }
-      // const content = await fs.readFile(packagePath, 'utf-8')
-      // const json = JSON.parse(content)
-      const json = require(packagePath)
+      const json = fs.readJSONSync(packagePath)
       const deps = Object.keys(json.dependencies || {})
       const devDeps = Object.keys(json.devDependencies || {})
       const modules = deps.concat(devDeps).filter((name: string) => {
