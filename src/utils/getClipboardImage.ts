@@ -9,14 +9,16 @@ const getClipboardImage = (ctx: PicGo): Promise<string> => {
   return new Promise((resolve: any, reject: any): any => {
     let platform: string = process.platform
     let execution = null
+    // for PicGo GUI
+    let env = ctx.config.PICGO_ENV === 'GUI'
     const platformPaths: {
       [index: string]: string
     } = {
-      'darwin': './clipboard/mac.applescript',
-      'win32': './clipboard/windows.ps1',
-      'linux': './clipboard/linux.sh'
+      'darwin': env ? path.join(ctx.baseDir,'./mac.applescript') : './clipboard/mac.applescript',
+      'win32': env ? path.join(ctx.baseDir, 'windows.ps1') : './clipboard/windows.ps1',
+      'linux': env ? path.join(ctx.baseDir, 'linux.sh') : './clipboard/linux.sh'
     }
-    const scriptPath = path.join(__dirname, platformPaths[platform])
+    const scriptPath = env ? platformPaths[platform] : path.join(__dirname, platformPaths[platform])
     if (platform === 'darwin') {
       execution = spawn('osascript', [scriptPath, imagePath])
 

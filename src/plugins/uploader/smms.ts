@@ -1,7 +1,7 @@
 import PicGo from '../../core/PicGo'
 import request from 'request-promise-native'
 
-const postOptions = (fileName: string, imgBase64: string): any => {
+const postOptions = (fileName: string, image: Buffer): any => {
   return {
     method: 'POST',
     url: `https://sm.ms/api/upload`,
@@ -11,7 +11,7 @@ const postOptions = (fileName: string, imgBase64: string): any => {
     },
     formData: {
       smfile: {
-        value: Buffer.from(imgBase64, 'base64'),
+        value: image,
         options: {
           filename: fileName
         }
@@ -24,11 +24,16 @@ const postOptions = (fileName: string, imgBase64: string): any => {
 const handle = async (ctx: PicGo): Promise<PicGo> => {
   const imgList = ctx.output
   for (let i in imgList) {
-    const postConfig = postOptions(imgList[i].fileName, imgList[i].base64Image)
+    let image = imgList[i].buffer
+    if (!image && imgList[i].base64Image) {
+      image = Buffer.from(imgList[i].base64Image, 'base64')
+    }
+    const postConfig = postOptions(imgList[i].fileName, image)
     let body = await request(postConfig)
     body = JSON.parse(body)
     if (body.code === 'success') {
       delete imgList[i].base64Image
+      delete imgList[i].buffer
       imgList[i]['imgUrl'] = body.data.url
     } else {
       ctx.emit('notification', {

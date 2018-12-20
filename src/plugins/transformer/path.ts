@@ -8,10 +8,11 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
   await Promise.all(ctx.input.map(async (item: string) => {
     let fileName = path.basename(item)
     let buffer = await fs.readFile(item)
-    let base64Image = Buffer.from(buffer).toString('base64')
+    // let base64Image = Buffer.from(buffer).toString('base64')
     let imgSize = probe.sync(buffer)
     results.push({
-      base64Image,
+      buffer,
+      // base64Image,
       fileName,
       width: imgSize.width,
       height: imgSize.height,

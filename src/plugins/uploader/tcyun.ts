@@ -42,7 +42,7 @@ const generateSignature = (options: any, fileName: string): any => {
   }
 }
 
-const postOptions = (options: any, fileName: string, signature: any, imgBase64: string): any => {
+const postOptions = (options: any, fileName: string, signature: any, image: Buffer): any => {
   const area = options.area
   const path = options.path
   if (!options.version || options.version === 'v4') {
@@ -56,7 +56,7 @@ const postOptions = (options: any, fileName: string, signature: any, imgBase64: 
       },
       formData: {
         op: 'upload',
-        filecontent: Buffer.from(imgBase64, 'base64')
+        filecontent: image
       }
     }
   } else {
@@ -68,7 +68,7 @@ const postOptions = (options: any, fileName: string, signature: any, imgBase64: 
         Authorization: `q-sign-algorithm=sha1&q-ak=${options.secretId}&q-sign-time=${signature.signTime}&q-key-time=${signature.signTime}&q-header-list=host&q-url-param-list=&q-signature=${signature.signature}`,
         contentType: mime.lookup(fileName)
       },
-      body: Buffer.from(imgBase64, 'base64'),
+      body: image,
       resolveWithFullResponse: true
     }
   }
@@ -89,7 +89,11 @@ const handle = async (ctx: PicGo): Promise<PicGo | boolean> => {
       if (!signature) {
         return false
       }
-      const options = postOptions(tcYunOptions, imgList[i].fileName, signature, imgList[i].base64Image)
+      let image = imgList[i].buffer
+      if (!image && imgList[i].base64Image) {
+        image = Buffer.from(imgList[i].base64Image, 'base64')
+      }
+      const options = postOptions(tcYunOptions, imgList[i].fileName, signature, image)
       const res = await request(options)
         .then((res: any) => res)
         .catch((err: Error) => {
@@ -112,6 +116,7 @@ const handle = async (ctx: PicGo): Promise<PicGo | boolean> => {
       }
       if (useV4 && body.message === 'SUCCESS') {
         delete imgList[i].base64Image
+        delete imgList[i].buffer
         if (customUrl) {
           imgList[i]['imgUrl'] = `${customUrl}/${path}${imgList[i].fileName}`
         } else {
@@ -119,6 +124,7 @@ const handle = async (ctx: PicGo): Promise<PicGo | boolean> => {
         }
       } else if (!useV4 && body && body.statusCode === 200) {
         delete imgList[i].base64Image
+        delete imgList[i].buffer
         if (customUrl) {
           imgList[i]['imgUrl'] = `${customUrl}/${path}${imgList[i].fileName}`
         } else {

@@ -32,11 +32,13 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
   try {
     const imgList = ctx.output
     for (let i in imgList) {
-      const options = postOptions(imgurOptions, imgList[i].fileName, imgList[i].base64Image)
+      let base64Image = imgList[i].base64Image || Buffer.from(imgList[i].buffer).toString('base64')
+      const options = postOptions(imgurOptions, imgList[i].fileName, base64Image)
       let body = await request(options)
       body = JSON.parse(body)
       if (body.success) {
         delete imgList[i].base64Image
+        delete imgList[i].buffer
         imgList[i]['imgUrl'] = `${body.data.link}`
       } else {
         throw new Error('Server error, please try again')

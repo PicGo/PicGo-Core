@@ -118,6 +118,9 @@ class PicGo extends EventEmitter {
           })
           this.log.warn('no image to upload')
         } else {
+          this.once('failed', async () => {
+            await fs.remove(imgPath)
+          })
           this.once('finished', async () => {
             await fs.remove(imgPath)
           })

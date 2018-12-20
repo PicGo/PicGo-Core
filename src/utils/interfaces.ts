@@ -18,6 +18,7 @@ interface Helper {
 }
 
 interface ImgInfo {
+  buffer?: Buffer
   base64Image?: string
   fileName?: string
   width?: number

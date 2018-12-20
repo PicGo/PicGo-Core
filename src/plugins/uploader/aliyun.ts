@@ -13,7 +13,7 @@ const generateSignature = (options: any, fileName: string): string => {
   return `OSS ${options.accessKeyId}:${signature}`
 }
 
-const postOptions = (options: any, fileName: string, signature: string, imgBase64: string): any => {
+const postOptions = (options: any, fileName: string, signature: string, image: Buffer): any => {
   return {
     method: 'PUT',
     url: `https://${options.bucket}.${options.area}.aliyuncs.com/${encodeURI(options.path)}${encodeURI(fileName)}`,
@@ -23,7 +23,7 @@ const postOptions = (options: any, fileName: string, signature: string, imgBase6
       Date: new Date().toUTCString(),
       'content-type': mime.lookup(fileName)
     },
-    body: Buffer.from(imgBase64, 'base64'),
+    body: image,
     resolveWithFullResponse: true
   }
 }
@@ -39,10 +39,15 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
     const path = aliYunOptions.path
     for (let i in imgList) {
       const signature = generateSignature(aliYunOptions, imgList[i].fileName)
-      const options = postOptions(aliYunOptions, imgList[i].fileName, signature, imgList[i].base64Image)
+      let image = imgList[i].buffer
+      if (!image && imgList[i].base64Image) {
+        image = Buffer.from(imgList[i].base64Image, 'base64')
+      }
+      const options = postOptions(aliYunOptions, imgList[i].fileName, signature, image)
       let body = await request(options)
       if (body.statusCode === 200) {
         delete imgList[i].base64Image
+        delete imgList[i].buffer
         if (customUrl) {
           imgList[i]['imgUrl'] = `${customUrl}/${path}${imgList[i].fileName}`
         } else {

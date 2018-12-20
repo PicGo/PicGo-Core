@@ -17,7 +17,7 @@ const generateSignature = (options: any, fileName: string): string => {
   return `UPYUN ${operator}:${sign}`
 }
 
-const postOptions = (options: any, fileName: string, signature: string, imgBase64: string): any => {
+const postOptions = (options: any, fileName: string, signature: string, image: Buffer): any => {
   const bucket = options.bucket
   const path = options.path || ''
   return {
@@ -27,7 +27,7 @@ const postOptions = (options: any, fileName: string, signature: string, imgBase6
       Authorization: signature,
       Date: new Date().toUTCString()
     },
-    body: Buffer.from(imgBase64, 'base64'),
+    body: image,
     resolveWithFullResponse: true
   }
 }
@@ -41,11 +41,16 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
     const imgList = ctx.output
     const path = upyunOptions.path || ''
     for (let i in imgList) {
+      let image = imgList[i].buffer
+      if (!image && imgList[i].base64Image) {
+        image = Buffer.from(imgList[i].base64Image, 'base64')
+      }
       const singature = generateSignature(upyunOptions, imgList[i].fileName)
-      const options = postOptions(upyunOptions, imgList[i].fileName, singature, imgList[i].base64Image)
+      const options = postOptions(upyunOptions, imgList[i].fileName, singature, image)
       const body = await request(options)
       if (body.statusCode === 200) {
         delete imgList[i].base64Image
+        delete imgList[i].buffer
         imgList[i]['imgUrl'] = `${upyunOptions.url}/${path}${imgList[i].fileName}${upyunOptions.options}`
       } else {
         throw new Error('Upload failed')

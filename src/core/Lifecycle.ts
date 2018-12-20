@@ -27,6 +27,7 @@ class Lifecycle extends EventEmitter {
       await this.afterUpload(this.ctx)
       return this.ctx
     } catch (e) {
+      console.log('failed')
       this.ctx.emit('uploadProgress', -1)
       this.ctx.emit('failed')
       this.ctx.log.error(e)

@@ -45,9 +45,10 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
       }
       const imgList = ctx.output
       for (let i in imgList) {
+        let base64Image = imgList[i].base64Image || Buffer.from(imgList[i].buffer).toString('base64')
         let opt = {
           formData: {
-            b64_data: imgList[i].base64Image
+            b64_data: base64Image
           }
         }
         if (chooseCookie) {
@@ -58,6 +59,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
         let result = await rp.post(UPLOAD_URL, opt)
         result = result.replace(/<.*?\/>/, '').replace(/<(\w+).*?>.*?<\/\1>/, '')
         delete imgList[i].base64Image
+        delete imgList[i].buffer
         const resTextJson = JSON.parse(result)
         if (resTextJson.data.pics.pic_1.pid === undefined) {
           ctx.emit('notification', {

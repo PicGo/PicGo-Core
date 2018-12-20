@@ -41,11 +41,13 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
   try {
     const imgList = ctx.output
     for (let i in imgList) {
-      const options = postOptions(qiniuOptions, imgList[i].fileName, getToken(qiniuOptions), imgList[i].base64Image)
+      let base64Image = imgList[i].base64Image || Buffer.from(imgList[i].buffer).toString('base64')
+      const options = postOptions(qiniuOptions, imgList[i].fileName, getToken(qiniuOptions), base64Image)
       const res = await request(options)
       const body = JSON.parse(res)
       if (body.key) {
         delete imgList[i].base64Image
+        delete imgList[i].buffer
         const baseUrl = qiniuOptions.url
         const options = qiniuOptions.options
         imgList[i]['imgUrl'] = `${baseUrl}/${body.key}${options}`

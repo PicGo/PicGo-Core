@@ -25,16 +25,18 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
   try {
     const imgList = ctx.output
     for (let i in imgList) {
+      let base64Image = imgList[i].base64Image || Buffer.from(imgList[i].buffer).toString('base64')
       const data = {
         message: 'Upload by PicGo',
         branch: githubOptions.branch,
-        content: imgList[i].base64Image,
+        content: base64Image,
         path: githubOptions.path + encodeURI(imgList[i].fileName)
       }
       const postConfig = postOptions(imgList[i].fileName, githubOptions, data)
       const body = await request(postConfig)
       if (body) {
         delete imgList[i].base64Image
+        delete imgList[i].buffer
         if (githubOptions.customUrl) {
           imgList[i]['imgUrl'] = `${githubOptions.customUrl}/${githubOptions.path}${imgList[i].fileName}`
         } else {
