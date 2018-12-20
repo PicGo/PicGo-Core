@@ -10,8 +10,9 @@ export default {
       .command('install <plugins...>')
       .description('install picgo plugin')
       .alias('add')
-      .action((plugins: string[]) => {
-        pluginHandler.install(plugins)
+      .option('-p, --proxy <proxy>', 'Add proxy for installing')
+      .action((plugins: string[], program: any) => {
+        pluginHandler.install(plugins, program.proxy)
       })
     cmd.program
       .command('uninstall <plugins...>')

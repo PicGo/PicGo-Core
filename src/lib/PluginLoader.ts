@@ -10,6 +10,20 @@ class PluginLoader {
   constructor (ctx: PicGo) {
     this.ctx = ctx
     this.list = []
+    this.init()
+  }
+
+  init (): void {
+    const packagePath = path.join(this.ctx.baseDir, 'package.json')
+    if (!fs.existsSync(packagePath)) {
+      const pkg = {
+        name: 'picgo-plugins',
+        description: 'picgo-plugins',
+        repository: 'https://github.com/Molunerfinn/PicGo-Core',
+        license: 'MIT'
+      }
+      fs.writeFileSync(packagePath, JSON.stringify(pkg), 'utf8')
+    }
   }
 
   // get plugin entry
