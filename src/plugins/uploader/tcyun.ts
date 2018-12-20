@@ -1,5 +1,4 @@
 import PicGo from '../../core/PicGo'
-import request from 'request-promise-native'
 import crypto from 'crypto'
 import mime from 'mime-types'
 import { PluginConfig } from '../../utils/interfaces'
@@ -94,7 +93,7 @@ const handle = async (ctx: PicGo): Promise<PicGo | boolean> => {
         image = Buffer.from(imgList[i].base64Image, 'base64')
       }
       const options = postOptions(tcYunOptions, imgList[i].fileName, signature, image)
-      const res = await request(options)
+      const res = await ctx.Request.request(options)
         .then((res: any) => res)
         .catch((err: Error) => {
           console.log(err)

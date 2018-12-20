@@ -1,5 +1,4 @@
 import PicGo from '../../core/PicGo'
-import request from 'request-promise-native'
 
 const postOptions = (fileName: string, image: Buffer): any => {
   return {
@@ -29,7 +28,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
       image = Buffer.from(imgList[i].base64Image, 'base64')
     }
     const postConfig = postOptions(imgList[i].fileName, image)
-    let body = await request(postConfig)
+    let body = await ctx.Request.request(postConfig)
     body = JSON.parse(body)
     if (body.code === 'success') {
       delete imgList[i].base64Image

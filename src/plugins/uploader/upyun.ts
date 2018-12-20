@@ -1,5 +1,4 @@
 import PicGo from '../../core/PicGo'
-import request from 'request-promise-native'
 import { PluginConfig } from '../../utils/interfaces'
 import crypto from 'crypto'
 import MD5 from 'md5'
@@ -47,7 +46,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
       }
       const singature = generateSignature(upyunOptions, imgList[i].fileName)
       const options = postOptions(upyunOptions, imgList[i].fileName, singature, image)
-      const body = await request(options)
+      const body = await ctx.Request.request(options)
       if (body.statusCode === 200) {
         delete imgList[i].base64Image
         delete imgList[i].buffer

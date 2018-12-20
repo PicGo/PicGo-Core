@@ -14,6 +14,7 @@ import PluginLoader from '../lib/PluginLoader'
 import { get, set } from 'lodash'
 import { Helper, ImgInfo, Config } from '../utils/interfaces'
 import getClipboardImage from '../utils/getClipboardImage'
+import Request from '../lib/Request'
 
 class PicGo extends EventEmitter {
   configPath: string
@@ -25,6 +26,7 @@ class PicGo extends EventEmitter {
   output: ImgInfo[]
   input: any[]
   pluginLoader: PluginLoader
+  Request: Request
   private lifecycle: Lifecycle
 
   constructor (configPath: string = '') {
@@ -58,6 +60,7 @@ class PicGo extends EventEmitter {
       const config = getConfig(this.configPath).read().value()
       this.config = config
       // load self plugins
+      this.Request = new Request(this)
       this.pluginLoader = new PluginLoader(this)
       uploaders(this)
       transformers(this)

@@ -3,8 +3,10 @@ const path = require('path')
 const minimist = require('minimist')
 let argv = minimist(process.argv.slice(2))
 let configPath = argv.c || argv.config || ''
-if (configPath) {
+if (configPath !== true && configPath !== '') {
   configPath = path.resolve(configPath)
+} else {
+  configPath = ''
 }
 const PicGo = require('../dist/index')
 const picgo = new PicGo(configPath)

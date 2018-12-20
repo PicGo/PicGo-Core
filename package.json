@@ -67,5 +67,9 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/PicGo/PicGo-Core.git"
-  }
+  },
+  "picBed": {
+    "current": "smms"
+  },
+  "plugins": {}
 }

@@ -1,5 +1,4 @@
 import PicGo from '../../core/PicGo'
-import request from 'request-promise-native'
 import { PluginConfig } from '../../utils/interfaces'
 
 const postOptions = (fileName: string, options: any, data: any): any => {
@@ -33,7 +32,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
         path: githubOptions.path + encodeURI(imgList[i].fileName)
       }
       const postConfig = postOptions(imgList[i].fileName, githubOptions, data)
-      const body = await request(postConfig)
+      const body = await ctx.Request.request(postConfig)
       if (body) {
         delete imgList[i].base64Image
         delete imgList[i].buffer

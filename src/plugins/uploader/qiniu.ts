@@ -1,5 +1,4 @@
 import PicGo from '../../core/PicGo'
-import request from 'request-promise-native'
 import qiniu from 'qiniu'
 import { PluginConfig } from '../../utils/interfaces'
 
@@ -43,7 +42,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
     for (let i in imgList) {
       let base64Image = imgList[i].base64Image || Buffer.from(imgList[i].buffer).toString('base64')
       const options = postOptions(qiniuOptions, imgList[i].fileName, getToken(qiniuOptions), base64Image)
-      const res = await request(options)
+      const res = await ctx.Request.request(options)
       const body = JSON.parse(res)
       if (body.key) {
         delete imgList[i].base64Image

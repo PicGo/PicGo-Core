@@ -1,8 +1,5 @@
 import PicGo from '../../core/PicGo'
-import request from 'request-promise-native'
 import { PluginConfig } from '../../utils/interfaces'
-const j = request.jar()
-const rp = request.defaults({ jar: j })
 const UPLOAD_URL = 'http://picupload.service.weibo.com/interface/pic_upload.php?ori=1&mime=image%2Fjpeg&data=base64&url=0&markpos=1&logo=&nick=0&marks=1&app=miniblog'
 
 const postOptions = (formData: any): any => {
@@ -35,12 +32,12 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
     const options = postOptions(formData)
     let res
     if (!chooseCookie) {
-      res = await rp(options)
+      res = await ctx.Request.request(options)
     }
     if (chooseCookie || res.body.retcode === 20000000) {
       if (res) {
         for (let i in res.body.data.crossdomainlist) {
-          await rp.get(res.body.data.crossdomainlist[i])
+          await ctx.Request.request.get(res.body.data.crossdomainlist[i])
         }
       }
       const imgList = ctx.output
@@ -56,7 +53,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
             Cookie: cookie
           }
         }
-        let result = await rp.post(UPLOAD_URL, opt)
+        let result = await ctx.Request.request.post(UPLOAD_URL, opt)
         result = result.replace(/<.*?\/>/, '').replace(/<(\w+).*?>.*?<\/\1>/, '')
         delete imgList[i].base64Image
         delete imgList[i].buffer

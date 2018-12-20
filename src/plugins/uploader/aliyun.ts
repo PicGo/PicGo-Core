@@ -1,5 +1,4 @@
 import PicGo from '../../core/PicGo'
-import request from 'request-promise-native'
 import { PluginConfig } from '../../utils/interfaces'
 import crypto from 'crypto'
 import mime from 'mime-types'
@@ -44,7 +43,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
         image = Buffer.from(imgList[i].base64Image, 'base64')
       }
       const options = postOptions(aliYunOptions, imgList[i].fileName, signature, image)
-      let body = await request(options)
+      let body = await ctx.Request.request(options)
       if (body.statusCode === 200) {
         delete imgList[i].base64Image
         delete imgList[i].buffer
