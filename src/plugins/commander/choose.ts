@@ -22,14 +22,14 @@ export default {
               type: 'list',
               name: 'uploader',
               message: 'Choose an uploader',
-              choices: ctx.helper.uploader.getNameList(),
+              choices: ctx.helper.uploader.getIdList(),
               default: ctx.config.picBed.uploader || ctx.config.picBed.current || 'smms'
             },
             transformer: {
               type: 'list',
               name: 'transformer',
               message: 'Choose a transformer',
-              choices: ctx.helper.transformer.getNameList(),
+              choices: ctx.helper.transformer.getIdList(),
               default: ctx.config.picBed.transformer || 'path'
             },
             plugins: {

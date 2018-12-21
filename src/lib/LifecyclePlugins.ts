@@ -11,23 +11,23 @@ class LifecyclePlugins {
     this.list = {}
   }
 
-  register (name: string, plugin: Plugin): void {
-    if (!name) throw new TypeError('name is required!')
+  register (id: string, plugin: Plugin): void {
+    if (!id) throw new TypeError('id is required!')
     if (typeof plugin.handle !== 'function') throw new TypeError('plugin.handle must be a function!')
-    if (this.list[name]) throw new TypeError('duplicate name!')
+    if (this.list[id]) throw new TypeError('duplicate id!')
 
-    this.list[name] = plugin
+    this.list[id] = plugin
   }
 
-  get (name: string): Plugin {
-    return this.list[name]
+  get (id: string): Plugin {
+    return this.list[id]
   }
 
   getList (): Plugin[] {
     return Object.keys(this.list).map((item: string) => this.list[item])
   }
 
-  getNameList (): string[] {
+  getIdList (): string[] {
     return Object.keys(this.list)
   }
 }

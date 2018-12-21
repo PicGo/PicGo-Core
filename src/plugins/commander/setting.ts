@@ -29,7 +29,7 @@ export default {
                   {
                     type: 'list',
                     name: `${module}`,
-                    choices: ctx.helper[module].getNameList(),
+                    choices: ctx.helper[module].getIdList(),
                     message: `Choose a(n) ${module}`,
                     default: ctx.config.picBed.uploader || ctx.config.picBed.current
                   }
