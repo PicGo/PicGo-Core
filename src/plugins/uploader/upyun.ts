@@ -120,17 +120,8 @@ const config = (ctx: PicGo): PluginConfig[] => {
   return config
 }
 
-const handleConfig = async (ctx: PicGo): Promise<void> => {
-  const prompts = config(ctx)
-  const answer = await ctx.cmd.inquirer.prompt(prompts)
-  ctx.saveConfig({
-    'picBed.upyun': answer
-  })
-}
-
 export default {
   name: '又拍云图床',
   handle,
-  handleConfig,
   config
 }

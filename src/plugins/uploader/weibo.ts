@@ -139,17 +139,8 @@ const config = (ctx: PicGo): PluginConfig[] => {
   return config
 }
 
-const handleConfig = async (ctx: PicGo): Promise<void> => {
-  const prompts = config(ctx)
-  const answer = await ctx.cmd.inquirer.prompt(prompts)
-  ctx.saveConfig({
-    'picBed.weibo': answer
-  })
-}
-
 export default {
   name: '微博图床',
   handle,
-  handleConfig,
   config
 }

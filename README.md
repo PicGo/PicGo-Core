@@ -60,7 +60,7 @@ $ picgo -h
     update <plugins...>           update picgo plugin
     set|config <module> [name]    configure config of picgo modules
     upload|u [input...]           upload, go go go
-    choose|ch [options] [module]  choose modules of picgo
+    use [options] [module]        use modules of picgo
 ```
 
 #### Upload a picture from path

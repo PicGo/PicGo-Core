@@ -1,4 +1,16 @@
 import PicGo from '../../core/PicGo'
+import { PluginConfig } from '../../utils/interfaces'
+
+// handle modules config -> save to picgo config file
+const handleConfig = async (ctx: PicGo, prompts: PluginConfig, module: string, name: string): Promise<void> => {
+  const answer = await ctx.cmd.inquirer.prompt(prompts)
+  let configName = module === 'uploader' ?
+                    `picBed.${name}` : module === 'transformer' ?
+                    `transformer.${name}` : name
+  ctx.saveConfig({
+    [configName]: answer
+  })
+}
 
 export default {
   handle: (ctx: PicGo): void => {
@@ -21,8 +33,8 @@ export default {
                 if (!item) {
                   return ctx.log.error(`No ${module} named ${name}`)
                 }
-                if (item.handleConfig) {
-                  await item.handleConfig(ctx)
+                if (item.config) {
+                  await handleConfig(ctx, item.config(ctx), module, name)
                 }
               } else {
                 let prompts = [
@@ -36,8 +48,8 @@ export default {
                 ]
                 let answer = await ctx.cmd.inquirer.prompt(prompts)
                 const item = ctx.helper[module].get(answer[module])
-                if (item.handleConfig) {
-                  await item.handleConfig(ctx)
+                if (item.config) {
+                  await handleConfig(ctx, item.config(ctx), module, answer[module])
                 }
               }
               break
@@ -47,8 +59,8 @@ export default {
                   name = `picgo-plugin-${name}`
                 }
                 if (Object.keys(ctx.config.plugins).includes(name)) {
-                  if (ctx.pluginLoader.getPlugin(name).handleConfig) {
-                    await ctx.pluginLoader.getPlugin(name).handleConfig(ctx)
+                  if (ctx.pluginLoader.getPlugin(name).config) {
+                    await handleConfig(ctx, ctx.pluginLoader.getPlugin(name).config(ctx), 'plugin', name)
                   }
                 } else {
                   return ctx.log.error(`No plugin named ${name}`)
@@ -63,8 +75,8 @@ export default {
                   }
                 ]
                 let answer = await ctx.cmd.inquirer.prompt(prompts)
-                if (ctx.pluginLoader.getPlugin(answer['plugin']).handleConfig) {
-                  await ctx.pluginLoader.getPlugin(answer['plugin']).handleConfig(ctx)
+                if (ctx.pluginLoader.getPlugin(answer['plugin']).config) {
+                  await handleConfig(ctx, ctx.pluginLoader.getPlugin(answer['plugin']).config(ctx), 'plugin', answer['plugin'])
                 }
               }
               break

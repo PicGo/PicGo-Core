@@ -4,16 +4,11 @@ export default {
   handle: (ctx: PicGo): void => {
     const cmd: typeof ctx.cmd = ctx.cmd
     cmd.program
-      .command('choose')
-      .alias('ch')
+      .command('use')
       .arguments('[module]')
-      .option('-l, --list', 'Display config')
-      .description('choose modules of picgo')
-      .action(async (module: string, list: any) => {
+      .description('use modules of picgo')
+      .action(async (module: string) => {
         try {
-          if (list.list) {
-            return console.log(ctx.config)
-          }
           // // load third-party plugins
           // await ctx.pluginLoader.load()
           let prompts = []
@@ -21,21 +16,21 @@ export default {
             uploader: {
               type: 'list',
               name: 'uploader',
-              message: 'Choose an uploader',
+              message: 'Use an uploader',
               choices: ctx.helper.uploader.getIdList(),
               default: ctx.config.picBed.uploader || ctx.config.picBed.current || 'smms'
             },
             transformer: {
               type: 'list',
               name: 'transformer',
-              message: 'Choose a transformer',
+              message: 'Use a transformer',
               choices: ctx.helper.transformer.getIdList(),
               default: ctx.config.picBed.transformer || 'path'
             },
             plugins: {
               type: 'checkbox',
               name: 'plugins',
-              message: 'Choose plugins',
+              message: 'Use plugins',
               choices: ctx.pluginLoader.getList(),
               default: Object.keys(ctx.config.plugins).filter((item: string) => ctx.config.plugins[item])
             }

@@ -218,17 +218,8 @@ const config = (ctx: PicGo): PluginConfig[] => {
   return config
 }
 
-const handleConfig = async (ctx: PicGo): Promise<void> => {
-  const prompts = config(ctx)
-  const answer = await ctx.cmd.inquirer.prompt(prompts)
-  ctx.saveConfig({
-    'picBed.tcyun': answer
-  })
-}
-
 export default {
   name: '腾讯云COS',
   handle,
-  config,
-  handleConfig
+  config
 }
