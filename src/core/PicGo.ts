@@ -8,7 +8,6 @@ import Lifecycle from './Lifecycle'
 import LifecyclePlugins from '../lib/LifecyclePlugins'
 import uploaders from '../plugins/uploader'
 import transformers from '../plugins/transformer'
-import commanders from '../plugins/commander'
 import { saveConfig, getConfig } from '../utils/config'
 import PluginLoader from '../lib/PluginLoader'
 import { get, set } from 'lodash'
@@ -78,13 +77,8 @@ class PicGo extends EventEmitter {
   // please mannually remove listeners for avoiding listeners memory leak
   registerCommands (): void {
     this.cmd.init()
-    return commanders(this)
+    this.cmd.loadCommands()
   }
-
-  // remove listeners for avoiding listeners memory leak
-  // removeListeners () {
-  //   this.cmd.program.removeAllListeners()
-  // }
 
   // get config
   getConfig (name: string = ''): any {

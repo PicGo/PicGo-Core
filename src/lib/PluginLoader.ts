@@ -39,22 +39,22 @@ class PluginLoader {
   load (): void | boolean {
     const packagePath = path.join(this.ctx.baseDir, 'package.json')
     const pluginDir = path.join(this.ctx.baseDir, 'node_modules/')
-    try {
       // Thanks to hexo -> https://github.com/hexojs/hexo/blob/master/lib/hexo/load_plugins.js
-      if (!fs.existsSync(pluginDir)) {
-        return false
-      }
-      const json = fs.readJSONSync(packagePath)
-      const deps = Object.keys(json.dependencies || {})
-      const devDeps = Object.keys(json.devDependencies || {})
-      const modules = deps.concat(devDeps).filter((name: string) => {
-        if (!/^picgo-plugin-|^@[^/]+\/picgo-plugin-/.test(name)) return false
-        const path = this.resolvePlugin(this.ctx, name)
-        return fs.existsSync(path)
-      })
-      for (let i in modules) {
-        this.list.push(modules[i])
-        if (this.ctx.config.plugins[modules[i]] || this.ctx.config.plugins[modules[i]] === undefined) {
+    if (!fs.existsSync(pluginDir)) {
+      return false
+    }
+    const json = fs.readJSONSync(packagePath)
+    const deps = Object.keys(json.dependencies || {})
+    const devDeps = Object.keys(json.devDependencies || {})
+    const modules = deps.concat(devDeps).filter((name: string) => {
+      if (!/^picgo-plugin-|^@[^/]+\/picgo-plugin-/.test(name)) return false
+      const path = this.resolvePlugin(this.ctx, name)
+      return fs.existsSync(path)
+    })
+    for (let i in modules) {
+      this.list.push(modules[i])
+      if (this.ctx.config.plugins[modules[i]] || this.ctx.config.plugins[modules[i]] === undefined) {
+        try {
           this.getPlugin(modules[i]).register()
           const plugin = `plugins[${modules[i]}]`
           this.ctx.saveConfig(
@@ -62,10 +62,14 @@ class PluginLoader {
               [plugin]: true
             }
           )
+        } catch (e) {
+          this.ctx.log.error(e)
+          this.ctx.emit('notification', {
+            title: `Plugin ${modules[i]} Load Error`,
+            body: e
+          })
         }
       }
-    } catch (e) {
-      throw new Error(e)
     }
   }
 

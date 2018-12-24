@@ -14,7 +14,7 @@ class LifecyclePlugins {
   register (id: string, plugin: Plugin): void {
     if (!id) throw new TypeError('id is required!')
     if (typeof plugin.handle !== 'function') throw new TypeError('plugin.handle must be a function!')
-    if (this.list[id]) throw new TypeError('duplicate id!')
+    if (this.list[id]) throw new TypeError(`${this.name} duplicate id: ${id}!`)
 
     this.list[id] = plugin
   }

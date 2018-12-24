@@ -2,6 +2,7 @@ import PicGo from '../core/PicGo'
 import program from 'commander'
 import inquirer from 'inquirer'
 import { Plugin } from '../utils/interfaces'
+import commanders from '../plugins/commander'
 const pkg = require('../../package.json')
 
 class Commander {
@@ -32,6 +33,9 @@ class Commander {
         this.ctx.log.error(`Invalid command: ${this.program.args.join(' ')}\nSee --help for a list of available commands.`)
         process.exit(1)
       })
+
+    // built-in commands
+    commanders(this.ctx)
   }
 
   register (name: string, plugin: Plugin): void {
@@ -40,7 +44,10 @@ class Commander {
     if (this.list[name]) throw new TypeError('duplicate name!')
 
     this.list[name] = plugin
-    this.list[name].handle(this.ctx)
+  }
+
+  loadCommands (): void {
+    Object.keys(this.list).map((item: string) => this.list[item].handle(this.ctx))
   }
 
   get (name: string): Plugin {
