@@ -53,10 +53,10 @@ class PluginLoader {
     })
     for (let i in modules) {
       this.list.push(modules[i])
-      if (this.ctx.config.plugins[modules[i]] || this.ctx.config.plugins[modules[i]] === undefined) {
+      if (this.ctx.config.picgoPlugins[modules[i]] || this.ctx.config.picgoPlugins[modules[i]] === undefined) {
         try {
           this.getPlugin(modules[i]).register()
-          const plugin = `plugins[${modules[i]}]`
+          const plugin = `picgoPlugins[${modules[i]}]`
           this.ctx.saveConfig(
             {
               [plugin]: true

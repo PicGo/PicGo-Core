@@ -58,7 +58,7 @@ export default {
                 if (!name.includes('picgo-plugin-')) {
                   name = `picgo-plugin-${name}`
                 }
-                if (Object.keys(ctx.config.plugins).includes(name)) {
+                if (Object.keys(ctx.config.picgoPlugins).includes(name)) {
                   if (ctx.pluginLoader.getPlugin(name).config) {
                     await handleConfig(ctx, ctx.pluginLoader.getPlugin(name).config(ctx), 'plugin', name)
                   }

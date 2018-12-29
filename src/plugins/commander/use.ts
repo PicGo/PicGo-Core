@@ -32,7 +32,7 @@ export default {
               name: 'plugins',
               message: 'Use plugins',
               choices: ctx.pluginLoader.getList(),
-              default: Object.keys(ctx.config.plugins).filter((item: string) => ctx.config.plugins[item])
+              default: Object.keys(ctx.config.picgoPlugins).filter((item: string) => ctx.config.plugins[item])
             }
           }
           // if an option is specific, then just set this option in config
@@ -50,7 +50,7 @@ export default {
 
           // handle for plugins option from Array to object
           if (answer['plugins']) {
-            let plugins = ctx.getConfig('plugins')
+            let plugins = ctx.getConfig('picgoPlugins')
             Object.keys(plugins).map((item: string) => {
               if (answer['plugins'].includes(item)) {
                 plugins[item] = true
@@ -60,7 +60,7 @@ export default {
             })
             // save config for plugins
             ctx.saveConfig({
-              plugins: plugins
+              picgoPlugins: plugins
             })
           }
           // save config for uploader & transformer
