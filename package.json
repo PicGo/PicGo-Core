@@ -60,6 +60,7 @@
     "lodash-id": "^0.14.0",
     "lowdb": "^1.0.0",
     "md5": "^2.2.1",
+    "minimatch": "^3.0.4",
     "probe-image-size": "^4.0.0",
     "qiniu": "^7.2.1",
     "request": "^2.87.0",

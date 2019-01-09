@@ -2,25 +2,25 @@ import PicGo from '../../core/PicGo'
 import chalk from 'chalk'
 import path from 'path'
 import fs from 'fs-extra'
-import generate from '../../utils/generate'
+import { generate } from '../../utils/initUtils'
 import { homedir } from 'os'
 import download from 'download-git-repo'
 
-const run = (template: string, hasSlash: boolean, project: string, clone: boolean): void => {
+const run = (ctx: PicGo, template: string, hasSlash: boolean, project: string, clone: boolean): void => {
   let templateName = !hasSlash
     ? 'PicGo/picgo-template-' + template
     : template
-  downloadAndGenerate(templateName, project, clone)
+  downloadAndGenerate(ctx, templateName, project, clone)
 }
 
-const downloadAndGenerate = (template: string, project: string, clone: boolean): void => {
+const downloadAndGenerate = (ctx: PicGo, template: string, project: string, clone: boolean): void => {
   const tmp = path.join(homedir(), '.picgo', template)
   const to = path.resolve(project || '.')
   download(template, tmp, { clone }, (err: Error) => {
     if (err) {
       return console.error(err)
     }
-    generate(template, tmp, to, (err: any) => {
+    generate(ctx, template, tmp, to, (err: any) => {
       console.log(err)
     })
   })
@@ -53,11 +53,11 @@ export default {
               }
             ]).then((answer: any) => {
               if (answer.ok) {
-                run(template, hasSlash, project, clone)
+                run(ctx, template, hasSlash, project, clone)
               }
             })
           } else {
-            run(template, hasSlash, project, clone)
+            run(ctx, template, hasSlash, project, clone)
           }
         } catch (e) {
           ctx.log.error(e)
