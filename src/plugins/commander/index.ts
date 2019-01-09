@@ -5,6 +5,7 @@ import upload from './upload'
 import setting from './setting'
 import use from './use'
 import proxy from './proxy'
+import init from './init'
 
 export default (ctx: PicGo): void => {
   ctx.cmd.register('pluginHandler', pluginHandler)
@@ -13,4 +14,5 @@ export default (ctx: PicGo): void => {
   ctx.cmd.register('upload', upload)
   ctx.cmd.register('use', use)
   ctx.cmd.register('proxy', proxy)
+  ctx.cmd.register('init', init)
 }
