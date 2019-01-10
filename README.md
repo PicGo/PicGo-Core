@@ -55,12 +55,13 @@ $ picgo -h
 
   Commands:
 
-    install|add <plugins...>      install picgo plugin
-    uninstall|rm <plugins...>     uninstall picgo plugin
-    update <plugins...>           update picgo plugin
-    set|config <module> [name]    configure config of picgo modules
-    upload|u [input...]           upload, go go go
-    use [options] [module]        use modules of picgo
+    install|add <plugins...>             install picgo plugin
+    uninstall|rm <plugins...>            uninstall picgo plugin
+    update <plugins...>                  update picgo plugin
+    set|config <module> [name]           configure config of picgo modules
+    upload|u [input...]                  upload, go go go
+    use [module]                         use modules of picgo
+    init [options] <template> [project]  create picgo plugin\'s development templates
 ```
 
 #### Upload a picture from path

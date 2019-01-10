@@ -51,6 +51,7 @@ export default {
       .arguments('<template> [project]')
       .option('--clone', 'use git clone')
       .option('--offline', 'use cached template')
+      .description('create picgo plugin\'s development templates')
       .action(async (template: string, project: string, program: any) => {
         // Thanks to vue-cli init: https://github.com/vuejs/vue-cli/blob/master/bin/vue-init
         try {
