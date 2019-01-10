@@ -5,24 +5,35 @@ import fs from 'fs-extra'
 import { generate } from '../../utils/initUtils'
 import { homedir } from 'os'
 import download from 'download-git-repo'
+import { Options } from '../../utils/interfaces'
 
-const run = (ctx: PicGo, template: string, hasSlash: boolean, project: string, clone: boolean): void => {
-  let templateName = !hasSlash
-    ? 'PicGo/picgo-template-' + template
-    : template
-  downloadAndGenerate(ctx, templateName, project, clone)
+const run = (ctx: PicGo, options: Options): void => {
+  // const name = options.inPlace ? path.relative('../', process.cwd()) : options.project
+  if (options.offline) { // offline mode
+    if (fs.existsSync(options.template)) {
+      generate(ctx, options)
+    } else {
+      ctx.log.error(`Local template ${options.template} not found`)
+    }
+  } else { // online mode
+    options.template = !options.hasSlash
+      ? 'PicGo/picgo-template-' + options.template // official template
+      : options.template
+    downloadAndGenerate(ctx, options)
+  }
 }
 
-const downloadAndGenerate = (ctx: PicGo, template: string, project: string, clone: boolean): void => {
-  const tmp = path.join(homedir(), '.picgo', template)
-  const to = path.resolve(project || '.')
-  download(template, tmp, { clone }, (err: Error) => {
+/**
+ * download template & generate
+ * @param { PicGo } ctx
+ * @param { Options } options
+ */
+const downloadAndGenerate = (ctx: PicGo, options: Options): void => {
+  download(options.template, options.tmp, { clone: options.clone }, (err: Error) => {
     if (err) {
-      return console.error(err)
+      return ctx.log.error(err)
     }
-    generate(ctx, template, tmp, to, (err: any) => {
-      console.log(err)
-    })
+    generate(ctx, options)
   })
 }
 
@@ -33,16 +44,34 @@ export default {
       .command('init')
       .arguments('<template> [project]')
       .option('--clone', 'use git clone')
+      .option('--offline', 'use cached template')
       .action(async (template: string, project: string, program: any) => {
         // Thanks to vue-cli init: https://github.com/vuejs/vue-cli/blob/master/bin/vue-init
         try {
           const hasSlash = template.indexOf('/') > -1
           const inPlace = !project || project === '.'
-          // const name = inPlace ? path.relative('../', process.cwd()) : project
-          const to = path.resolve(project || '.')
+          const dest = path.resolve(project || '.')
           const clone = program.clone || false
+          const offline = program.offline || false
+          const tmp = path.join(homedir(), '.picgo/templates', template.replace(/[\/:]/g, '-')) // for caching template
 
-          if (inPlace || fs.existsSync(to)) {
+          if (program.offline) {
+            template = tmp
+          }
+
+          let options = {
+            template,
+            project,
+            hasSlash,
+            inPlace,
+            dest,
+            clone,
+            tmp,
+            offline
+          }
+
+          // check if project is empty or exist
+          if (inPlace || fs.existsSync(dest)) {
             ctx.cmd.inquirer.prompt([
               {
                 type: 'confirm',
@@ -53,11 +82,11 @@ export default {
               }
             ]).then((answer: any) => {
               if (answer.ok) {
-                run(ctx, template, hasSlash, project, clone)
+                run(ctx, options)
               }
             })
-          } else {
-            run(ctx, template, hasSlash, project, clone)
+          } else { // project is given
+            run(ctx, options)
           }
         } catch (e) {
           ctx.log.error(e)

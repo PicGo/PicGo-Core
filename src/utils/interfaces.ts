@@ -48,6 +48,18 @@ interface ImgSize {
   height: number
 }
 
+// for initUtils
+interface Options {
+  template: string // template name
+  dest: string // destination for template to generate
+  hasSlash: boolean // check if is officail template
+  inPlace: boolean // check if is given project name
+  clone: boolean // check if use git clone
+  offline: boolean // check if use offline mode
+  tmp: string // cache template
+  project: string // project name
+}
+
 export {
   PluginConfig,
   ImgInfo,
@@ -55,5 +67,6 @@ export {
   Helper,
   Plugin,
   Result,
-  ImgSize
+  ImgSize,
+  Options
 }
