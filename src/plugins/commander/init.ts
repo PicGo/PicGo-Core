@@ -6,6 +6,7 @@ import { generate } from '../../utils/initUtils'
 import { homedir } from 'os'
 import download from 'download-git-repo'
 import { Options } from '../../utils/interfaces'
+import rm from 'rimraf'
 
 const run = (ctx: PicGo, options: Options): void => {
   // const name = options.inPlace ? path.relative('../', process.cwd()) : options.project
@@ -29,10 +30,15 @@ const run = (ctx: PicGo, options: Options): void => {
  * @param { Options } options
  */
 const downloadAndGenerate = (ctx: PicGo, options: Options): void => {
+  if (fs.existsSync(options.tmp)) {
+    rm.sync(options.tmp)
+  }
+  ctx.log.info('Template files are downloading...')
   download(options.template, options.tmp, { clone: options.clone }, (err: Error) => {
     if (err) {
       return ctx.log.error(err)
     }
+    ctx.log.success('Template files are downloaded!')
     generate(ctx, options)
   })
 }
