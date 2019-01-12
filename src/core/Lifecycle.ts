@@ -81,11 +81,13 @@ class Lifecycle extends EventEmitter {
     this.ctx.emit('afterUpload', ctx)
     this.ctx.emit('uploadProgress', 100)
     await this.handlePlugins(ctx.helper.afterUploadPlugins.getList(), ctx)
-    this.ctx.emit('finished', ctx)
     let msg = ''
     for (let i in ctx.output) {
       msg += ctx.output[i].imgUrl + '\n'
+      delete ctx.output[i].base64Image
+      delete ctx.output[i].buffer
     }
+    this.ctx.emit('finished', ctx)
     this.ctx.log.success(`\n${msg}`)
     return ctx
   }
