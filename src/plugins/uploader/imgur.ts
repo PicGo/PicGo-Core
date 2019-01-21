@@ -17,6 +17,9 @@ const postOptions = (options: any, fileName: string, imgBase64: string): any => 
       name: fileName
     }
   }
+  if (options.proxy) {
+    obj['proxy'] = options.proxy
+  }
   return obj
 }
 
