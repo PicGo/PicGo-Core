@@ -18,6 +18,7 @@ class Lifecycle extends EventEmitter {
         throw new Error('Input must be an array.')
       }
       this.ctx.input = input
+      this.ctx.output = []
 
       // lifecycle main
       await this.beforeTransform(this.ctx)
