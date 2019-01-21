@@ -32,7 +32,7 @@ export default {
               name: 'plugins',
               message: 'Use plugins',
               choices: ctx.pluginLoader.getList(),
-              default: Object.keys(ctx.config.picgoPlugins).filter((item: string) => ctx.config.plugins[item])
+              default: Object.keys(ctx.config.picgoPlugins).filter((item: string) => ctx.config.picgoPlugins[item])
             }
           }
           // if an option is specific, then just set this option in config
