@@ -37,14 +37,14 @@ class Lifecycle extends EventEmitter {
       }
     }
   }
-  async beforeTransform (ctx: PicGo): Promise<PicGo> {
+  private async beforeTransform (ctx: PicGo): Promise<PicGo> {
     this.ctx.emit('uploadProgress', 0)
     this.ctx.emit('beforeTransform', ctx)
     this.ctx.log.info('Before transform')
     await this.handlePlugins(ctx.helper.beforeTransformPlugins.getList(), ctx)
     return ctx
   }
-  async doTransform (ctx: PicGo): Promise<PicGo> {
+  private async doTransform (ctx: PicGo): Promise<PicGo> {
     this.ctx.emit('uploadProgress', 30)
     this.ctx.log.info('Transforming...')
     let type = ctx.config.picBed.transformer || 'path'
@@ -56,14 +56,14 @@ class Lifecycle extends EventEmitter {
     await transformer.handle(ctx)
     return ctx
   }
-  async beforeUpload (ctx: PicGo): Promise<PicGo> {
+  private async beforeUpload (ctx: PicGo): Promise<PicGo> {
     this.ctx.emit('uploadProgress', 60)
     this.ctx.log.info('Before upload')
     this.ctx.emit('beforeUpload', ctx)
     await this.handlePlugins(ctx.helper.beforeUploadPlugins.getList(), ctx)
     return ctx
   }
-  async doUpload (ctx: PicGo): Promise<PicGo> {
+  private async doUpload (ctx: PicGo): Promise<PicGo> {
     this.ctx.log.info('Uploading...')
     let type = ctx.config.picBed.uploader || ctx.config.picBed.current || 'smms'
     let uploader = this.ctx.helper.uploader.get(type)
@@ -78,7 +78,7 @@ class Lifecycle extends EventEmitter {
     }
     return ctx
   }
-  async afterUpload (ctx: PicGo): Promise<PicGo> {
+  private async afterUpload (ctx: PicGo): Promise<PicGo> {
     this.ctx.emit('afterUpload', ctx)
     this.ctx.emit('uploadProgress', 100)
     await this.handlePlugins(ctx.helper.afterUploadPlugins.getList(), ctx)
@@ -93,7 +93,7 @@ class Lifecycle extends EventEmitter {
     return ctx
   }
 
-  async handlePlugins (plugins: Plugin[], ctx: PicGo): Promise<PicGo> {
+  private async handlePlugins (plugins: Plugin[], ctx: PicGo): Promise<PicGo> {
     await Promise.all(plugins.map(async (plugin: Plugin) => {
       await plugin.handle(ctx)
     }))
