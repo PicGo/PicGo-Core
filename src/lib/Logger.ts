@@ -16,7 +16,9 @@ class Logger {
     this.ctx = ctx
   }
   protected handleLog (type: string, msg: string | Error): string | Error | undefined {
-    if (!this.ctx.config.silent) {
+    // if configPath is invalid then this.ctx.config === undefined
+    // if not then check config.silent
+    if (this.ctx.config === undefined || !this.ctx.config.silent) {
       let log = chalk[this.level[type]](`[PicGo ${type.toUpperCase()}]: `)
       log += msg
       console.log(log)

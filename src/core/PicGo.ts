@@ -45,9 +45,13 @@ class PicGo extends EventEmitter {
     this.init()
   }
 
-  init (): void {
+  init (): any {
     if (this.configPath === '') {
       this.configPath = homedir() + '/.picgo/config.json'
+    }
+    if (path.extname(this.configPath).toUpperCase() !== '.JSON') {
+      this.configPath = ''
+      return this.log.error('The configuration file only supports JSON format.')
     }
     this.baseDir = path.dirname(this.configPath)
     const exist = fs.pathExistsSync(this.configPath)
@@ -76,8 +80,10 @@ class PicGo extends EventEmitter {
   // register commandline commands
   // please mannually remove listeners for avoiding listeners memory leak
   registerCommands (): void {
-    this.cmd.init()
-    this.cmd.loadCommands()
+    if (this.configPath !== '') {
+      this.cmd.init()
+      this.cmd.loadCommands()
+    }
   }
 
   // get config
@@ -103,7 +109,8 @@ class PicGo extends EventEmitter {
     })
   }
 
-  async upload (input?: any[]): Promise<void> {
+  async upload (input?: any[]): Promise<void | string | Error> {
+    if (this.configPath === '') return this.log.error('The configuration file only supports JSON format.')
     // upload from clipboard
     if (input === undefined || input.length === 0) {
       try {
