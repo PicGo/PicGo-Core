@@ -8,7 +8,7 @@ import Lifecycle from './Lifecycle'
 import LifecyclePlugins from '../lib/LifecyclePlugins'
 import uploaders from '../plugins/uploader'
 import transformers from '../plugins/transformer'
-import { saveConfig, getConfig } from '../utils/config'
+import { saveConfig, initConfig } from '../utils/config'
 import PluginLoader from '../lib/PluginLoader'
 import { get, set } from 'lodash'
 import { Helper, ImgInfo, Config } from '../utils/interfaces'
@@ -56,7 +56,7 @@ class PicGo extends EventEmitter {
     }
     try {
       // init config
-      const config = getConfig(this.configPath).read().value()
+      const config = initConfig(this.configPath).read().value()
       this.config = config
       // load self plugins
       this.Request = new Request(this)
