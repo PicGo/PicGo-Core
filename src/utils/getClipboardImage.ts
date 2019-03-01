@@ -47,7 +47,6 @@ const getClipboardImage = (ctx: PicGo): Promise<any> => {
         }
       }
       let imgPath = data.toString().trim()
-      console.log(imgPath, imagePath)
       let isExistFile = false
       // in macOS if your copy the file in system, it's basename will not equal to our default basename
       if (path.basename(imgPath) !== path.basename(imagePath)) {
