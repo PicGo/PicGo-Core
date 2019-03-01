@@ -114,7 +114,7 @@ class PicGo extends EventEmitter {
     // upload from clipboard
     if (input === undefined || input.length === 0) {
       try {
-        const imgPath = await getClipboardImage(this)
+        const { imgPath, isExistFile } = await getClipboardImage(this)
         if (imgPath === 'no image') {
           this.emit('notification', {
             title: 'image not found in clipboard',
@@ -123,10 +123,14 @@ class PicGo extends EventEmitter {
           this.log.warn('no image to upload')
         } else {
           this.once('failed', async () => {
-            await fs.remove(imgPath)
+            if (!isExistFile) {
+              await fs.remove(imgPath)
+            }
           })
           this.once('finished', async () => {
-            await fs.remove(imgPath)
+            if (!isExistFile) {
+              await fs.remove(imgPath)
+            }
           })
           await this.lifecycle.start([imgPath])
         }
