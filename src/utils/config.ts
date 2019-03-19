@@ -1,12 +1,14 @@
 import lowdb from 'lowdb'
 import lodashId from 'lodash-id'
 import FileSync from 'lowdb/adapters/FileSync'
+import json from 'comment-json'
 
 const initConfig = (configPath: string): lowdb.LowdbSync<any> => {
   const adapter = new FileSync(configPath, {
-    deserialize: (data: string): Function => {
-      return (new Function(`return ${data}`))()
-    }
+    serialize (obj: object): string {
+      return json.stringify(obj, null, 2)
+    },
+    deserialize: json.parse
   })
   const db = lowdb(adapter)
   db._.mixin(lodashId)
