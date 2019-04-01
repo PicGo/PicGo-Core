@@ -30,7 +30,7 @@ class Lifecycle extends EventEmitter {
     } catch (e) {
       console.log('failed')
       this.ctx.emit('uploadProgress', -1)
-      this.ctx.emit('failed')
+      this.ctx.emit('failed', e)
       this.ctx.log.error(e)
       if (this.ctx.config.debug) {
         Promise.reject(e)
