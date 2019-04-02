@@ -73,25 +73,35 @@ class PluginHandler {
       if (proxy) {
         args = args.concat(`--proxy=${proxy}`)
       }
+      try {
+        const npm = spawn('npm', args, { cwd: where })
 
-      const npm = spawn('npm', args, { cwd: where })
+        let output = ''
+        npm.stdout.on('data', (data: string) => {
+          output += data
+        }).pipe(process.stdout)
 
-      let output = ''
-      npm.stdout.on('data', (data: string) => {
-        output += data
-      }).pipe(process.stdout)
+        npm.stderr.on('data', (data: string) => {
+          output += data
+        }).pipe(process.stderr)
 
-      npm.stderr.on('data', (data: string) => {
-        output += data
-      }).pipe(process.stderr)
-
-      npm.on('close', (code: number) => {
-        if (!code) {
-          resolve({ code: 0, data: output })
-        } else {
-          reject({ code: code, data: output })
-        }
-      })
+        npm.on('close', (code: number) => {
+          if (!code) {
+            resolve({ code: 0, data: output })
+          } else {
+            reject({ code: code, data: output })
+          }
+        })
+        // for users who haven't installed node.js
+        npm.on('error', (err: Error) => {
+          this.ctx.log.error(err)
+          this.ctx.log.error('NPM is not installed')
+          this.ctx.emit('failed', 'NPM is not installed')
+        })
+      } catch (e) {
+        this.ctx.log.error(e)
+        this.ctx.emit('failed')
+      }
     })
   }
 }
