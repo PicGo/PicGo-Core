@@ -105,7 +105,7 @@ const handle = async (ctx: PicGo): Promise<PicGo | boolean> => {
           }
         })
       let body
-      if (useV4) {
+      if (useV4 && typeof res === 'string') {
         body = JSON.parse(res)
       } else {
         body = res
@@ -139,7 +139,7 @@ const handle = async (ctx: PicGo): Promise<PicGo | boolean> => {
     }
     return ctx
   } catch (err) {
-    if (err.error !== 'Upload failed') {
+    if (err.message !== 'Upload failed') {
       let body
       if (!tcYunOptions.version || tcYunOptions.version === 'v4') {
         body = JSON.parse(err.error)
@@ -148,12 +148,12 @@ const handle = async (ctx: PicGo): Promise<PicGo | boolean> => {
           body: `错误码：${body.code}，请打开浏览器粘贴地址查看相关原因。`,
           text: 'https://cloud.tencent.com/document/product/436/8432'
         })
-      } else {
-        ctx.emit('notification', {
-          title: '上传失败！',
-          body: `请检查你的配置项是否正确`
-        })
       }
+    } else {
+      ctx.emit('notification', {
+        title: '上传失败！',
+        body: `请检查你的配置项是否正确`
+      })
     }
     throw err
   }

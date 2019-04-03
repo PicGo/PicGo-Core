@@ -57,7 +57,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
     }
     return ctx
   } catch (err) {
-    if (err.error === 'Upload failed') {
+    if (err.message === 'Upload failed') {
       ctx.emit('notification', {
         title: '上传失败！',
         body: `请检查你的配置项是否正确`

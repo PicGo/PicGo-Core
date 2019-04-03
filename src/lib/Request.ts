@@ -13,8 +13,9 @@ class Request {
     let options = {
       jar: request.jar()
     }
-    if (this.ctx.config.picBed.proxy) {
-      options['proxy'] = this.ctx.config.picBed.proxy
+    const proxy = this.ctx.getConfig('picBed.proxy')
+    if (proxy) {
+      options['proxy'] = proxy
     }
     this.request = request.defaults(options)
   }

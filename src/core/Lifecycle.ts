@@ -83,8 +83,12 @@ class Lifecycle extends EventEmitter {
     this.ctx.emit('uploadProgress', 100)
     await this.handlePlugins(ctx.helper.afterUploadPlugins.getList(), ctx)
     let msg = ''
-    for (let i in ctx.output) {
-      msg += ctx.output[i].imgUrl + '\n'
+    let length = ctx.output.length
+    for (let i = 0; i < length; i++) {
+      msg += ctx.output[i].imgUrl
+      if (i !== length - 1) {
+        msg += '\n'
+      }
       delete ctx.output[i].base64Image
       delete ctx.output[i].buffer
     }

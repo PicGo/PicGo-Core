@@ -79,7 +79,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
       throw new Error('Upload failed')
     }
   } catch (err) {
-    if (err.error !== 'Upload failed' && err.error !== 'Cookie is unavailable') {
+    if (err.message !== 'Upload failed' && err.error !== 'Cookie is unavailable') {
       ctx.emit('notification', {
         title: '上传失败！',
         body: '服务端出错，请重试'

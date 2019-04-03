@@ -1,5 +1,8 @@
 import chalk from 'chalk'
 import PicGo from '../core/PicGo'
+import dayjs from 'dayjs'
+import fs from 'fs-extra'
+import path from 'path'
 
 class Logger {
   level: {
@@ -18,13 +21,42 @@ class Logger {
   protected handleLog (type: string, msg: string | Error): string | Error | undefined {
     // if configPath is invalid then this.ctx.config === undefined
     // if not then check config.silent
-    if (this.ctx.config === undefined || !this.ctx.config.silent) {
+    if (this.ctx.config === undefined || !this.ctx.getConfig('silent')) {
       let log = chalk[this.level[type]](`[PicGo ${type.toUpperCase()}]: `)
       log += msg
       console.log(log)
+      this.handleWriteLog(type, msg, this.ctx)
       return msg
     } else {
       return
+    }
+  }
+
+  protected handleWriteLog (type: string, msg: string | Error, ctx: PicGo): void {
+    try {
+      const logLevel = this.ctx.getConfig('settings.logLevel')
+      const logPath = this.ctx.getConfig('settings.logPath') || path.join(ctx.baseDir, './picgo.log')
+      if (this.checkLogLevel(type, logLevel)) {
+        const picgoLog = fs.createWriteStream(logPath, { flags: 'a', encoding: 'utf8' })
+        const log = `${dayjs().format('YYYY-MM-DD HH:mm:ss')} [PicGo ${type.toUpperCase()}] ${msg}`
+        let logger = new console.Console(picgoLog)
+        logger.log(log)
+        picgoLog.destroy()
+        logger = null
+      }
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  protected checkLogLevel (type: string, level: undefined | string | string[]): boolean {
+    if (level === undefined) {
+      return true
+    }
+    if (Array.isArray(level)) {
+      return level.some((item: string) => item === type)
+    } else {
+      return type === level
     }
   }
 

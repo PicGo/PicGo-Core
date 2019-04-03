@@ -60,7 +60,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
     }
     return ctx
   } catch (err) {
-    if (err.error !== 'Upload failed') {
+    if (err.message !== 'Upload failed') {
       const error = JSON.parse(err.response.body)
       ctx.emit('notification', {
         title: '上传失败！',
