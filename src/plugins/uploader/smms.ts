@@ -37,7 +37,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
     } else {
       ctx.emit('notification', {
         title: '上传失败！',
-        body: '当前网络状态不佳，请稍后再试'
+        body: body.msg
       })
       throw new Error('Upload failed')
     }
