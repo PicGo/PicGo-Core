@@ -3,6 +3,7 @@ import PicGo from '../core/PicGo'
 import dayjs from 'dayjs'
 import fs from 'fs-extra'
 import path from 'path'
+import util from 'util'
 
 class Logger {
   level: {
@@ -38,8 +39,12 @@ class Logger {
       const logPath = this.ctx.getConfig('settings.logPath') || path.join(ctx.baseDir, './picgo.log')
       if (this.checkLogLevel(type, logLevel)) {
         const picgoLog = fs.createWriteStream(logPath, { flags: 'a', encoding: 'utf8' })
-        const log = `${dayjs().format('YYYY-MM-DD HH:mm:ss')} [PicGo ${type.toUpperCase()}] ${msg}`
+        let log = `${dayjs().format('YYYY-MM-DD HH:mm:ss')} [PicGo ${type.toUpperCase()}] ${msg}`
         let logger = new console.Console(picgoLog)
+        if (typeof msg === 'object' && type === 'error') {
+          log += `\n------Error Stack Begin------\n${util.format(msg.stack)}\n-------Error Stack End-------
+          `
+        }
         logger.log(log)
         picgoLog.destroy()
         logger = null
