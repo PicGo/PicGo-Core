@@ -39,7 +39,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
         title: '上传失败！',
         body: body.msg
       })
-      throw new Error('Upload failed')
+      throw new Error(body.msg)
     }
   }
   return ctx
