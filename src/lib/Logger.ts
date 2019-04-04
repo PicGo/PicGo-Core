@@ -58,7 +58,7 @@ class Logger {
       return true
     }
     if (Array.isArray(level)) {
-      return level.some((item: string) => item === type)
+      return level.some((item: string) => (item === type || item === 'all'))
     } else {
       return type === level
     }
