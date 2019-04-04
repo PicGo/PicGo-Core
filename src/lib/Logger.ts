@@ -42,8 +42,7 @@ class Logger {
         let log = `${dayjs().format('YYYY-MM-DD HH:mm:ss')} [PicGo ${type.toUpperCase()}] ${msg}`
         let logger = new console.Console(picgoLog)
         if (typeof msg === 'object' && type === 'error') {
-          log += `\n------Error Stack Begin------\n${util.format(msg.stack)}\n-------Error Stack End-------
-          `
+          log += `\n------Error Stack Begin------\n${util.format(msg.stack)}\n-------Error Stack End-------`
         }
         logger.log(log)
         picgoLog.destroy()
