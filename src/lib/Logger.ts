@@ -54,7 +54,7 @@ class Logger {
   }
 
   protected checkLogLevel (type: string, level: undefined | string | string[]): boolean {
-    if (level === undefined) {
+    if (level === undefined || level === 'all') {
       return true
     }
     if (Array.isArray(level)) {
