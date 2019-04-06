@@ -16,7 +16,7 @@ export default {
             .filter((item: string) => {
               const exist = fs.existsSync(item)
               if (!exist) {
-                ctx.log.warn(`${item} is not existed.`)
+                ctx.log.warn(`${item} does not exist.`)
               }
               return exist
             })
