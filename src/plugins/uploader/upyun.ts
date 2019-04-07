@@ -59,14 +59,14 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
   } catch (err) {
     if (err.message === 'Upload failed') {
       ctx.emit('notification', {
-        title: '上传失败！',
+        title: '上传失败',
         body: `请检查你的配置项是否正确`
       })
     } else {
       const body = JSON.parse(err.error)
       ctx.emit('notification', {
-        title: '上传失败！',
-        body: `错误码：${body.code}，请打开浏览器粘贴地址查看相关原因。`,
+        title: '上传失败',
+        body: `错误码：${body.code}，请打开浏览器粘贴地址查看相关原因`,
         text: 'http://docs.upyun.com/api/errno/'
       })
     }

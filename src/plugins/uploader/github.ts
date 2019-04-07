@@ -48,7 +48,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
     return ctx
   } catch (err) {
     ctx.emit('notification', {
-      title: '上传失败！',
+      title: '上传失败',
       body: '服务端出错，请重试'
     })
     throw err

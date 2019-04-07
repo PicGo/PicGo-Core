@@ -42,7 +42,7 @@ const getClipboardImage = (ctx: PicGo): Promise<any> => {
         if (data.toString().trim() === 'no xclip') {
           return ctx.emit('notification', {
             title: 'xclip not found',
-            body: 'Please install xclip before run picgo!'
+            body: 'Please install xclip before run picgo'
           })
         }
       }

@@ -60,7 +60,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
         const resTextJson = JSON.parse(result)
         if (resTextJson.data.pics.pic_1.pid === undefined) {
           ctx.emit('notification', {
-            title: '上传失败！',
+            title: '上传失败',
             body: '微博Cookie失效，请在网页版重新登录一遍'
           })
           throw new Error('Cookie is unavailable')
@@ -73,7 +73,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
       return ctx
     } else {
       ctx.emit('notification', {
-        title: '上传失败！',
+        title: '上传失败',
         body: res.body.msg
       })
       throw new Error('Upload failed')
@@ -81,7 +81,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
   } catch (err) {
     if (err.message !== 'Upload failed' && err.error !== 'Cookie is unavailable') {
       ctx.emit('notification', {
-        title: '上传失败！',
+        title: '上传失败',
         body: '服务端出错，请重试'
       })
     }

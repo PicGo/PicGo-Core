@@ -52,7 +52,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
         imgList[i]['imgUrl'] = `${baseUrl}/${body.key}${options}`
       } else {
         ctx.emit('notification', {
-          title: '上传失败！',
+          title: '上传失败',
           body: res.body.msg
         })
         throw new Error('Upload failed')
@@ -63,7 +63,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
     if (err.message !== 'Upload failed') {
       const error = JSON.parse(err.response.body)
       ctx.emit('notification', {
-        title: '上传失败！',
+        title: '上传失败',
         body: error.error
       })
     }

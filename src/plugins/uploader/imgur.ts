@@ -46,8 +46,8 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
     return ctx
   } catch (err) {
     ctx.emit('notification', {
-      title: '上传失败！',
-      body: '请检查你的配置以及网络！',
+      title: '上传失败',
+      body: '请检查你的配置以及网络',
       text: 'http://docs.imgur.com/api/errno/'
     })
     throw err

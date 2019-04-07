@@ -131,7 +131,7 @@ const handle = async (ctx: PicGo): Promise<PicGo | boolean> => {
         }
       } else {
         ctx.emit('notification', {
-          title: '上传失败！',
+          title: '上传失败',
           body: res.body.msg
         })
         throw new Error('Upload failed')
@@ -144,14 +144,14 @@ const handle = async (ctx: PicGo): Promise<PicGo | boolean> => {
       if (!tcYunOptions.version || tcYunOptions.version === 'v4') {
         body = JSON.parse(err.error)
         ctx.emit('notification', {
-          title: '上传失败！',
-          body: `错误码：${body.code}，请打开浏览器粘贴地址查看相关原因。`,
+          title: '上传失败',
+          body: `错误码：${body.code}，请打开浏览器粘贴地址查看相关原因`,
           text: 'https://cloud.tencent.com/document/product/436/8432'
         })
       }
     } else {
       ctx.emit('notification', {
-        title: '上传失败！',
+        title: '上传失败',
         body: `请检查你的配置项是否正确`
       })
     }

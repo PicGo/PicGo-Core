@@ -36,7 +36,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
       imgList[i]['imgUrl'] = body.data.url
     } else {
       ctx.emit('notification', {
-        title: '上传失败！',
+        title: '上传失败',
         body: body.msg
       })
       throw new Error(body.msg)
