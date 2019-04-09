@@ -19,20 +19,36 @@
     "patch": "npm version patch && git push origin master && git push origin --tags",
     "minor": "npm version minor && git push origin master && git push origin --tags",
     "major": "npm version major && git push origin master && git push origin --tags",
-    "precommit-msg": "echo \"Start to lint your code...\" && exit 0"
+    "cz": "git-cz",
+    "release": "bump-version"
   },
   "keywords": [
     "picture",
     "upload",
     "util"
   ],
-  "precommit": [
-    "precommit-msg",
-    "lint"
-  ],
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run lint",
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-customizable"
+    },
+    "cz-customizable": {
+      "config": "./node_modules/@picgo/bump-version/.cz-config.js"
+    }
+  },
+  "commitlint": {
+    "extends": ["./node_modules/@picgo/bump-version/commitlint-picgo"]
+  },
   "author": "Molunerfinn",
   "license": "MIT",
   "devDependencies": {
+    "@commitlint/cli": "^7.5.2",
+    "@picgo/bump-version": "^1.0.1",
     "@types/cross-spawn": "^6.0.0",
     "@types/fs-extra": "^5.0.4",
     "@types/image-size": "^0.0.29",
@@ -42,7 +58,11 @@
     "@types/node": "^10.5.2",
     "@types/request-promise-native": "^1.0.15",
     "@types/resolve": "^0.0.8",
+    "commitizen": "^3.0.7",
+    "conventional-changelog": "^3.0.6",
     "copyfiles": "^2.1.0",
+    "cz-customizable": "^5.10.0",
+    "husky": "^1.3.1",
     "pre-commit": "^1.2.2",
     "tslint": "^5.10.0",
     "tslint-config-standard": "^8.0.1",

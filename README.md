@@ -4,6 +4,7 @@
 ![GitHub](https://img.shields.io/github/license/mashape/apistatus.svg?style=flat-square)
 ![Travis (.org)](https://img.shields.io/travis/PicGo/PicGo-Core.svg?style=flat-square)
 ![npm](https://img.shields.io/npm/v/picgo.svg?style=flat-square)
+[![PicGo Convention](https://img.shields.io/badge/picgo-convention-blue.svg?style=flat-square)](https://github.com/PicGo/bump-version)
 
 ![](https://raw.githubusercontent.com/Molunerfinn/test/master/picgo/picgo-core-fix.jpg)
 
