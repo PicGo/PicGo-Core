@@ -26,7 +26,9 @@ class Logger {
       let log = chalk[this.level[type]](`[PicGo ${type.toUpperCase()}]: `)
       log += msg
       console.log(log)
-      this.handleWriteLog(type, msg, this.ctx)
+      process.nextTick(() => {
+        this.handleWriteLog(type, msg, this.ctx)
+      })
       return msg
     } else {
       return
