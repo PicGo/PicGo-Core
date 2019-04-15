@@ -1,6 +1,6 @@
 {
   "name": "picgo",
-  "version": "1.3.4",
+  "version": "1.3.5",
   "description": "A tool for picture uploading",
   "main": "dist/index.js",
   "bin": {
@@ -42,7 +42,9 @@
     }
   },
   "commitlint": {
-    "extends": ["./node_modules/@picgo/bump-version/commitlint-picgo"]
+    "extends": [
+      "./node_modules/@picgo/bump-version/commitlint-picgo"
+    ]
   },
   "author": "Molunerfinn",
   "license": "MIT",
