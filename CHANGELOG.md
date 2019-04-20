@@ -1,3 +1,12 @@
+## :tada: 1.3.6 (2019-04-20)
+
+
+### :bug: Bug Fixes
+
+* clipboard image upload under win10 ([48b72ed](https://github.com/PicGo/PicGo-Core/commit/48b72ed))
+
+
+
 ## :tada: 1.3.5 (2019-04-15)
 
 
