@@ -2,12 +2,27 @@ import PicGo from '../core/PicGo'
 import path from 'path'
 import { spawn } from 'child_process'
 import dayjs from 'dayjs'
+import os from 'os'
+
+const getCurrentPlatform = (): string => {
+  let platform = process.platform
+  if (platform !== 'win32') {
+    return platform
+  } else {
+    let currentOS = os.release().split('.')[0]
+    if (currentOS === '10') {
+      return 'win10'
+    } else {
+      return 'win32'
+    }
+  }
+}
 
 // Thanks to vs-picgo: https://github.com/Spades-S/vs-picgo/blob/master/src/extension.ts
 const getClipboardImage = (ctx: PicGo): Promise<any> => {
   const imagePath = path.join(ctx.baseDir, `${dayjs().format('YYYYMMDDHHmmss')}.png`)
   return new Promise((resolve: any, reject: any): any => {
-    let platform: string = process.platform
+    let platform: string = getCurrentPlatform()
     let execution = null
     // for PicGo GUI
     let env = ctx.config.PICGO_ENV === 'GUI'
@@ -16,13 +31,13 @@ const getClipboardImage = (ctx: PicGo): Promise<any> => {
     } = {
       'darwin': env ? path.join(ctx.baseDir,'./mac.applescript') : './clipboard/mac.applescript',
       'win32': env ? path.join(ctx.baseDir, 'windows.ps1') : './clipboard/windows.ps1',
+      'win10': env ? path.join(ctx.baseDir, 'windows10.ps1') : './clipboard/windows10.ps1',
       'linux': env ? path.join(ctx.baseDir, 'linux.sh') : './clipboard/linux.sh'
     }
     const scriptPath = env ? platformPaths[platform] : path.join(__dirname, platformPaths[platform])
     if (platform === 'darwin') {
       execution = spawn('osascript', [scriptPath, imagePath])
-
-    } else if (platform === 'win32') {
+    } else if (platform === 'win32' || platform === 'win10') {
       execution = spawn('powershell', [
         '-noprofile',
         '-noninteractive',
