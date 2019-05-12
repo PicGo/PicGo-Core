@@ -3,6 +3,8 @@ import path from 'path'
 import { spawn } from 'child_process'
 import dayjs from 'dayjs'
 import os from 'os'
+import fs from 'fs-extra'
+import { ClipboardImage } from '../utils/interfaces'
 
 const getCurrentPlatform = (): string => {
   let platform = process.platform
@@ -19,9 +21,9 @@ const getCurrentPlatform = (): string => {
 }
 
 // Thanks to vs-picgo: https://github.com/Spades-S/vs-picgo/blob/master/src/extension.ts
-const getClipboardImage = (ctx: PicGo): Promise<any> => {
+const getClipboardImage = (ctx: PicGo): Promise<ClipboardImage> => {
   const imagePath = path.join(ctx.baseDir, `${dayjs().format('YYYYMMDDHHmmss')}.png`)
-  return new Promise((resolve: any, reject: any): any => {
+  return new Promise<ClipboardImage>((resolve: Function): void => {
     let platform: string = getCurrentPlatform()
     let execution = null
     // for PicGo GUI
@@ -29,7 +31,7 @@ const getClipboardImage = (ctx: PicGo): Promise<any> => {
     const platformPaths: {
       [index: string]: string
     } = {
-      'darwin': env ? path.join(ctx.baseDir,'./mac.applescript') : './clipboard/mac.applescript',
+      'darwin': env ? path.join(ctx.baseDir,'mac.applescript') : './clipboard/mac.applescript',
       'win32': env ? path.join(ctx.baseDir, 'windows.ps1') : './clipboard/windows.ps1',
       'win10': env ? path.join(ctx.baseDir, 'windows10.ps1') : './clipboard/windows10.ps1',
       'linux': env ? path.join(ctx.baseDir, 'linux.sh') : './clipboard/linux.sh'
@@ -65,15 +67,14 @@ const getClipboardImage = (ctx: PicGo): Promise<any> => {
       let isExistFile = false
       // in macOS if your copy the file in system, it's basename will not equal to our default basename
       if (path.basename(imgPath) !== path.basename(imagePath)) {
-        isExistFile = true
+        if (fs.existsSync(imgPath)) {
+          isExistFile = true
+        }
       }
       resolve({
         imgPath,
         isExistFile
       })
-    })
-    execution.stderr.on('data', (err: any) => {
-      reject(err)
     })
   })
 }
