@@ -1,3 +1,12 @@
+## :tada: 1.3.7 (2019-05-12)
+
+
+### :bug: Bug Fixes
+
+* **clipboard:** clipboard image getter error in macOS ([8314604](https://github.com/PicGo/PicGo-Core/commit/8314604))
+
+
+
 ## :tada: 1.3.6 (2019-04-20)
 
 
