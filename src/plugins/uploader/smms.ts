@@ -37,9 +37,9 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
     } else {
       ctx.emit('notification', {
         title: '上传失败',
-        body: body.msg
+        body: body.message
       })
-      throw new Error(body.msg)
+      throw new Error(body.message)
     }
   }
   return ctx
