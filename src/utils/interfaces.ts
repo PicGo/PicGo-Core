@@ -89,6 +89,12 @@ interface ClipboardImage {
   isExistFile: boolean
 }
 
+/**
+ * for install command environment variable
+ */
+interface ProcessEnv {
+  [propName: string]: string | undefined
+}
 export {
   PluginConfig,
   ImgInfo,
@@ -98,5 +104,6 @@ export {
   Result,
   ImgSize,
   Options,
-  ClipboardImage
+  ClipboardImage,
+  ProcessEnv
 }
