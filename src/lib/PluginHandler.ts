@@ -9,7 +9,7 @@ class PluginHandler {
     this.ctx = ctx
   }
 
-  async install (plugins: string[], proxy: string = '', env: ProcessEnv): Promise<void> {
+  async install (plugins: string[], proxy: string = '', env?: ProcessEnv): Promise<void> {
     plugins = plugins.map((item: string) => 'picgo-plugin-' + item)
     const result = await this.execCommand('install', plugins, this.ctx.baseDir, proxy, env)
     if (!result.code) {
@@ -51,7 +51,7 @@ class PluginHandler {
       })
     }
   }
-  async update (plugins: string[], proxy: string = '', env: ProcessEnv): Promise<void> {
+  async update (plugins: string[], proxy: string = '', env?: ProcessEnv): Promise<void> {
     plugins = plugins.map((item: string) => 'picgo-plugin-' + item)
     const result = await this.execCommand('update', plugins, this.ctx.baseDir, proxy, env)
     if (!result.code) {
