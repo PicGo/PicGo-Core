@@ -1,6 +1,6 @@
 import PicGo from '../core/PicGo'
 import spawn from 'cross-spawn'
-import { Result } from '../utils/interfaces'
+import { Result, ProcessEnv } from '../utils/interfaces'
 
 class PluginHandler {
   // Thanks to feflow -> https://github.com/feflow/feflow/blob/master/lib/internal/install/plugin.js
@@ -9,9 +9,9 @@ class PluginHandler {
     this.ctx = ctx
   }
 
-  async install (plugins: string[], proxy: string = ''): Promise<void> {
+  async install (plugins: string[], proxy: string = '', env: ProcessEnv): Promise<void> {
     plugins = plugins.map((item: string) => 'picgo-plugin-' + item)
-    const result = await this.execCommand('install', plugins, this.ctx.baseDir, proxy)
+    const result = await this.execCommand('install', plugins, this.ctx.baseDir, proxy, env)
     if (!result.code) {
       plugins.forEach((plugin: string) => {
         this.ctx.pluginLoader.registerPlugin(plugin)
@@ -51,9 +51,9 @@ class PluginHandler {
       })
     }
   }
-  async update (plugins: string[], proxy: string = ''): Promise<void> {
+  async update (plugins: string[], proxy: string = '', env: ProcessEnv): Promise<void> {
     plugins = plugins.map((item: string) => 'picgo-plugin-' + item)
-    const result = await this.execCommand('update', plugins, this.ctx.baseDir, proxy)
+    const result = await this.execCommand('update', plugins, this.ctx.baseDir, proxy, env)
     if (!result.code) {
       this.ctx.log.success('插件更新成功')
       this.ctx.emit('updateSuccess', {
@@ -69,7 +69,7 @@ class PluginHandler {
       })
     }
   }
-  execCommand (cmd: string, modules: string[], where: string, proxy: string = ''): Promise<Result> {
+  execCommand (cmd: string, modules: string[], where: string, proxy: string = '', env: ProcessEnv = {}): Promise<Result> {
     const registry = this.ctx.getConfig('registry')
     return new Promise((resolve: any, reject: any): void => {
       let args = [cmd].concat(modules).concat('--color=always').concat('--save')
@@ -80,7 +80,7 @@ class PluginHandler {
         args = args.concat(`--proxy=${proxy}`)
       }
       try {
-        const npm = spawn('npm', args, { cwd: where })
+        const npm = spawn('npm', args, { cwd: where, env: Object.assign({}, process.env, env) })
 
         let output = ''
         npm.stdout.on('data', (data: string) => {
