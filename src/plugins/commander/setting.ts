@@ -43,7 +43,7 @@ export default {
                     name: `${module}`,
                     choices: ctx.helper[module].getIdList(),
                     message: `Choose a(n) ${module}`,
-                    default: ctx.config.picBed.uploader || ctx.config.picBed.current
+                    default: ctx.getConfig('picBed.uploader') || ctx.getConfig('picBed.current')
                   }
                 ]
                 let answer = await ctx.cmd.inquirer.prompt(prompts)
@@ -58,7 +58,7 @@ export default {
                 if (!name.includes('picgo-plugin-')) {
                   name = `picgo-plugin-${name}`
                 }
-                if (Object.keys(ctx.config.picgoPlugins).includes(name)) {
+                if (Object.keys(ctx.getConfig('picgoPlugins')).includes(name)) {
                   if (ctx.pluginLoader.getPlugin(name).config) {
                     await handleConfig(ctx, ctx.pluginLoader.getPlugin(name).config(ctx), 'plugin', name)
                   }
@@ -88,7 +88,7 @@ export default {
         } catch (e) {
           ctx.log.error(e)
           if (process.argv.includes('--debug')) {
-            Promise.reject(e)
+            throw e
           }
         }
       })

@@ -3,7 +3,7 @@ import program from 'commander'
 import inquirer from 'inquirer'
 import { Plugin } from '../utils/interfaces'
 import commanders from '../plugins/commander'
-const pkg = require('../../package.json')
+import pkg from '../../package.json'
 
 class Commander {
   list: {
@@ -24,10 +24,14 @@ class Commander {
     this.program
       .version(pkg.version, '-v, --version')
       .option('-d, --debug', 'debug mode', () => {
-        this.ctx.config.debug = true
+        this.ctx.setConfig({
+          debug: true
+        })
       })
       .option('-s, --silent', 'silent mode', () => {
-        this.ctx.config.silent = true
+        this.ctx.setConfig({
+          silent: true
+        })
       })
       .on('command:*', () => {
         this.ctx.log.error(`Invalid command: ${this.program.args.join(' ')}\nSee --help for a list of available commands.`)
