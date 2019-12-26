@@ -1,3 +1,12 @@
+## :tada: 1.4.2 (2019-12-26)
+
+
+### :bug: Bug Fixes
+
+* cli source ([be6cdcc](https://github.com/PicGo/PicGo-Core/commit/be6cdcc))
+
+
+
 ## :tada: 1.4.1 (2019-12-26)
 
 
