@@ -52,25 +52,42 @@ class PluginLoader {
       return fs.existsSync(path)
     })
     for (let i in modules) {
-      this.list.push(modules[i])
-      if (this.ctx.config.picgoPlugins[modules[i]] || this.ctx.config.picgoPlugins[modules[i]] === undefined) {
-        try {
-          this.getPlugin(modules[i]).register()
-          const plugin = `picgoPlugins[${modules[i]}]`
-          this.ctx.saveConfig(
-            {
-              [plugin]: true
-            }
-          )
-        } catch (e) {
-          this.ctx.log.error(e)
-          this.ctx.emit('notification', {
-            title: `Plugin ${modules[i]} Load Error`,
-            body: e
-          })
-        }
+      this.registerPlugin(modules[i])
+    }
+  }
+
+  registerPlugin (name: string): void {
+    if (this.ctx.getConfig(`picgoPlugins.${name}`) === true || (this.ctx.getConfig(`picgoPlugins.${name}`) === undefined)) {
+      try {
+        this.list.push(name)
+        this.ctx.setCurrentPluginName(name)
+        this.getPlugin(name).register()
+        const plugin = `picgoPlugins[${name}]`
+        this.ctx.saveConfig(
+          {
+            [plugin]: true
+          }
+        )
+      } catch (e) {
+        this.list = this.list.filter((item: string) => item !== name)
+        this.ctx.log.error(e)
+        this.ctx.emit('notification', {
+          title: `Plugin ${name} Load Error`,
+          body: e
+        })
       }
     }
+  }
+
+  unregisterPlugin (name: string): void {
+    this.list = this.list.filter((item: string) => item !== name)
+    this.ctx.setCurrentPluginName(name)
+    this.ctx.helper.uploader.unregister(name)
+    this.ctx.helper.transformer.unregister(name)
+    this.ctx.helper.beforeTransformPlugins.unregister(name)
+    this.ctx.helper.beforeUploadPlugins.unregister(name)
+    this.ctx.helper.afterUploadPlugins.unregister(name)
+    this.ctx.removeConfig('picgoPlugin', name)
   }
 
   // get plugin by name

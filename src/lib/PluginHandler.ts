@@ -9,10 +9,13 @@ class PluginHandler {
     this.ctx = ctx
   }
 
-  async install (plugins: string[], proxy: string): Promise<void> {
+  async install (plugins: string[], proxy: string = ''): Promise<void> {
     plugins = plugins.map((item: string) => 'picgo-plugin-' + item)
     const result = await this.execCommand('install', plugins, this.ctx.baseDir, proxy)
     if (!result.code) {
+      plugins.forEach((plugin: string) => {
+        this.ctx.pluginLoader.registerPlugin(plugin)
+      })
       this.ctx.log.success('插件安装成功')
       this.ctx.emit('installSuccess', {
         title: '插件安装成功',
@@ -21,7 +24,7 @@ class PluginHandler {
     } else {
       const err = `插件安装失败，失败码为${result.code}，错误日志为${result.data}`
       this.ctx.log.error(err)
-      this.ctx.emit('failed', {
+      this.ctx.emit('installFailed', {
         title: '插件安装失败',
         body: err
       })
@@ -31,6 +34,9 @@ class PluginHandler {
     plugins = plugins.map((item: string) => 'picgo-plugin-' + item)
     const result = await this.execCommand('uninstall', plugins, this.ctx.baseDir)
     if (!result.code) {
+      plugins.forEach((plugin: string) => {
+        this.ctx.pluginLoader.unregisterPlugin(plugin)
+      })
       this.ctx.log.success('插件卸载成功')
       this.ctx.emit('uninstallSuccess', {
         title: '插件卸载成功',
@@ -39,15 +45,15 @@ class PluginHandler {
     } else {
       const err = `插件卸载失败，失败码为${result.code}，错误日志为${result.data}`
       this.ctx.log.error(err)
-      this.ctx.emit('failed', {
+      this.ctx.emit('uninstallFailed', {
         title: '插件卸载失败',
         body: err
       })
     }
   }
-  async update (plugins: string[]): Promise<void> {
+  async update (plugins: string[], proxy: string = ''): Promise<void> {
     plugins = plugins.map((item: string) => 'picgo-plugin-' + item)
-    const result = await this.execCommand('update', plugins, this.ctx.baseDir)
+    const result = await this.execCommand('update', plugins, this.ctx.baseDir, proxy)
     if (!result.code) {
       this.ctx.log.success('插件更新成功')
       this.ctx.emit('updateSuccess', {
@@ -57,14 +63,14 @@ class PluginHandler {
     } else {
       const err = `插件更新失败，失败码为${result.code}，错误日志为${result.data}`
       this.ctx.log.error(err)
-      this.ctx.emit('failed', {
+      this.ctx.emit('updateFailed', {
         title: '插件更新失败',
         body: err
       })
     }
   }
   execCommand (cmd: string, modules: string[], where: string, proxy: string = ''): Promise<Result> {
-    const registry = this.ctx.config.registry
+    const registry = this.ctx.getConfig('registry')
     return new Promise((resolve: any, reject: any): void => {
       let args = [cmd].concat(modules).concat('--color=always').concat('--save')
       if (registry) {
