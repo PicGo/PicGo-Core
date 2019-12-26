@@ -1,3 +1,24 @@
+# :tada: 1.4.0 (2019-12-26)
+
+
+### :sparkles: Features
+
+* add config methods && pluginHandler to ctx ([f9bb9fb](https://github.com/PicGo/PicGo-Core/commit/f9bb9fb))
+* **plugin:** passing environment variables ([50467c7](https://github.com/PicGo/PicGo-Core/commit/50467c7))
+
+
+### :bug: Bug Fixes
+
+* correct sm.ms err msg ([#18](https://github.com/PicGo/PicGo-Core/issues/18)) ([f0a4e8a](https://github.com/PicGo/PicGo-Core/commit/f0a4e8a))
+* pluginHandler args length error ([e15eac2](https://github.com/PicGo/PicGo-Core/commit/e15eac2))
+
+
+### :package: Chore
+
+* **types:** added typings field to export type inform… ([#23](https://github.com/PicGo/PicGo-Core/issues/23)) ([8bb16e7](https://github.com/PicGo/PicGo-Core/commit/8bb16e7))
+
+
+
 ## :tada: 1.3.7 (2019-05-12)
 
 
