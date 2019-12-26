@@ -18,21 +18,21 @@ export default {
               name: 'uploader',
               message: 'Use an uploader',
               choices: ctx.helper.uploader.getIdList(),
-              default: ctx.config.picBed.uploader || ctx.config.picBed.current || 'smms'
+              default: ctx.getConfig('picBed.uploader') || ctx.getConfig('picBed.current') || 'smms'
             },
             transformer: {
               type: 'list',
               name: 'transformer',
               message: 'Use a transformer',
               choices: ctx.helper.transformer.getIdList(),
-              default: ctx.config.picBed.transformer || 'path'
+              default: ctx.getConfig('picBed.transformer') || 'path'
             },
             plugins: {
               type: 'checkbox',
               name: 'plugins',
               message: 'Use plugins',
               choices: ctx.pluginLoader.getList(),
-              default: Object.keys(ctx.config.picgoPlugins).filter((item: string) => ctx.config.picgoPlugins[item])
+              default: Object.keys(ctx.getConfig('picgoPlugins')).filter((item: string) => ctx.getConfig(`picgoPlugins.${item}`))
             }
           }
           // if an option is specific, then just set this option in config
@@ -65,15 +65,15 @@ export default {
           }
           // save config for uploader & transformer
           ctx.saveConfig({
-            'picBed.current': answer['uploader'] || ctx.config.picBed.current,
-            'picBed.uploader': answer['uploader'] || ctx.config.picBed.current,
+            'picBed.current': answer['uploader'] || ctx.getConfig('picBed.current'),
+            'picBed.uploader': answer['uploader'] || ctx.getConfig('picBed.current'),
             'picBed.transformer': answer['transformer'] || 'path'
           })
           ctx.log.success('Configure config successfully!')
         } catch (e) {
           ctx.log.error(e)
           if (process.argv.includes('--debug')) {
-            Promise.reject(e)
+            throw e
           }
         }
       })

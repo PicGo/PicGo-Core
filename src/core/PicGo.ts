@@ -8,25 +8,28 @@ import Lifecycle from './Lifecycle'
 import LifecyclePlugins from '../lib/LifecyclePlugins'
 import uploaders from '../plugins/uploader'
 import transformers from '../plugins/transformer'
-import { saveConfig, initConfig } from '../utils/config'
 import PluginLoader from '../lib/PluginLoader'
-import { get, set } from 'lodash'
+import { get, set, unset } from 'lodash'
 import { Helper, ImgInfo, Config } from '../utils/interfaces'
 import getClipboardImage from '../utils/getClipboardImage'
 import Request from '../lib/Request'
+import DB from '../utils/db'
+import PluginHandler from '../lib/PluginHandler'
 
 class PicGo extends EventEmitter {
+  private config: Config
+  private lifecycle: Lifecycle
+  private db: DB
   configPath: string
   baseDir: string
   helper: Helper
   log: Logger
   cmd: Commander
-  config: Config
   output: ImgInfo[]
   input: any[]
   pluginLoader: PluginLoader
+  pluginHandler: PluginHandler
   Request: Request
-  private lifecycle: Lifecycle
 
   constructor (configPath: string = '') {
     super()
@@ -42,38 +45,49 @@ class PicGo extends EventEmitter {
     }
     this.log = new Logger(this)
     this.cmd = new Commander(this)
+    this.pluginHandler = new PluginHandler(this)
+    this.initConfig()
     this.init()
   }
 
-  init (): any {
+  setCurrentPluginName (name: string): void {
+    LifecyclePlugins.currentPlugin = name
+  }
+
+  initConfig (): void {
     if (this.configPath === '') {
       this.configPath = homedir() + '/.picgo/config.json'
     }
     if (path.extname(this.configPath).toUpperCase() !== '.JSON') {
       this.configPath = ''
-      return this.log.error('The configuration file only supports JSON format.')
+      this.log.error('The configuration file only supports JSON format.')
+      return
     }
     this.baseDir = path.dirname(this.configPath)
     const exist = fs.pathExistsSync(this.configPath)
     if (!exist) {
       fs.ensureFileSync(`${this.configPath}`)
     }
+    this.db = new DB(this)
+    this.config = this.db.read().value()
+  }
+
+  init (): any {
     try {
-      // init config
-      const config = initConfig(this.configPath).read().value()
-      this.config = config
       // load self plugins
       this.Request = new Request(this)
       this.pluginLoader = new PluginLoader(this)
+      this.setCurrentPluginName('picgo')
       uploaders(this)
       transformers(this)
+      this.setCurrentPluginName(null)
       // load third-party plugins
       this.pluginLoader.load()
       this.lifecycle = new Lifecycle(this)
     } catch (e) {
       this.emit('uploadProgress', -1)
       this.log.error(e)
-      Promise.reject(e)
+      throw e
     }
   }
 
@@ -88,6 +102,7 @@ class PicGo extends EventEmitter {
 
   // get config
   getConfig (name: string = ''): any {
+    if (!this.config) return
     if (name) {
       return get(this.config, name)
     } else {
@@ -96,17 +111,30 @@ class PicGo extends EventEmitter {
   }
 
   // save to db
-  saveConfig (config: any): void {
-    saveConfig(this.configPath, config)
+  saveConfig (config: Config): void {
     this.setConfig(config)
+    this.db.saveConfig(config)
+  }
+
+  // remove from db
+  removeConfig (key: string, propName: string): void {
+    if (!key || !propName) return
+    this.unsetConfig(key, propName)
+    this.db.unset(key, propName)
   }
 
   // set config for ctx but will not be saved to db
   // it's more lightweight
-  setConfig (config: any): void {
+  setConfig (config: Config): void {
     Object.keys(config).forEach((name: string) => {
       set(this.config, name, config[name])
     })
+  }
+
+  // unset config for ctx but won't be saved to db
+  unsetConfig (key: string, propName: string): void {
+    if (!key || !propName) return
+    unset(this.getConfig(key), propName)
   }
 
   async upload (input?: any[]): Promise<void | string | Error> {

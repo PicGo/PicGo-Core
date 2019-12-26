@@ -2,8 +2,8 @@
   "name": "picgo",
   "version": "1.3.7",
   "description": "A tool for picture uploading",
-  "main": "dist/index.js",
-  "typings": "dist/index.d.ts",
+  "main": "dist/src/index.js",
+  "typings": "dist/src/index.d.ts",
   "bin": {
     "picgo": "./bin/picgo"
   },
@@ -15,7 +15,7 @@
     "lint": "tslint src/**/*.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc -p . && npm run copy",
-    "copy": "copyfiles -f src/utils/clipboard/* dist/utils/clipboard",
+    "copy": "copyfiles -f src/utils/clipboard/* dist/src/utils/clipboard",
     "dev": "tsc -w -p .",
     "patch": "npm version patch && git push origin master && git push origin --tags",
     "minor": "npm version minor && git push origin master && git push origin --tags",
@@ -69,12 +69,12 @@
     "pre-commit": "^1.2.2",
     "tslint": "^5.10.0",
     "tslint-config-standard": "^8.0.1",
-    "typescript": "3.0.3"
+    "typescript": "3.7.4"
   },
   "dependencies": {
     "chalk": "^2.4.1",
     "commander": "^2.17.0",
-    "comment-json": "^1.1.3",
+    "comment-json": "^2.3.1",
     "cross-spawn": "^6.0.5",
     "dayjs": "^1.7.4",
     "download-git-repo": "^1.1.0",

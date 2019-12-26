@@ -27,7 +27,7 @@ const getClipboardImage = (ctx: PicGo): Promise<ClipboardImage> => {
     let platform: string = getCurrentPlatform()
     let execution = null
     // for PicGo GUI
-    let env = ctx.config.PICGO_ENV === 'GUI'
+    let env = ctx.getConfig('PICGO_ENV') === 'GUI'
     const platformPaths: {
       [index: string]: string
     } = {

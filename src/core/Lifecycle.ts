@@ -28,12 +28,12 @@ class Lifecycle extends EventEmitter {
       await this.afterUpload(this.ctx)
       return this.ctx
     } catch (e) {
-      console.log('failed')
+      this.ctx.log.warn('failed')
       this.ctx.emit('uploadProgress', -1)
       this.ctx.emit('failed', e)
       this.ctx.log.error(e)
-      if (this.ctx.config.debug) {
-        Promise.reject(e)
+      if (this.ctx.getConfig('debug')) {
+        throw e
       }
     }
   }
@@ -47,7 +47,7 @@ class Lifecycle extends EventEmitter {
   private async doTransform (ctx: PicGo): Promise<PicGo> {
     this.ctx.emit('uploadProgress', 30)
     this.ctx.log.info('Transforming...')
-    let type = ctx.config.picBed.transformer || 'path'
+    let type = ctx.getConfig('picBed.transformer') || 'path'
     let transformer = this.ctx.helper.transformer.get(type)
     if (!transformer) {
       transformer = this.ctx.helper.transformer.get('path')
@@ -65,7 +65,7 @@ class Lifecycle extends EventEmitter {
   }
   private async doUpload (ctx: PicGo): Promise<PicGo> {
     this.ctx.log.info('Uploading...')
-    let type = ctx.config.picBed.uploader || ctx.config.picBed.current || 'smms'
+    let type = ctx.getConfig('picBed.uploader') || ctx.getConfig('picBed.current') || 'smms'
     let uploader = this.ctx.helper.uploader.get(type)
     if (!uploader) {
       type = 'smms'

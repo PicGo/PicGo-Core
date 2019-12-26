@@ -22,7 +22,7 @@ class Logger {
   protected handleLog (type: string, msg: string | Error): string | Error | undefined {
     // if configPath is invalid then this.ctx.config === undefined
     // if not then check config.silent
-    if (this.ctx.config === undefined || !this.ctx.getConfig('silent')) {
+    if (this.ctx.getConfig() === undefined || !this.ctx.getConfig('silent')) {
       let log = chalk[this.level[type]](`[PicGo ${type.toUpperCase()}]: `)
       log += msg
       console.log(log)
