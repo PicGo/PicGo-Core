@@ -8,7 +8,7 @@ if (configPath !== true && configPath !== '') {
 } else {
   configPath = ''
 }
-const PicGo = require('../dist/index')
+const PicGo = require('../dist/src/index')
 const picgo = new PicGo(configPath)
 picgo.registerCommands()
 
