@@ -11,6 +11,7 @@
     "target": "es2017",
     "declaration": true,
     "outDir": "dist",
+    "skipLibCheck": true,
     // It's shit.
     // "baseUrl": "src",
     // "paths": {
@@ -26,7 +27,6 @@
     ]
   },
   "include": [
-    "./src/**/*",
-    "./package.json"
+    "./src/**/*"
   ]
 }
