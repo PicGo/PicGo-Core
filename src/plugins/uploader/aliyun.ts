@@ -47,10 +47,11 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
       if (body.statusCode === 200) {
         delete imgList[i].base64Image
         delete imgList[i].buffer
+        const optionUrl = aliYunOptions.options || ''
         if (customUrl) {
-          imgList[i]['imgUrl'] = `${customUrl}/${path}${imgList[i].fileName}`
+          imgList[i]['imgUrl'] = `${customUrl}/${path}${imgList[i].fileName}${optionUrl}`
         } else {
-          imgList[i]['imgUrl'] = `https://${aliYunOptions.bucket}.${aliYunOptions.area}.aliyuncs.com/${path}${imgList[i].fileName}`
+          imgList[i]['imgUrl'] = `https://${aliYunOptions.bucket}.${aliYunOptions.area}.aliyuncs.com/${path}${imgList[i].fileName}${optionUrl}`
         }
       } else {
         throw new Error('Upload failed')
@@ -106,6 +107,12 @@ const config = (ctx: PicGo): PluginConfig[] => {
       name: 'customUrl',
       type: 'input',
       default: userConfig.customUrl || '',
+      required: false
+    },
+    {
+      name: 'options',
+      type: 'input',
+      default: userConfig.options || '',
       required: false
     }
   ]
