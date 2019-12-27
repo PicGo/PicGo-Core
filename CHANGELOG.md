@@ -1,3 +1,12 @@
+## :tada: 1.4.3 (2019-12-27)
+
+
+### :sparkles: Features
+
+* add aliyun optionUrl option ([0a3bdea](https://github.com/PicGo/PicGo-Core/commit/0a3bdea))
+
+
+
 ## :tada: 1.4.2 (2019-12-26)
 
 
