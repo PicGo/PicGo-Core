@@ -1,3 +1,12 @@
+## :tada: 1.4.4 (2019-12-30)
+
+
+### :bug: Bug Fixes
+
+* image_repeated error from smms ([#28](https://github.com/PicGo/PicGo-Core/issues/28)) ([f246b8d](https://github.com/PicGo/PicGo-Core/commit/f246b8d))
+
+
+
 ## :tada: 1.4.3 (2019-12-27)
 
 
