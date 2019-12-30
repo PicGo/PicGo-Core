@@ -34,6 +34,10 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
       delete imgList[i].base64Image
       delete imgList[i].buffer
       imgList[i]['imgUrl'] = body.data.url
+    } else if (body.code === 'image_repeated' && typeof body.images === 'string') { // do extra check since this error return is not documented at https://doc.sm.ms/#api-Image-Upload
+      delete imgList[i].base64Image
+      delete imgList[i].buffer
+      imgList[i]['imgUrl'] = body.images
     } else {
       ctx.emit('notification', {
         title: '上传失败',
