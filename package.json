@@ -100,5 +100,8 @@
   "picBed": {
     "current": "smms"
   },
-  "plugins": {}
+  "plugins": {},
+  "resolutions": {
+    "**/**/lodash": "^4.17.12"
+  }
 }
