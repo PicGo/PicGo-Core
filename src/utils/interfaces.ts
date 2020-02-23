@@ -36,6 +36,10 @@ interface ImgInfo {
   [propName: string]: any
 }
 
+interface IPathTransformedImgInfo extends ImgInfo {
+  success: boolean
+}
+
 /**
  * for config options
  */
@@ -105,5 +109,6 @@ export {
   ImgSize,
   Options,
   ClipboardImage,
-  ProcessEnv
+  ProcessEnv,
+  IPathTransformedImgInfo
 }
