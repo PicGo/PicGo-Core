@@ -2,7 +2,6 @@ import PicGo from '../core/PicGo'
 import request from 'request'
 import path from 'path'
 import { IPathTransformedImgInfo } from './interfaces'
-import fs from 'fs'
 
 export const getURLFile = async (ctx: PicGo, url: string): Promise<IPathTransformedImgInfo> => {
   const requestOptions = {
@@ -26,7 +25,6 @@ export const getURLFile = async (ctx: PicGo, url: string): Promise<IPathTransfor
         })
       clearTimeout(timeoutId)
       if (isImage) {
-        fs.writeFileSync('./logo.png', res)
         resolve({
           buffer: res,
           fileName: path.basename(requestOptions.url.split('?')[0]),
