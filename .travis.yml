@@ -20,6 +20,7 @@ jobs:
       script:
         - npm run build
       deploy:
+        edge: true
         provider: npm
         email: "marksz@teamsz.xyz"
         api_key: "${NPM_TOKEN}"
