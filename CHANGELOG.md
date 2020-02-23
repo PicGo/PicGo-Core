@@ -1,3 +1,17 @@
+## :tada: 1.4.5 (2020-02-23)
+
+
+### :sparkles: Features
+
+* add upload image from URL support ([0d87342](https://github.com/PicGo/PicGo-Core/commit/0d87342))
+
+
+### :package: Chore
+
+* travis-ci deploy option ([a2a89cd](https://github.com/PicGo/PicGo-Core/commit/a2a89cd))
+
+
+
 ## :tada: 1.4.4 (2019-12-30)
 
 
