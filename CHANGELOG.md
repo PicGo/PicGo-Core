@@ -1,3 +1,12 @@
+## :tada: 1.4.6 (2020-02-23)
+
+
+### :bug: Bug Fixes
+
+* auto generate a local png bug ([c54ac67](https://github.com/PicGo/PicGo-Core/commit/c54ac67))
+
+
+
 ## :tada: 1.4.5 (2020-02-23)
 
 
