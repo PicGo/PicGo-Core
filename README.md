@@ -1,4 +1,4 @@
-## PicGo - Core
+# PicGo-Core
 
 ![standard](https://img.shields.io/badge/code%20style-standard-green.svg?style=flat-square)
 ![GitHub](https://img.shields.io/github/license/mashape/apistatus.svg?style=flat-square)
@@ -6,10 +6,11 @@
 ![npm](https://img.shields.io/npm/v/picgo.svg?style=flat-square)
 [![PicGo Convention](https://img.shields.io/badge/picgo-convention-blue.svg?style=flat-square)](https://github.com/PicGo/bump-version)
 
-![](https://raw.githubusercontent.com/Molunerfinn/test/master/picgo/picgo-core-fix.jpg)
+![picgo-core](https://cdn.jsdelivr.net/gh/Molunerfinn/test/picgo/picgo-core-fix.jpg)
 
-A tool for picture uploading. Both CLI & api supports.
+A tool for picture uploading. Both CLI & api supports. It also supports plugin system, please check [Awesome-PicGo](https://github.com/PicGo/Awesome-PicGo) to find powerful plugins.
 
+**Typora supports PicGo-Core natively**. If you like PicGo-Core and have time, welcome to help me translate the documentation of PicGo-Core into English.
 
 ## Installation
 
