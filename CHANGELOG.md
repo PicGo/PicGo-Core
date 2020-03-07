@@ -1,3 +1,18 @@
+## :tada: 1.4.7 (2020-03-07)
+
+
+### :sparkles: Features
+
+* add smms-v2 support ([7e10655](https://github.com/PicGo/PicGo-Core/commit/7e10655))
+* remove weibo support ([96b2b3a](https://github.com/PicGo/PicGo-Core/commit/96b2b3a))
+
+
+### :pencil: Documentation
+
+* update README ([aff6326](https://github.com/PicGo/PicGo-Core/commit/aff6326))
+
+
+
 ## :tada: 1.4.6 (2020-02-23)
 
 
