@@ -46,7 +46,10 @@ const getClipboardImage = (ctx: PicGo): Promise<ClipboardImage> => {
         '-nologo',
         '-sta',
         '-executionpolicy', 'unrestricted',
-        '-windowstyle', 'hidden',
+        // '-windowstyle', 'hidden',
+        // prevent powershell console from closing after running script 
+        // https://github.com/PicGo/PicGo-Core/issues/32
+        '-noexit',
         '-file', scriptPath,
         imagePath
       ])
