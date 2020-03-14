@@ -46,10 +46,10 @@ const getClipboardImage = (ctx: PicGo): Promise<ClipboardImage> => {
         '-nologo',
         '-sta',
         '-executionpolicy', 'unrestricted',
-        // '-windowstyle', 'hidden',
-        // prevent powershell console from closing after running script 
+        // fix windows 10 native cmd crash bug when "picgo upload"
         // https://github.com/PicGo/PicGo-Core/issues/32
-        '-noexit',
+        // '-windowstyle', 'hidden',
+        // '-noexit',
         '-file', scriptPath,
         imagePath
       ])
