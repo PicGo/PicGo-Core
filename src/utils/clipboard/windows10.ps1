@@ -27,6 +27,9 @@ function main {
     $stream.Dispose() | out-null
 
     $imagePath
+    # fix windows 10 native cmd crash bug when "picgo upload"
+    # https://github.com/PicGo/PicGo-Core/issues/32
+    Exit 1
 }
 
 try {
