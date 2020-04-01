@@ -1,6 +1,7 @@
 import { EventEmitter } from 'events'
 import PicGo from './PicGo'
 import { Plugin } from '../utils/interfaces'
+import { handleUrlEncode } from '../utils/common'
 
 class Lifecycle extends EventEmitter {
   configPath: string
@@ -85,7 +86,7 @@ class Lifecycle extends EventEmitter {
     let msg = ''
     let length = ctx.output.length
     for (let i = 0; i < length; i++) {
-      msg += ctx.output[i].imgUrl
+      msg += handleUrlEncode(ctx.output[i].imgUrl)
       if (i !== length - 1) {
         msg += '\n'
       }
