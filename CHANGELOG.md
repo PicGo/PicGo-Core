@@ -1,3 +1,14 @@
+## :tada: 1.4.8 (2020-04-04)
+
+
+### :bug: Bug Fixes
+
+* encode url before finishing ([7a6b39c](https://github.com/PicGo/PicGo-Core/commit/7a6b39c))
+* return true if decodeURI throw error to avoid crash ([d09d77a](https://github.com/PicGo/PicGo-Core/commit/d09d77a))
+* win10 cmd crash bug when "picgo upload" ([#35](https://github.com/PicGo/PicGo-Core/issues/35)) ([deec252](https://github.com/PicGo/PicGo-Core/commit/deec252))
+
+
+
 ## :tada: 1.4.7 (2020-03-07)
 
 
