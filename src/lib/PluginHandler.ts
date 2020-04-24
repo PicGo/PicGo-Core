@@ -61,7 +61,7 @@ class PluginHandler {
         body: plugins
       })
     } else {
-      const err = `插件更新失败，失败码为${result.code}，错误日志为${result.data}`
+      const err = `插件更新失败，失败码为${result.code}，错误日志为 \n ${result.data}`
       this.ctx.log.error(err)
       this.ctx.emit('updateFailed', {
         title: '插件更新失败',
@@ -71,7 +71,7 @@ class PluginHandler {
   }
   execCommand (cmd: string, modules: string[], where: string, proxy: string = '', env: ProcessEnv = {}): Promise<Result> {
     const registry = this.ctx.getConfig('registry')
-    return new Promise((resolve: any, reject: any): void => {
+    return new Promise((resolve: any): void => {
       let args = [cmd].concat(modules).concat('--color=always').concat('--save')
       if (registry) {
         args = args.concat(`--registry=${registry}`)
@@ -95,7 +95,7 @@ class PluginHandler {
           if (!code) {
             resolve({ code: 0, data: output })
           } else {
-            reject({ code: code, data: output })
+            resolve({ code: code, data: output })
           }
         })
         // for users who haven't installed node.js

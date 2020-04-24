@@ -4,7 +4,7 @@ import LifecyclePlugins from '../lib/LifecyclePlugins'
 /**
  * for plugin config
  */
-interface PluginConfig {
+export interface PluginConfig {
   name: string
   type: string
   required: boolean
@@ -15,7 +15,7 @@ interface PluginConfig {
 /**
  * for lifecycle plugins
  */
-interface Helper {
+export interface Helper {
   transformer: LifecyclePlugins
   uploader: LifecyclePlugins
   beforeTransformPlugins: LifecyclePlugins
@@ -26,7 +26,7 @@ interface Helper {
 /**
  * for uploading image info
  */
-interface ImgInfo {
+export interface ImgInfo {
   buffer?: Buffer
   base64Image?: string
   fileName?: string
@@ -36,21 +36,21 @@ interface ImgInfo {
   [propName: string]: any
 }
 
-interface IPathTransformedImgInfo extends ImgInfo {
+export interface IPathTransformedImgInfo extends ImgInfo {
   success: boolean
 }
 
 /**
  * for config options
  */
-interface Config {
+export interface Config {
   [propName: string]: any
 }
 
 /**
  * for plugin
  */
-interface Plugin {
+export interface Plugin {
   handle (ctx: PicGo): void | Promise<any>
   [propName: string]: any
 }
@@ -58,7 +58,7 @@ interface Plugin {
 /**
  * for spawn output
  */
-interface Result {
+export interface Result {
   code: string | number
   data: string
 }
@@ -66,7 +66,7 @@ interface Result {
 /**
  * for transformer - path
  */
-interface ImgSize {
+export interface ImgSize {
   width: number
   height: number
 }
@@ -74,7 +74,7 @@ interface ImgSize {
 /**
  * for initUtils
  */
-interface Options {
+export interface Options {
   template: string // template name
   dest: string // destination for template to generate
   hasSlash: boolean // check if is officail template
@@ -88,7 +88,7 @@ interface Options {
 /**
  * for clipboard image
  */
-interface ClipboardImage {
+export interface ClipboardImage {
   imgPath: string
   isExistFile: boolean
 }
@@ -96,19 +96,10 @@ interface ClipboardImage {
 /**
  * for install command environment variable
  */
-interface ProcessEnv {
+export interface ProcessEnv {
   [propName: string]: string | undefined
 }
-export {
-  PluginConfig,
-  ImgInfo,
-  Config,
-  Helper,
-  Plugin,
-  Result,
-  ImgSize,
-  Options,
-  ClipboardImage,
-  ProcessEnv,
-  IPathTransformedImgInfo
-}
+
+export type ILogArgvType = string | number
+
+export type ILogArgvTypeWithError = ILogArgvType | Error

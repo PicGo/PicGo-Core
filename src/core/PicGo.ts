@@ -43,6 +43,7 @@ class PicGo extends EventEmitter {
       beforeUploadPlugins: new LifecyclePlugins('beforeUploadPlugins'),
       afterUploadPlugins: new LifecyclePlugins('afterUploadPlugins')
     }
+    this.initConfigPath()
     this.log = new Logger(this)
     this.cmd = new Commander(this)
     this.pluginHandler = new PluginHandler(this)
@@ -54,29 +55,31 @@ class PicGo extends EventEmitter {
     LifecyclePlugins.currentPlugin = name
   }
 
-  initConfig (): void {
+  private initConfigPath (): void {
     if (this.configPath === '') {
       this.configPath = homedir() + '/.picgo/config.json'
     }
     if (path.extname(this.configPath).toUpperCase() !== '.JSON') {
       this.configPath = ''
-      this.log.error('The configuration file only supports JSON format.')
-      return
+      throw Error('The configuration file only supports JSON format.')
     }
     this.baseDir = path.dirname(this.configPath)
     const exist = fs.pathExistsSync(this.configPath)
     if (!exist) {
       fs.ensureFileSync(`${this.configPath}`)
     }
+  }
+
+  private initConfig (): void {
     this.db = new DB(this)
     this.config = this.db.read().value()
   }
 
-  init (): any {
+  private init (): void {
     try {
-      // load self plugins
       this.Request = new Request(this)
       this.pluginLoader = new PluginLoader(this)
+      // load self plugins
       this.setCurrentPluginName('picgo')
       uploaders(this)
       transformers(this)
