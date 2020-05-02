@@ -2,9 +2,9 @@ import { Plugin } from '../utils/interfaces'
 
 class LifecyclePlugins {
   static currentPlugin: string | null
-  list: Map<string, Plugin>
-  pluginIdMap: Map<string, string[]>
-  name: string
+  private list: Map<string, Plugin>
+  private pluginIdMap: Map<string, string[]>
+  private name: string
 
   constructor (name: string) {
     this.name = name
@@ -33,6 +33,10 @@ class LifecyclePlugins {
         this.list.delete(plugin)
       })
     }
+  }
+
+  getName (): string {
+    return this.name
   }
 
   get (id: string): Plugin {

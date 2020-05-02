@@ -18,7 +18,6 @@ class Logger {
     [ILogType.error]: 'red'
   }
   private ctx: PicGo
-  // private logger: Console
   private logLevel: string
   private logPath: string
   constructor (ctx: PicGo) {
@@ -28,13 +27,13 @@ class Logger {
     // if configPath is invalid then this.ctx.config === undefined
     // if not then check config.silent
     if (this.ctx.getConfig() === undefined || !this.ctx.getConfig('silent')) {
-      let log = chalk[this.level[type]](`[PicGo ${type.toUpperCase()}]: `)
-      console.log(log, ...msg)
+      const logHeader = chalk[this.level[type]](`[PicGo ${type.toUpperCase()}]:`)
+      console.log(logHeader, ...msg)
       this.logLevel = this.ctx.getConfig('settings.logLevel')
       const logPath = this.checkLogPathChange()
+      // The incoming logPath is a value
+      // lock the path with a closure
       setTimeout(() => {
-        // The incoming logPath is a value
-        // lock the path with a closure
         this.handleWriteLog(logPath, type, ...msg)
       }, 0)
     } else {
@@ -50,7 +49,7 @@ class Logger {
     return logPath
   }
 
-  protected handleWriteLog (logPath: string, type: string, ...msg: ILogArgvTypeWithError[]): void {
+  private handleWriteLog (logPath: string, type: string, ...msg: ILogArgvTypeWithError[]): void {
     try {
       if (this.checkLogLevel(type, this.logLevel)) {
         let log = `${dayjs().format('YYYY-MM-DD HH:mm:ss')} [PicGo ${type.toUpperCase()}] `
@@ -62,16 +61,15 @@ class Logger {
           }
         })
         log += '\n'
-        fs.appendFile(logPath, log, (err: Error) => {
-          if (err) console.log(err)
-        })
+        // A synchronized approach to avoid log msg sequence errors
+        fs.appendFileSync(logPath, log)
       }
     } catch (e) {
       console.log(e)
     }
   }
 
-  protected checkLogLevel (type: string, level: undefined | string | string[]): boolean {
+  private checkLogLevel (type: string, level: undefined | string | string[]): boolean {
     if (level === undefined || level === 'all') {
       return true
     }
