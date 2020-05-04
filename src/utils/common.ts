@@ -1,3 +1,13 @@
+import request from 'request'
+import requestPromise from 'request-promise-native'
+import fs from 'fs-extra'
+import path from 'path'
+import { imageSize } from 'image-size'
+import {
+  ImgSize,
+  IPathTransformedImgInfo
+} from './interfaces'
+
 export const isUrl = (url: string): boolean => (url.startsWith('http://') || url.startsWith('https://'))
 export const isUrlEncode = (url: string): boolean => {
   url = url || ''
@@ -13,4 +23,92 @@ export const handleUrlEncode = (url: string): string => {
     url = encodeURI(url)
   }
   return url
+}
+
+export const getImageSize = (file: Buffer): ImgSize => {
+  try {
+    const { width, height } = imageSize(file)
+    return {
+      real: true,
+      width,
+      height
+    }
+  } catch (e) {
+    // fallback to 200 * 200
+    return {
+      real: false,
+      width: 200,
+      height: 200
+    }
+  }
+}
+
+export const getFSFile = async (filePath: string): Promise<IPathTransformedImgInfo> => {
+  try {
+    return {
+      extname: path.extname(filePath),
+      fileName: path.basename(filePath),
+      buffer: await fs.readFile(filePath),
+      success: true
+    }
+  } catch {
+    return {
+      reason: `read file ${filePath} error`,
+      success: false
+    }
+  }
+}
+
+export const getURLFile = async (url: string): Promise<IPathTransformedImgInfo> => {
+  const requestOptions = {
+    method: 'GET',
+    url,
+    encoding: null
+  }
+  let isImage = false
+  let extname = ''
+  let timeoutId
+  // tslint:disable-next-line: typedef
+  const requestFn = new Promise<IPathTransformedImgInfo>(async (resolve): Promise<void> => {
+    try {
+      const res = await requestPromise(requestOptions)
+        .on('response', (response: request.Response): void => {
+          const contentType = response.headers['content-type']
+          if (contentType.includes('image')) {
+            isImage = true
+            extname = `.${contentType.split('image/')[1]}`
+          }
+        })
+      clearTimeout(timeoutId)
+      if (isImage) {
+        resolve({
+          buffer: res,
+          fileName: path.basename(requestOptions.url.split('?')[0]),
+          extname,
+          success: true
+        })
+      } else {
+        resolve({
+          success: false,
+          reason: `${url} is not image`
+        })
+      }
+    } catch {
+      clearTimeout(timeoutId)
+      resolve({
+        success: false,
+        reason: `request ${url} error`
+      })
+    }
+  })
+  // tslint:disable-next-line: typedef
+  const timeoutPromise = new Promise<IPathTransformedImgInfo>((resolve): void => {
+    timeoutId = setTimeout(() => {
+      resolve({
+        success: false,
+        reason: `request ${url} timeout`
+      })
+    }, 10000)
+  })
+  return Promise.race([requestFn, timeoutPromise])
 }
