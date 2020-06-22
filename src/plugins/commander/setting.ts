@@ -92,7 +92,7 @@ const setting = {
               throw e
             }
           }
-        })().catch(() => {})
+        })().catch((e) => { this.ctx.log.error(e) })
       })
   }
 }

@@ -23,10 +23,10 @@ class DB {
       this.db.set('picBed', {
         uploader: 'smms',
         current: 'smms'
-      }).write().catch(() => {})
+      }).write().catch((e) => { this.ctx.log.error(e) })
     }
     if (!this.db.has('picgoPlugins').value()) {
-      this.db.set('picgoPlugins', {}).write().catch(() => {})
+      this.db.set('picgoPlugins', {}).write().catch((e) => { this.ctx.log.error(e) })
     }
   }
 

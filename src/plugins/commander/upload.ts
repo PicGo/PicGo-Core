@@ -26,7 +26,7 @@ const upload: Plugin = {
               return exist
             })
           await ctx.upload(inputList)
-        })().catch(() => {})
+        })().catch((e) => { this.ctx.log.error(e) })
       })
   }
 }

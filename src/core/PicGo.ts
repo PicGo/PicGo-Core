@@ -154,13 +154,12 @@ class PicGo extends EventEmitter {
           this.once('failed', () => {
             if (!isExistFile) {
               // 删除 picgo 生成的图片文件，例如 `~/.picgo/20200621205720.png`
-              fs.remove(imgPath).catch(() => {})
+              fs.remove(imgPath).catch((e) => { this.log.error(e) })
             }
           })
           this.once('finished', () => {
-            console.log('imgPath', imgPath)
             if (!isExistFile) {
-              fs.remove(imgPath).catch(() => {})
+              fs.remove(imgPath).catch((e) => { this.log.error(e) })
             }
           })
           await this.lifecycle.start([imgPath])

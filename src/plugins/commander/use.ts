@@ -78,7 +78,7 @@ const use: Plugin = {
               throw e
             }
           }
-        })().catch(() => {})
+        })().catch((e) => { this.ctx.log.error(e) })
       })
   }
 }

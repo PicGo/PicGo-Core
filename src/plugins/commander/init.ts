@@ -12,7 +12,7 @@ const run = (ctx: PicGo, options: Options): void => {
   // const name = options.inPlace ? path.relative('../', process.cwd()) : options.project
   if (options.offline) { // offline mode
     if (fs.existsSync(options.template)) {
-      generate(ctx, options).catch(() => {})
+      generate(ctx, options).catch((e) => { this.ctx.log.error(e) })
     } else {
       ctx.log.error(`Local template ${options.template} not found`)
     }
@@ -39,7 +39,7 @@ const downloadAndGenerate = (ctx: PicGo, options: Options): void => {
       return ctx.log.error(err)
     }
     ctx.log.success('Template files are downloaded!')
-    generate(ctx, options).catch(() => {})
+    generate(ctx, options).catch((e) => { this.ctx.log.error(e) })
   })
 }
 
@@ -102,7 +102,7 @@ const init: Plugin = {
               throw e
             }
           }
-        })().catch(() => {})
+        })().catch((e) => { this.ctx.log.error(e) })
       })
       .on('--help', () => {
         console.log()
