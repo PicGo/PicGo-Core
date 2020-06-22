@@ -13,7 +13,7 @@ class Request {
     const options: RequestPromiseOptions = {
       jar: request.jar()
     }
-    const proxy = this.ctx.getConfig<string>('picBed.proxy')
+    const proxy = this.ctx.getConfig<string | undefined>('picBed.proxy')
     if (proxy) {
       options.proxy = proxy
     }

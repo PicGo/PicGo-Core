@@ -29,7 +29,7 @@ class Logger {
   private handleLog (type: ILogType, ...msg: ILogArgvTypeWithError[]): void {
     // if configPath is invalid then this.ctx.config === undefined
     // if not then check config.silent
-    if (this.ctx.getConfig<Config>() === undefined || !this.ctx.getConfig<string>('silent')) {
+    if (this.ctx.getConfig<Config>() === undefined || !this.ctx.getConfig<string | undefined>('silent')) {
       const logHeader = chalk[this.level[type]](`[PicGo ${type.toUpperCase()}]:`)
       console.log(logHeader, ...msg)
       this.logLevel = this.ctx.getConfig('settings.logLevel')
