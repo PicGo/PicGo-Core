@@ -1,5 +1,5 @@
 import PicGo from '../core/PicGo'
-import request from 'request-promise-native'
+import request, { RequestPromiseOptions } from 'request-promise-native'
 
 class Request {
   ctx: PicGo
@@ -10,12 +10,12 @@ class Request {
   }
 
   init (): void {
-    let options = {
+    const options: RequestPromiseOptions = {
       jar: request.jar()
     }
-    const proxy = this.ctx.getConfig('picBed.proxy')
+    const proxy = this.ctx.getConfig<string>('picBed.proxy')
     if (proxy) {
-      options['proxy'] = proxy
+      options.proxy = proxy
     }
     this.request = request.defaults(options)
   }

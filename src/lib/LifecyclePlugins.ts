@@ -2,9 +2,9 @@ import { Plugin } from '../utils/interfaces'
 
 class LifecyclePlugins {
   static currentPlugin: string | null
-  private list: Map<string, Plugin>
-  private pluginIdMap: Map<string, string[]>
-  private name: string
+  private readonly list: Map<string, Plugin>
+  private readonly pluginIdMap: Map<string, string[]>
+  private readonly name: string
 
   constructor (name: string) {
     this.name = name
@@ -13,11 +13,11 @@ class LifecyclePlugins {
   }
 
   register (id: string, plugin: Plugin): void {
-    if (!id) throw new TypeError('id is required!')
+    if (id === '') throw new TypeError('id is required!')
     if (typeof plugin.handle !== 'function') throw new TypeError('plugin.handle must be a function!')
     if (this.list.has(id)) throw new TypeError(`${this.name} duplicate id: ${id}!`)
     this.list.set(id, plugin)
-    if (LifecyclePlugins.currentPlugin) { // maybe null
+    if (LifecyclePlugins.currentPlugin !== null) {
       if (this.pluginIdMap.has(LifecyclePlugins.currentPlugin)) {
         this.pluginIdMap.get(LifecyclePlugins.currentPlugin).push(id)
       } else {

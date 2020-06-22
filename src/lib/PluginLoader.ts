@@ -4,7 +4,6 @@ import path from 'path'
 import resolve from 'resolve'
 
 class PluginLoader {
-
   ctx: PicGo
   list: string[]
   constructor (ctx: PicGo) {
@@ -36,10 +35,10 @@ class PluginLoader {
   }
 
   // load all third party plugin
-  load (): void | boolean {
+  load (): boolean {
     const packagePath = path.join(this.ctx.baseDir, 'package.json')
     const pluginDir = path.join(this.ctx.baseDir, 'node_modules/')
-      // Thanks to hexo -> https://github.com/hexojs/hexo/blob/master/lib/hexo/load_plugins.js
+    // Thanks to hexo -> https://github.com/hexojs/hexo/blob/master/lib/hexo/load_plugins.js
     if (!fs.existsSync(pluginDir)) {
       return false
     }
@@ -51,8 +50,8 @@ class PluginLoader {
       const path = this.resolvePlugin(this.ctx, name)
       return fs.existsSync(path)
     })
-    for (let i in modules) {
-      this.registerPlugin(modules[i])
+    for (const module of modules) {
+      this.registerPlugin(module)
     }
   }
 
@@ -93,6 +92,7 @@ class PluginLoader {
   // get plugin by name
   getPlugin (name: string): any {
     const pluginDir = path.join(this.ctx.baseDir, 'node_modules/')
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     return require(pluginDir + name)(this.ctx)
   }
 

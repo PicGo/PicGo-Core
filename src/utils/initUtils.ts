@@ -19,7 +19,7 @@ const generate = async (ctx: PicGo, options: Options): Promise<any> => {
     if (opts.prompts && opts.prompts.length > 0) {
       answers = await ctx.cmd.inquirer.prompt(opts.prompts)
     }
-    let _files: Array<string> = await globby(['**/*'], { cwd: source, dot: true }) // get files' name array
+    let _files: string[] = await globby(['**/*'], { cwd: source, dot: true }) // get files' name array
     _files = _files.filter((item: string) => {
       let glob = ''
       Object.keys(opts.filters).forEach((key: string) => {
@@ -36,7 +36,7 @@ const generate = async (ctx: PicGo, options: Options): Promise<any> => {
     if (_files.length === 0) {
       return ctx.log.warn('Template files not found!')
     }
-    let files = render(_files, source, answers)
+    const files = render(_files, source, answers)
     writeFileTree(options.dest, files)
     if (typeof opts.complete === 'function') {
       opts.complete({ answers, options, files: _files, ctx })
@@ -57,11 +57,12 @@ const generate = async (ctx: PicGo, options: Options): Promise<any> => {
  * @param data options data
  */
 const filters = (ctx: PicGo, exp: any, data: any): boolean => {
+  // eslint-disable-next-line @typescript-eslint/restrict-plus-operands, no-new-func, @typescript-eslint/no-implied-eval
   const fn = new Function('data', 'with (data) { return ' + exp + '}')
   try {
     return fn(data)
   } catch (e) {
-    ctx.log.error('Error when evaluating filter condition: ' + exp)
+    ctx.log.error(`Error when evaluating filter condition: ${JSON.stringify(exp)}`)
   }
 }
 
@@ -70,8 +71,9 @@ const filters = (ctx: PicGo, exp: any, data: any): boolean => {
  * @param {string} templatePath
  */
 const getOptions = (templatePath: string): any => {
-  let optionsPath = path.join(templatePath, 'index.js')
+  const optionsPath = path.join(templatePath, 'index.js')
   if (fs.existsSync(optionsPath)) {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const options = require(optionsPath)
     return options
   } else {
@@ -83,8 +85,8 @@ const getOptions = (templatePath: string): any => {
  * Render files to a virtual tree object
  * @param {arry} files
  */
-const render = (files: Array<string>, source: string, options: any): any => {
-  let fileTree = {}
+const render = (files: string[], source: string, options: any): any => {
+  const fileTree = {}
   files.forEach((filePath: string): void => {
     const file = fs.readFileSync(path.join(source, filePath), 'utf8')
     const content = ejs.render(file, options)

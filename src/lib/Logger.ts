@@ -7,26 +7,29 @@ import util from 'util'
 import { ILogType } from '../utils/enum'
 import {
   ILogArgvType,
-  ILogArgvTypeWithError
+  ILogArgvTypeWithError,
+  Config
 } from '../utils/interfaces'
 
 class Logger {
-  private level = {
+  private readonly level = {
     [ILogType.success]: 'green',
     [ILogType.info]: 'blue',
     [ILogType.warn]: 'yellow',
     [ILogType.error]: 'red'
   }
-  private ctx: PicGo
+
+  private readonly ctx: PicGo
   private logLevel: string
   private logPath: string
   constructor (ctx: PicGo) {
     this.ctx = ctx
   }
+
   private handleLog (type: ILogType, ...msg: ILogArgvTypeWithError[]): void {
     // if configPath is invalid then this.ctx.config === undefined
     // if not then check config.silent
-    if (this.ctx.getConfig() === undefined || !this.ctx.getConfig('silent')) {
+    if (this.ctx.getConfig<Config>() === undefined || !this.ctx.getConfig<string>('silent')) {
       const logHeader = chalk[this.level[type]](`[PicGo ${type.toUpperCase()}]:`)
       console.log(logHeader, ...msg)
       this.logLevel = this.ctx.getConfig('settings.logLevel')
@@ -36,13 +39,11 @@ class Logger {
       setTimeout(() => {
         this.handleWriteLog(logPath, type, ...msg)
       }, 0)
-    } else {
-      return
     }
   }
 
   private checkLogPathChange (): string {
-    const logPath = this.ctx.getConfig('settings.logPath') || path.join(this.ctx.baseDir, './picgo.log')
+    const logPath = this.ctx.getConfig<string | undefined>('settings.logPath') || path.join(this.ctx.baseDir, './picgo.log')
     if (logPath !== this.logPath) {
       this.logPath = logPath
     }
@@ -57,7 +58,7 @@ class Logger {
           if (typeof item === 'object' && type === 'error') {
             log += `\n------Error Stack Begin------\n${util.format(item.stack)}\n-------Error Stack End------- `
           } else {
-            log += `${item} `
+            log += `${JSON.stringify(item)} `
           }
         })
         log += '\n'

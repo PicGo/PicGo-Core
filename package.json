@@ -12,7 +12,7 @@
   },
   "scripts": {
     "start": "node ./bin/picgo",
-    "lint": "tslint src/**/*.ts",
+    "lint": "eslint src/**/*.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc -p . && npm run copy",
     "copy": "copyfiles -f src/utils/clipboard/* dist/src/utils/clipboard",
@@ -58,6 +58,7 @@
     "@types/inquirer": "^0.0.42",
     "@types/lowdb": "^1.0.4",
     "@types/md5": "^2.1.32",
+    "@types/mime-types": "^2.1.0",
     "@types/node": "^10.5.2",
     "@types/request-promise-native": "^1.0.15",
     "@types/resolve": "^0.0.8",

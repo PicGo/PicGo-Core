@@ -1,7 +1,8 @@
 import PicGo from '../../core/PicGo'
+import { Plugin } from '../../utils/interfaces'
 
-export default {
-  handle: (ctx: PicGo): void => {
+const proxy: Plugin = {
+  handle: (ctx: PicGo) => {
     const cmd = ctx.cmd
     cmd.program
       .option('-p, --proxy <url>', 'set proxy for uploading', (proxy: string) => {
@@ -12,3 +13,5 @@ export default {
       })
   }
 }
+
+export default proxy

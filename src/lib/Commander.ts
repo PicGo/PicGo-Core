@@ -9,9 +9,10 @@ class Commander {
   list: {
     [propName: string]: Plugin
   }
+
   program: typeof program
   inquirer: typeof inquirer
-  private ctx: PicGo
+  private readonly ctx: PicGo
 
   constructor (ctx: PicGo) {
     this.list = {}
@@ -45,13 +46,13 @@ class Commander {
   register (name: string, plugin: Plugin): void {
     if (!name) throw new TypeError('name is required!')
     if (typeof plugin.handle !== 'function') throw new TypeError('plugin.handle must be a function!')
-    if (this.list[name]) throw new TypeError('duplicate name!')
+    if (name in this.list) throw new TypeError('duplicate name!')
 
     this.list[name] = plugin
   }
 
   loadCommands (): void {
-    Object.keys(this.list).map((item: string) => this.list[item].handle(this.ctx))
+    Object.keys(this.list).map(async (item: string) => await this.list[item].handle(this.ctx))
   }
 
   get (name: string): Plugin {

@@ -2,17 +2,19 @@ import PicGo from '../../core/PicGo'
 import path from 'path'
 import fs from 'fs-extra'
 import { isUrl } from '../../utils/common'
+import { Plugin } from '../../utils/interfaces'
 
-export default {
-  handle: (ctx: PicGo): void => {
+const upload: Plugin = {
+  handle: (ctx: PicGo) => {
     const cmd = ctx.cmd
     cmd.program
       .command('upload')
       .description('upload, go go go')
       .arguments('[input...]')
       .alias('u')
-      .action(async (input: string[]) => {
-        const inputList = input
+      .action((input: string[]) => {
+        (async () => {
+          const inputList = input
             .map((item: string) => {
               return isUrl(item) ? item : path.resolve(item)
             })
@@ -23,7 +25,10 @@ export default {
               }
               return exist
             })
-        await ctx.upload(inputList)
+          await ctx.upload(inputList)
+        })().catch(() => {})
       })
   }
 }
+
+export default upload

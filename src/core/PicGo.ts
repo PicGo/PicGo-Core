@@ -94,8 +94,8 @@ class PicGo extends EventEmitter {
     }
   }
 
-  // register commandline commands
-  // please mannually remove listeners for avoiding listeners memory leak
+  /** register command-line commands
+   please manually remove listeners for avoiding listeners memory leak */
   registerCommands (): void {
     if (this.configPath !== '') {
       this.cmd.init()
@@ -103,23 +103,22 @@ class PicGo extends EventEmitter {
     }
   }
 
-  // get config
-  getConfig (name: string = ''): any {
-    if (!this.config) return
-    if (name) {
-      return get(this.config, name)
+  /** get config by property path, return full config if `name` is not provided */
+  getConfig<T> (name?: string): T {
+    if (name === undefined) {
+      return this.config as unknown as T
     } else {
-      return this.config
+      return get(this.config, name)
     }
   }
 
-  // save to db
-  saveConfig (config: Config): void {
+  /** save to db */
+  saveConfig (config: object): void {
     this.setConfig(config)
     this.db.saveConfig(config)
   }
 
-  // remove from db
+  /** remove from db */
   removeConfig (key: string, propName: string): void {
     if (!key || !propName) return
     this.unsetConfig(key, propName)
@@ -128,7 +127,7 @@ class PicGo extends EventEmitter {
 
   // set config for ctx but will not be saved to db
   // it's more lightweight
-  setConfig (config: Config): void {
+  setConfig (config: object): void {
     Object.keys(config).forEach((name: string) => {
       set(this.config, name, config[name])
     })
@@ -140,8 +139,11 @@ class PicGo extends EventEmitter {
     unset(this.getConfig(key), propName)
   }
 
-  async upload (input?: any[]): Promise<void | string | Error> {
-    if (this.configPath === '') return this.log.error('The configuration file only supports JSON format.')
+  async upload (input?: any[]): Promise<string | Error> {
+    if (this.configPath === '') {
+      this.log.error('The configuration file only supports JSON format.')
+      return ''
+    }
     // upload from clipboard
     if (input === undefined || input.length === 0) {
       try {
@@ -149,14 +151,16 @@ class PicGo extends EventEmitter {
         if (imgPath === 'no image') {
           throw new Error('image not found in clipboard')
         } else {
-          this.once('failed', async () => {
+          this.once('failed', () => {
             if (!isExistFile) {
-              await fs.remove(imgPath)
+              // 删除 picgo 生成的图片文件，例如 `~/.picgo/20200621205720.png`
+              fs.remove(imgPath).catch(() => {})
             }
           })
-          this.once('finished', async () => {
+          this.once('finished', () => {
+            console.log('imgPath', imgPath)
             if (!isExistFile) {
-              await fs.remove(imgPath)
+              fs.remove(imgPath).catch(() => {})
             }
           })
           await this.lifecycle.start([imgPath])

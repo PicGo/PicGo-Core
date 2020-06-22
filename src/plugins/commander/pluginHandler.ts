@@ -1,7 +1,8 @@
 import PicGo from '../../core/PicGo'
+import { Plugin } from '../../utils/interfaces'
 
-export default {
-  handle: (ctx: PicGo): void => {
+const pluginHandler: Plugin = {
+  handle: (ctx: PicGo) => {
     // const pluginHandler = new PluginHandler(ctx)
     const cmd = ctx.cmd
     cmd.program
@@ -10,20 +11,22 @@ export default {
       .alias('add')
       .option('-p, --proxy <proxy>', 'Add proxy for installing')
       .action((plugins: string[], program: any) => {
-        return ctx.pluginHandler.install(plugins, program.proxy)
+        ctx.pluginHandler.install(plugins, program.proxy).catch(() => {})
       })
     cmd.program
       .command('uninstall <plugins...>')
       .alias('rm')
       .description('uninstall picgo plugin')
       .action((plugins: string[]) => {
-        return ctx.pluginHandler.uninstall(plugins)
+        ctx.pluginHandler.uninstall(plugins).catch(() => {})
       })
     cmd.program
       .command('update <plugins...>')
       .description('update picgo plugin')
       .action((plugins: string[]) => {
-        return ctx.pluginHandler.update(plugins)
+        ctx.pluginHandler.update(plugins).catch(() => {})
       })
   }
 }
+
+export default pluginHandler

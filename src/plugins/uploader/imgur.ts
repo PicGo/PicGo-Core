@@ -1,13 +1,14 @@
 import PicGo from '../../core/PicGo'
-import { PluginConfig } from '../../utils/interfaces'
+import { PluginConfig, ImgurConfig } from '../../utils/interfaces'
+import { Options } from 'request-promise-native'
 
-const postOptions = (options: any, fileName: string, imgBase64: string): any => {
+const postOptions = (options: ImgurConfig, fileName: string, imgBase64: string): Options => {
   const clientId = options.clientId
-  let obj = {
+  const obj: Options = {
     method: 'POST',
-    url: `https://api.imgur.com/3/image`,
+    url: 'https://api.imgur.com/3/image',
     headers: {
-      Authorization: 'Client-ID ' + clientId,
+      Authorization: `Client-ID ${clientId}`,
       'content-type': 'multipart/form-data',
       'User-Agent': 'PicGo'
     },
@@ -18,27 +19,27 @@ const postOptions = (options: any, fileName: string, imgBase64: string): any => 
     }
   }
   if (options.proxy) {
-    obj['proxy'] = options.proxy
+    obj.proxy = options.proxy
   }
   return obj
 }
 
 const handle = async (ctx: PicGo): Promise<PicGo> => {
-  const imgurOptions = ctx.getConfig('picBed.imgur')
+  const imgurOptions = ctx.getConfig<ImgurConfig>('picBed.imgur')
   if (!imgurOptions) {
     throw new Error('Can\'t find imgur config')
   }
   try {
     const imgList = ctx.output
-    for (let i in imgList) {
-      let base64Image = imgList[i].base64Image || Buffer.from(imgList[i].buffer).toString('base64')
-      const options = postOptions(imgurOptions, imgList[i].fileName, base64Image)
+    for (const img of imgList) {
+      const base64Image = img.base64Image || Buffer.from(img.buffer).toString('base64')
+      const options = postOptions(imgurOptions, img.fileName, base64Image)
       let body = await ctx.Request.request(options)
       body = JSON.parse(body)
       if (body.success) {
-        delete imgList[i].base64Image
-        delete imgList[i].buffer
-        imgList[i]['imgUrl'] = `${body.data.link}`
+        delete img.base64Image
+        delete img.buffer
+        img.imgUrl = body.data.link
       } else {
         throw new Error('Server error, please try again')
       }
@@ -55,10 +56,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
 }
 
 const config = (ctx: PicGo): PluginConfig[] => {
-  let userConfig = ctx.getConfig('picBed.imgur')
-  if (!userConfig) {
-    userConfig = {}
-  }
+  const userConfig = ctx.getConfig<ImgurConfig>('picBed.imgur')
   const config = [
     {
       name: 'clientId',

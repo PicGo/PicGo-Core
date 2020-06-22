@@ -30,6 +30,7 @@ class PluginHandler {
       })
     }
   }
+
   async uninstall (plugins: string[]): Promise<void> {
     plugins = plugins.map((item: string) => 'picgo-plugin-' + item)
     const result = await this.execCommand('uninstall', plugins, this.ctx.baseDir)
@@ -51,6 +52,7 @@ class PluginHandler {
       })
     }
   }
+
   async update (plugins: string[], proxy: string = '', env?: ProcessEnv): Promise<void> {
     plugins = plugins.map((item: string) => 'picgo-plugin-' + item)
     const result = await this.execCommand('update', plugins, this.ctx.baseDir, proxy, env)
@@ -69,9 +71,10 @@ class PluginHandler {
       })
     }
   }
-  execCommand (cmd: string, modules: string[], where: string, proxy: string = '', env: ProcessEnv = {}): Promise<Result> {
-    const registry = this.ctx.getConfig('registry')
-    return new Promise((resolve: any): void => {
+
+  async execCommand (cmd: string, modules: string[], where: string, proxy: string = '', env: ProcessEnv = {}): Promise<Result> {
+    const registry = this.ctx.getConfig<string | undefined>('registry')
+    return await new Promise((resolve: any): void => {
       let args = [cmd].concat(modules).concat('--color=always').concat('--save')
       if (registry) {
         args = args.concat(`--registry=${registry}`)

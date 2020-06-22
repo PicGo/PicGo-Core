@@ -1,10 +1,11 @@
 import PicGo from '../../core/PicGo'
-import { PluginConfig } from '../../utils/interfaces'
+import { PluginConfig, UpyunConfig } from '../../utils/interfaces'
 import crypto from 'crypto'
 import MD5 from 'md5'
+import { Options } from 'request-promise-native'
 
 // generate COS signature string
-const generateSignature = (options: any, fileName: string): string => {
+const generateSignature = (options: UpyunConfig, fileName: string): string => {
   const path = options.path || ''
   const operator = options.operator
   const password = options.password
@@ -16,7 +17,7 @@ const generateSignature = (options: any, fileName: string): string => {
   return `UPYUN ${operator}:${sign}`
 }
 
-const postOptions = (options: any, fileName: string, signature: string, image: Buffer): any => {
+const postOptions = (options: UpyunConfig, fileName: string, signature: string, image: Buffer): Options => {
   const bucket = options.bucket
   const path = options.path || ''
   return {
@@ -32,25 +33,25 @@ const postOptions = (options: any, fileName: string, signature: string, image: B
 }
 
 const handle = async (ctx: PicGo): Promise<PicGo> => {
-  const upyunOptions = ctx.getConfig('picBed.upyun')
+  const upyunOptions = ctx.getConfig<UpyunConfig>('picBed.upyun')
   if (!upyunOptions) {
     throw new Error('Can\'t find upYun config')
   }
   try {
     const imgList = ctx.output
     const path = upyunOptions.path || ''
-    for (let i in imgList) {
-      let image = imgList[i].buffer
-      if (!image && imgList[i].base64Image) {
-        image = Buffer.from(imgList[i].base64Image, 'base64')
+    for (const img of imgList) {
+      let image = img.buffer
+      if (!image && img.base64Image) {
+        image = Buffer.from(img.base64Image, 'base64')
       }
-      const singature = generateSignature(upyunOptions, imgList[i].fileName)
-      const options = postOptions(upyunOptions, imgList[i].fileName, singature, image)
+      const signature = generateSignature(upyunOptions, img.fileName)
+      const options = postOptions(upyunOptions, img.fileName, signature, image)
       const body = await ctx.Request.request(options)
       if (body.statusCode === 200) {
-        delete imgList[i].base64Image
-        delete imgList[i].buffer
-        imgList[i]['imgUrl'] = `${upyunOptions.url}/${path}${imgList[i].fileName}${upyunOptions.options}`
+        delete img.base64Image
+        delete img.buffer
+        img.imgUrl = `${upyunOptions.url}/${path}${img.fileName}${upyunOptions.options}`
       } else {
         throw new Error('Upload failed')
       }
@@ -60,13 +61,13 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
     if (err.message === 'Upload failed') {
       ctx.emit('notification', {
         title: '上传失败',
-        body: `请检查你的配置项是否正确`
+        body: '请检查你的配置项是否正确'
       })
     } else {
       const body = JSON.parse(err.error)
       ctx.emit('notification', {
         title: '上传失败',
-        body: `错误码：${body.code}，请打开浏览器粘贴地址查看相关原因`,
+        body: `错误码：${body.code as string}，请打开浏览器粘贴地址查看相关原因`,
         text: 'http://docs.upyun.com/api/errno/'
       })
     }
@@ -75,10 +76,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
 }
 
 const config = (ctx: PicGo): PluginConfig[] => {
-  let userConfig = ctx.getConfig('picBed.upyun')
-  if (!userConfig) {
-    userConfig = {}
-  }
+  const userConfig = ctx.getConfig<UpyunConfig>('picBed.upyun')
   const config = [
     {
       name: 'bucket',
