@@ -27,7 +27,7 @@ const use: IPlugin = {
                 name: 'transformer',
                 message: 'Use a transformer',
                 choices: ctx.helper.transformer.getIdList(),
-                default: ctx.getConfig<Undefinable<string>>('picBed.transformer') ?? 'path'
+                default: ctx.getConfig<Undefinable<string>>('picBed.transformer') || 'path'
               },
               plugins: {
                 type: 'checkbox',

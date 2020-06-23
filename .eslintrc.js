@@ -16,6 +16,7 @@ module.exports = {
           match: true
         }
       }
-    ]
+    ],
+    '@typescript-eslint/prefer-nullish-coalescing': 0
   }
 }

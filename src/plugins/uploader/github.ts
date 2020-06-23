@@ -26,7 +26,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
     const imgList = ctx.output
     for (const img of imgList) {
       if (img.fileName && img.buffer) {
-        const base64Image = img.base64Image ?? Buffer.from(img.buffer).toString('base64')
+        const base64Image = img.base64Image || Buffer.from(img.buffer).toString('base64')
         const data = {
           message: 'Upload by PicGo',
           branch: githubOptions.branch,

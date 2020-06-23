@@ -44,7 +44,7 @@ class Logger {
   }
 
   private checkLogPathChange (): string {
-    const logPath = this.ctx.getConfig<Undefinable<string>>('settings.logPath') ?? path.join(this.ctx.baseDir, './picgo.log')
+    const logPath = this.ctx.getConfig<Undefinable<string>>('settings.logPath') || path.join(this.ctx.baseDir, './picgo.log')
     if (logPath !== this.logPath) {
       this.logPath = logPath
     }

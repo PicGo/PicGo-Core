@@ -33,7 +33,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
     const imgList = ctx.output
     for (const img of imgList) {
       if (img.fileName && img.buffer) {
-        const base64Image = img.base64Image ?? Buffer.from(img.buffer).toString('base64')
+        const base64Image = img.base64Image || Buffer.from(img.buffer).toString('base64')
         const options = postOptions(imgurOptions, img.fileName, base64Image)
         let body = await ctx.Request.request(options)
         body = JSON.parse(body)

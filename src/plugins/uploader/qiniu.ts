@@ -42,7 +42,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
     const imgList = ctx.output
     for (const img of imgList) {
       if (img.fileName && img.buffer) {
-        const base64Image = img.base64Image ?? Buffer.from(img.buffer).toString('base64')
+        const base64Image = img.base64Image || Buffer.from(img.buffer).toString('base64')
         const options = postOptions(qiniuOptions, img.fileName, getToken(qiniuOptions), base64Image)
         const res = await ctx.Request.request(options)
         const body = JSON.parse(res)
