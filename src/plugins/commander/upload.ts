@@ -2,9 +2,9 @@ import PicGo from '../../core/PicGo'
 import path from 'path'
 import fs from 'fs-extra'
 import { isUrl } from '../../utils/common'
-import { Plugin } from '../../utils/interfaces'
+import { IPlugin } from '../../utils/interfaces'
 
-const upload: Plugin = {
+const upload: IPlugin = {
   handle: (ctx: PicGo) => {
     const cmd = ctx.cmd
     cmd.program

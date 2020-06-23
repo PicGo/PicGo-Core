@@ -1,6 +1,6 @@
 import PicGo from '../core/PicGo'
 import match from 'minimatch'
-import { Options } from './interfaces'
+import { IOptions } from './interfaces'
 import fs from 'fs-extra'
 import path from 'path'
 import globby from 'globby'
@@ -9,9 +9,9 @@ import ejs from 'ejs'
 /**
  * Generate template files to destination files.
  * @param {PicGo} ctx
- * @param {Options} options
+ * @param {IOptions} options
  */
-const generate = async (ctx: PicGo, options: Options): Promise<any> => {
+const generate = async (ctx: PicGo, options: IOptions): Promise<any> => {
   try {
     const opts = getOptions(options.tmp)
     const source = path.join(options.tmp, 'template')
@@ -63,6 +63,7 @@ const filters = (ctx: PicGo, exp: any, data: any): boolean => {
     return fn(data)
   } catch (e) {
     ctx.log.error(`Error when evaluating filter condition: ${JSON.stringify(exp)}`)
+    return false
   }
 }
 

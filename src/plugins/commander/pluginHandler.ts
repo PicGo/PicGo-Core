@@ -1,7 +1,7 @@
 import PicGo from '../../core/PicGo'
-import { Plugin } from '../../utils/interfaces'
+import { IPlugin } from '../../utils/interfaces'
 
-const pluginHandler: Plugin = {
+const pluginHandler: IPlugin = {
   handle: (ctx: PicGo) => {
     // const pluginHandler = new PluginHandler(ctx)
     const cmd = ctx.cmd

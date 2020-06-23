@@ -7,6 +7,8 @@
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
     "sourceMap": false,
     "target": "es2017",
     "declaration": true,

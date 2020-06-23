@@ -1,13 +1,13 @@
 import PicGo from '../core/PicGo'
 import program from 'commander'
 import inquirer from 'inquirer'
-import { Plugin } from '../utils/interfaces'
+import { IPlugin } from '../utils/interfaces'
 import commanders from '../plugins/commander'
 import pkg from '../../package.json'
 
 class Commander {
   list: {
-    [propName: string]: Plugin
+    [propName: string]: IPlugin
   }
 
   program: typeof program
@@ -43,7 +43,7 @@ class Commander {
     commanders(this.ctx)
   }
 
-  register (name: string, plugin: Plugin): void {
+  register (name: string, plugin: IPlugin): void {
     if (!name) throw new TypeError('name is required!')
     if (typeof plugin.handle !== 'function') throw new TypeError('plugin.handle must be a function!')
     if (name in this.list) throw new TypeError('duplicate name!')
@@ -52,14 +52,14 @@ class Commander {
   }
 
   loadCommands (): void {
-    Object.keys(this.list).map(async (item: string) => await this.list[item].handle(this.ctx))
+    Object.keys(this.list).map((item: string) => this.list[item].handle(this.ctx))
   }
 
-  get (name: string): Plugin {
+  get (name: string): IPlugin {
     return this.list[name]
   }
 
-  getList (): Plugin[] {
+  getList (): IPlugin[] {
     return Object.keys(this.list).map((item: string) => this.list[item])
   }
 }

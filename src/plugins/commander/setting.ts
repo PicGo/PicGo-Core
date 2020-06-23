@@ -1,8 +1,8 @@
 import PicGo from '../../core/PicGo'
-import { PluginConfig } from '../../utils/interfaces'
+import { IPluginConfig } from '../../utils/interfaces'
 
 // handle modules config -> save to picgo config file
-const handleConfig = async (ctx: PicGo, prompts: PluginConfig, module: string, name: string): Promise<void> => {
+const handleConfig = async (ctx: PicGo, prompts: IPluginConfig, module: string, name: string): Promise<void> => {
   const answer = await ctx.cmd.inquirer.prompt(prompts)
   const configName = module === 'uploader'
     ? `picBed.${name}` : module === 'transformer'
@@ -47,9 +47,9 @@ const setting = {
                       default: ctx.getConfig('picBed.uploader') || ctx.getConfig('picBed.current')
                     }
                   ]
-                  const answer = await ctx.cmd.inquirer.prompt(prompts)
+                  const answer = await ctx.cmd.inquirer.prompt<string>(prompts)
                   const item = ctx.helper[module].get(answer[module])
-                  if (item.config) {
+                  if (item?.config) {
                     await handleConfig(ctx, item.config(ctx), module, answer[module])
                   }
                 }

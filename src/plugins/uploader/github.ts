@@ -1,8 +1,8 @@
 import PicGo from '../../core/PicGo'
-import { PluginConfig, GithubConfig } from '../../utils/interfaces'
+import { IPluginConfig, IGithubConfig } from '../../utils/interfaces'
 import { Options } from 'request-promise-native'
 
-const postOptions = (fileName: string, options: GithubConfig, data: any): Options => {
+const postOptions = (fileName: string, options: IGithubConfig, data: any): Options => {
   const path = options.path || ''
   const { token, repo } = options
   return {
@@ -18,32 +18,34 @@ const postOptions = (fileName: string, options: GithubConfig, data: any): Option
 }
 
 const handle = async (ctx: PicGo): Promise<PicGo> => {
-  const githubOptions = ctx.getConfig<GithubConfig>('picBed.github')
+  const githubOptions = ctx.getConfig<IGithubConfig>('picBed.github')
   if (!githubOptions) {
     throw new Error('Can\'t find github config')
   }
   try {
     const imgList = ctx.output
     for (const img of imgList) {
-      const base64Image = img.base64Image || Buffer.from(img.buffer).toString('base64')
-      const data = {
-        message: 'Upload by PicGo',
-        branch: githubOptions.branch,
-        content: base64Image,
-        path: githubOptions.path + encodeURI(img.fileName)
-      }
-      const postConfig = postOptions(img.fileName, githubOptions, data)
-      const body = await ctx.Request.request(postConfig)
-      if (body) {
-        delete img.base64Image
-        delete img.buffer
-        if (githubOptions.customUrl) {
-          img.imgUrl = `${githubOptions.customUrl}/${githubOptions.path}${img.fileName}`
-        } else {
-          img.imgUrl = body.content.download_url
+      if (img.fileName && img.buffer) {
+        const base64Image = img.base64Image ?? Buffer.from(img.buffer).toString('base64')
+        const data = {
+          message: 'Upload by PicGo',
+          branch: githubOptions.branch,
+          content: base64Image,
+          path: githubOptions.path + encodeURI(img.fileName)
         }
-      } else {
-        throw new Error('Server error, please try again')
+        const postConfig = postOptions(img.fileName, githubOptions, data)
+        const body = await ctx.Request.request(postConfig)
+        if (body) {
+          delete img.base64Image
+          delete img.buffer
+          if (githubOptions.customUrl) {
+            img.imgUrl = `${githubOptions.customUrl}/${githubOptions.path}${img.fileName}`
+          } else {
+            img.imgUrl = body.content.download_url
+          }
+        } else {
+          throw new Error('Server error, please try again')
+        }
       }
     }
     return ctx
@@ -56,8 +58,8 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
   }
 }
 
-const config = (ctx: PicGo): PluginConfig[] => {
-  const userConfig = ctx.getConfig<GithubConfig>('picBed.github')
+const config = (ctx: PicGo): IPluginConfig[] => {
+  const userConfig = ctx.getConfig<IGithubConfig>('picBed.github')
   const config = [
     {
       name: 'repo',

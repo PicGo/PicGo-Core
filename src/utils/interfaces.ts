@@ -4,7 +4,7 @@ import LifecyclePlugins from '../lib/LifecyclePlugins'
 /**
  * for plugin config
  */
-export interface PluginConfig {
+export interface IPluginConfig {
   name: string
   type: string
   required: boolean
@@ -15,7 +15,7 @@ export interface PluginConfig {
 /**
  * for lifecycle plugins
  */
-export interface Helper {
+export interface IHelper {
   transformer: LifecyclePlugins
   uploader: LifecyclePlugins
   beforeTransformPlugins: LifecyclePlugins
@@ -26,7 +26,7 @@ export interface Helper {
 /**
  * for uploading image info
  */
-export interface ImgInfo {
+export interface IImgInfo {
   buffer?: Buffer
   base64Image?: string
   fileName?: string
@@ -36,15 +36,15 @@ export interface ImgInfo {
   [propName: string]: any
 }
 
-export interface IPathTransformedImgInfo extends ImgInfo {
+export interface IPathTransformedImgInfo extends IImgInfo {
   success: boolean
 }
 
 /** SM.MS 图床配置项 */
-export interface SmmsConfig {
+export interface ISmmsConfig {
   token: string
 }
-export interface QiniuConfig {
+export interface IQiniuConfig {
   accessKey: string
   secretKey: string
   /** 存储空间名 */
@@ -60,7 +60,7 @@ export interface QiniuConfig {
   path: string
 }
 /** 又拍云图床配置项 */
-export interface UpyunConfig {
+export interface IUpyunConfig {
   /** 存储空间名，及你的服务名 */
   bucket: string
   /** 操作员 */
@@ -75,7 +75,7 @@ export interface UpyunConfig {
   url: string
 }
 /** 又拍云图床配置项 */
-export interface TcyunConfig {
+export interface ITcyunConfig {
   secretId: string
   secretKey: string
   /** 存储桶名，v4 和 v5 版本不一样 */
@@ -91,7 +91,7 @@ export interface TcyunConfig {
   version: 'v5' | 'v4'
 }
 /** GitHub 图床配置项 */
-export interface GithubConfig {
+export interface IGithubConfig {
   /** 仓库名，格式是 `username/reponame` */
   repo: string
   /** github token */
@@ -104,7 +104,7 @@ export interface GithubConfig {
   branch: string
 }
 /** 阿里云图床配置项 */
-export interface AliyunConfig {
+export interface IAliyunConfig {
   accessKeyId: string
   accessKeySecret: string
   /** 存储空间名 */
@@ -118,7 +118,7 @@ export interface AliyunConfig {
   /** 针对图片的一些后缀处理参数 PicGo 2.2.0+ PicGo-Core 1.4.0+ */
   options: string
 }
-export interface ImgurConfig {
+export interface IImgurConfig {
   /** imgur 的 `clientId` */
   clientId: string
   /** 代理地址，仅支持 http 代理 */
@@ -127,17 +127,17 @@ export interface ImgurConfig {
 /**
  * for config options
  */
-export interface Config {
+export interface IConfig {
   picBed: {
     uploader: string
     current: string
-    smms?: SmmsConfig
-    qiniu?: QiniuConfig
-    upyun?: UpyunConfig
-    tcyun?: TcyunConfig
-    github?: GithubConfig
-    aliyun?: AliyunConfig
-    imgur?: ImgurConfig
+    smms?: ISmmsConfig
+    qiniu?: IQiniuConfig
+    upyun?: IUpyunConfig
+    tcyun?: ITcyunConfig
+    github?: IGithubConfig
+    aliyun?: IAliyunConfig
+    imgur?: IImgurConfig
     transformer?: string
     proxy: string
   }
@@ -157,7 +157,7 @@ export interface Config {
 /**
  * for plugin
  */
-export interface Plugin {
+export interface IPlugin {
   handle: ((ctx: PicGo) => Promise<any>) | ((ctx: PicGo) => void)
   [propName: string]: any
 }
@@ -165,7 +165,7 @@ export interface Plugin {
 /**
  * for spawn output
  */
-export interface Result {
+export interface IResult {
   code: number
   data: string
 }
@@ -173,7 +173,7 @@ export interface Result {
 /**
  * for transformer - path
  */
-export interface ImgSize {
+export interface IImgSize {
   width: number
   height: number
   real?: boolean
@@ -182,7 +182,7 @@ export interface ImgSize {
 /**
  * for initUtils
  */
-export interface Options {
+export interface IOptions {
   template: string // template name
   dest: string // destination for template to generate
   hasSlash: boolean // check if is officail template
@@ -196,7 +196,7 @@ export interface Options {
 /**
  * for clipboard image
  */
-export interface ClipboardImage {
+export interface IClipboardImage {
   imgPath: string
   isExistFile: boolean
 }
@@ -204,10 +204,13 @@ export interface ClipboardImage {
 /**
  * for install command environment variable
  */
-export interface ProcessEnv {
-  [propName: string]: string | undefined
+export interface IProcessEnv {
+  [propName: string]: Undefinable<string>
 }
 
 export type ILogArgvType = string | number
 
 export type ILogArgvTypeWithError = ILogArgvType | Error
+
+export type Nullable<T> = T | null
+export type Undefinable<T> = T | undefined

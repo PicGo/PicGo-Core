@@ -1,7 +1,7 @@
 import PicGo from '../../core/PicGo'
-import { Plugin } from '../../utils/interfaces'
+import { IPlugin } from '../../utils/interfaces'
 
-const proxy: Plugin = {
+const proxy: IPlugin = {
   handle: (ctx: PicGo) => {
     const cmd = ctx.cmd
     cmd.program

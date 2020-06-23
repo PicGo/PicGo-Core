@@ -1,9 +1,9 @@
 import PicGo from '../../core/PicGo'
 import qiniu from 'qiniu'
-import { PluginConfig, QiniuConfig } from '../../utils/interfaces'
+import { IPluginConfig, IQiniuConfig } from '../../utils/interfaces'
 import { Options } from 'request-promise-native'
 
-function postOptions (options: QiniuConfig, fileName: string, token: string, imgBase64: string): Options {
+function postOptions (options: IQiniuConfig, fileName: string, token: string, imgBase64: string): Options {
   const area = selectArea(options.area || 'z0')
   const path = options.path || ''
   const base64FileName = Buffer.from(path + fileName, 'utf-8').toString('base64').replace(/\+/g, '-').replace(/\//g, '_')
@@ -34,29 +34,31 @@ function getToken (qiniuOptions: any): string {
 }
 
 const handle = async (ctx: PicGo): Promise<PicGo> => {
-  const qiniuOptions = ctx.getConfig<QiniuConfig>('picBed.qiniu')
+  const qiniuOptions = ctx.getConfig<IQiniuConfig>('picBed.qiniu')
   if (!qiniuOptions) {
     throw new Error('Can\'t find qiniu config')
   }
   try {
     const imgList = ctx.output
     for (const img of imgList) {
-      const base64Image = img.base64Image || Buffer.from(img.buffer).toString('base64')
-      const options = postOptions(qiniuOptions, img.fileName, getToken(qiniuOptions), base64Image)
-      const res = await ctx.Request.request(options)
-      const body = JSON.parse(res)
-      if (body.key) {
-        delete img.base64Image
-        delete img.buffer
-        const baseUrl = qiniuOptions.url
-        const options = qiniuOptions.options
-        img.imgUrl = `${baseUrl}/${body.key as string}${options}`
-      } else {
-        ctx.emit('notification', {
-          title: '上传失败',
-          body: res.body.msg
-        })
-        throw new Error('Upload failed')
+      if (img.fileName && img.buffer) {
+        const base64Image = img.base64Image ?? Buffer.from(img.buffer).toString('base64')
+        const options = postOptions(qiniuOptions, img.fileName, getToken(qiniuOptions), base64Image)
+        const res = await ctx.Request.request(options)
+        const body = JSON.parse(res)
+        if (body.key) {
+          delete img.base64Image
+          delete img.buffer
+          const baseUrl = qiniuOptions.url
+          const options = qiniuOptions.options
+          img.imgUrl = `${baseUrl}/${body.key as string}${options}`
+        } else {
+          ctx.emit('notification', {
+            title: '上传失败',
+            body: res.body.msg
+          })
+          throw new Error('Upload failed')
+        }
       }
     }
     return ctx
@@ -72,8 +74,8 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
   }
 }
 
-const config = (ctx: PicGo): PluginConfig[] => {
-  const userConfig = ctx.getConfig<QiniuConfig>('picBed.qiniu')
+const config = (ctx: PicGo): IPluginConfig[] => {
+  const userConfig = ctx.getConfig<IQiniuConfig>('picBed.qiniu')
   const config = [
     {
       name: 'accessKey',

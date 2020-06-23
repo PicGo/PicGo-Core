@@ -1,8 +1,8 @@
 import PicGo from '../../core/PicGo'
-import { PluginConfig, ImgurConfig } from '../../utils/interfaces'
+import { IPluginConfig, IImgurConfig } from '../../utils/interfaces'
 import { Options } from 'request-promise-native'
 
-const postOptions = (options: ImgurConfig, fileName: string, imgBase64: string): Options => {
+const postOptions = (options: IImgurConfig, fileName: string, imgBase64: string): Options => {
   const clientId = options.clientId
   const obj: Options = {
     method: 'POST',
@@ -25,23 +25,25 @@ const postOptions = (options: ImgurConfig, fileName: string, imgBase64: string):
 }
 
 const handle = async (ctx: PicGo): Promise<PicGo> => {
-  const imgurOptions = ctx.getConfig<ImgurConfig>('picBed.imgur')
+  const imgurOptions = ctx.getConfig<IImgurConfig>('picBed.imgur')
   if (!imgurOptions) {
     throw new Error('Can\'t find imgur config')
   }
   try {
     const imgList = ctx.output
     for (const img of imgList) {
-      const base64Image = img.base64Image || Buffer.from(img.buffer).toString('base64')
-      const options = postOptions(imgurOptions, img.fileName, base64Image)
-      let body = await ctx.Request.request(options)
-      body = JSON.parse(body)
-      if (body.success) {
-        delete img.base64Image
-        delete img.buffer
-        img.imgUrl = body.data.link
-      } else {
-        throw new Error('Server error, please try again')
+      if (img.fileName && img.buffer) {
+        const base64Image = img.base64Image ?? Buffer.from(img.buffer).toString('base64')
+        const options = postOptions(imgurOptions, img.fileName, base64Image)
+        let body = await ctx.Request.request(options)
+        body = JSON.parse(body)
+        if (body.success) {
+          delete img.base64Image
+          delete img.buffer
+          img.imgUrl = body.data.link
+        } else {
+          throw new Error('Server error, please try again')
+        }
       }
     }
     return ctx
@@ -55,8 +57,8 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
   }
 }
 
-const config = (ctx: PicGo): PluginConfig[] => {
-  const userConfig = ctx.getConfig<ImgurConfig>('picBed.imgur')
+const config = (ctx: PicGo): IPluginConfig[] => {
+  const userConfig = ctx.getConfig<IImgurConfig>('picBed.imgur')
   const config = [
     {
       name: 'clientId',

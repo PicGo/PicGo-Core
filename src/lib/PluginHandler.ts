@@ -1,6 +1,6 @@
 import PicGo from '../core/PicGo'
 import spawn from 'cross-spawn'
-import { Result, ProcessEnv } from '../utils/interfaces'
+import { IResult, IProcessEnv, Undefinable } from '../utils/interfaces'
 
 class PluginHandler {
   // Thanks to feflow -> https://github.com/feflow/feflow/blob/master/lib/internal/install/plugin.js
@@ -9,7 +9,7 @@ class PluginHandler {
     this.ctx = ctx
   }
 
-  async install (plugins: string[], proxy: string = '', env?: ProcessEnv): Promise<void> {
+  async install (plugins: string[], proxy: string = '', env?: IProcessEnv): Promise<void> {
     plugins = plugins.map((item: string) => 'picgo-plugin-' + item)
     const result = await this.execCommand('install', plugins, this.ctx.baseDir, proxy, env)
     if (!result.code) {
@@ -53,7 +53,7 @@ class PluginHandler {
     }
   }
 
-  async update (plugins: string[], proxy: string = '', env?: ProcessEnv): Promise<void> {
+  async update (plugins: string[], proxy: string = '', env?: IProcessEnv): Promise<void> {
     plugins = plugins.map((item: string) => 'picgo-plugin-' + item)
     const result = await this.execCommand('update', plugins, this.ctx.baseDir, proxy, env)
     if (!result.code) {
@@ -72,8 +72,8 @@ class PluginHandler {
     }
   }
 
-  async execCommand (cmd: string, modules: string[], where: string, proxy: string = '', env: ProcessEnv = {}): Promise<Result> {
-    const registry = this.ctx.getConfig<string | undefined>('registry')
+  async execCommand (cmd: string, modules: string[], where: string, proxy: string = '', env: IProcessEnv = {}): Promise<IResult> {
+    const registry = this.ctx.getConfig<Undefinable<string>>('registry')
     return await new Promise((resolve: any): void => {
       let args = [cmd].concat(modules).concat('--color=always').concat('--save')
       if (registry) {

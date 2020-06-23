@@ -10,22 +10,22 @@ import uploaders from '../plugins/uploader'
 import transformers from '../plugins/transformer'
 import PluginLoader from '../lib/PluginLoader'
 import { get, set, unset } from 'lodash'
-import { Helper, ImgInfo, Config } from '../utils/interfaces'
+import { IHelper, IImgInfo, IConfig } from '../utils/interfaces'
 import getClipboardImage from '../utils/getClipboardImage'
 import Request from '../lib/Request'
 import DB from '../utils/db'
 import PluginHandler from '../lib/PluginHandler'
 
 class PicGo extends EventEmitter {
-  private config: Config
+  private config: IConfig
   private lifecycle: Lifecycle
   private db: DB
   configPath: string
   baseDir: string
-  helper: Helper
+  helper: IHelper
   log: Logger
   cmd: Commander
-  output: ImgInfo[]
+  output: IImgInfo[]
   input: any[]
   pluginLoader: PluginLoader
   pluginHandler: PluginHandler
@@ -83,7 +83,7 @@ class PicGo extends EventEmitter {
       this.setCurrentPluginName('picgo')
       uploaders(this)
       transformers(this)
-      this.setCurrentPluginName(null)
+      this.setCurrentPluginName('')
       // load third-party plugins
       this.pluginLoader.load()
       this.lifecycle = new Lifecycle(this)
@@ -169,9 +169,11 @@ class PicGo extends EventEmitter {
         this.emit('failed', e)
         throw e
       }
+      return ''
     } else {
       // upload from path
       await this.lifecycle.start(input)
+      return ''
     }
   }
 }

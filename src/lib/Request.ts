@@ -1,5 +1,6 @@
 import PicGo from '../core/PicGo'
 import request, { RequestPromiseOptions } from 'request-promise-native'
+import { Undefinable } from '../utils/interfaces'
 
 class Request {
   ctx: PicGo
@@ -13,7 +14,7 @@ class Request {
     const options: RequestPromiseOptions = {
       jar: request.jar()
     }
-    const proxy = this.ctx.getConfig<string | undefined>('picBed.proxy')
+    const proxy = this.ctx.getConfig<Undefinable<string>>('picBed.proxy')
     if (proxy) {
       options.proxy = proxy
     }

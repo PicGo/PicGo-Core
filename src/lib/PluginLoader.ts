@@ -53,6 +53,7 @@ class PluginLoader {
     for (const module of modules) {
       this.registerPlugin(module)
     }
+    return false
   }
 
   registerPlugin (name: string): void {

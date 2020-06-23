@@ -5,10 +5,10 @@ import {
   getFSFile,
   getURLFile
 } from '../../utils/common'
-import { IPathTransformedImgInfo, ImgInfo, ImgSize } from '../../utils/interfaces'
+import { IPathTransformedImgInfo, IImgInfo, IImgSize } from '../../utils/interfaces'
 
 const handle = async (ctx: PicGo): Promise<PicGo> => {
-  let results: ImgInfo[] = ctx.output
+  const results: IImgInfo[] = ctx.output
   await Promise.all(ctx.input.map(async (item: string, index: number) => {
     let info: IPathTransformedImgInfo
     if (isUrl(item)) {
@@ -16,7 +16,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
     } else {
       info = await getFSFile(item)
     }
-    if (info.success) {
+    if (info.success && info.buffer) {
       try {
         const imgSize = getImgSize(ctx, info.buffer, item)
         results[index] = {
@@ -38,11 +38,11 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
   return ctx
 }
 
-const getImgSize = (ctx: PicGo, file: Buffer, path: string): ImgSize => {
+const getImgSize = (ctx: PicGo, file: Buffer, path: string): IImgSize => {
   const imageSize = getImageSize(file)
   if (!imageSize.real) {
     ctx.log.warn(`can't get ${path}'s image size`)
-    ctx.log.warn(`fallback to 200 * 200`)
+    ctx.log.warn('fallback to 200 * 200')
   }
   return imageSize
 }

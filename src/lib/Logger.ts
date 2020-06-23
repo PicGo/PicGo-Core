@@ -8,7 +8,8 @@ import { ILogType } from '../utils/enum'
 import {
   ILogArgvType,
   ILogArgvTypeWithError,
-  Config
+  IConfig,
+  Undefinable
 } from '../utils/interfaces'
 
 class Logger {
@@ -29,7 +30,7 @@ class Logger {
   private handleLog (type: ILogType, ...msg: ILogArgvTypeWithError[]): void {
     // if configPath is invalid then this.ctx.config === undefined
     // if not then check config.silent
-    if (this.ctx.getConfig<Config>() === undefined || !this.ctx.getConfig<string | undefined>('silent')) {
+    if (this.ctx.getConfig<IConfig>() === undefined || !this.ctx.getConfig<Undefinable<string>>('silent')) {
       const logHeader = chalk[this.level[type]](`[PicGo ${type.toUpperCase()}]:`)
       console.log(logHeader, ...msg)
       this.logLevel = this.ctx.getConfig('settings.logLevel')
@@ -43,7 +44,7 @@ class Logger {
   }
 
   private checkLogPathChange (): string {
-    const logPath = this.ctx.getConfig<string | undefined>('settings.logPath') || path.join(this.ctx.baseDir, './picgo.log')
+    const logPath = this.ctx.getConfig<Undefinable<string>>('settings.logPath') ?? path.join(this.ctx.baseDir, './picgo.log')
     if (logPath !== this.logPath) {
       this.logPath = logPath
     }

@@ -1,25 +1,25 @@
 import PicGo from '../../core/PicGo'
 import crypto from 'crypto'
 import mime from 'mime-types'
-import { PluginConfig, TcyunConfig } from '../../utils/interfaces'
+import { IPluginConfig, ITcyunConfig } from '../../utils/interfaces'
 import { Options } from 'request-promise-native'
 
 // generate COS signature string
 
-export interface Signature {
+export interface ISignature {
   signature: string
   appId: string
   bucket: string
   signTime: string
 }
 
-const generateSignature = (options: TcyunConfig, fileName: string): Signature => {
+const generateSignature = (options: ITcyunConfig, fileName: string): ISignature => {
   const secretId = options.secretId
   const secretKey = options.secretKey
   const appId = options.appId
   const bucket = options.bucket
   let signature
-  let signTime: string
+  let signTime: string = ''
   if (!options.version || options.version === 'v4') {
     const random = Math.floor(Math.random() * 10000000000)
     const current = Math.floor(new Date().getTime() / 1000) - 1
@@ -49,7 +49,7 @@ const generateSignature = (options: TcyunConfig, fileName: string): Signature =>
   }
 }
 
-const postOptions = (options: TcyunConfig, fileName: string, signature: Signature, image: Buffer): Options => {
+const postOptions = (options: ITcyunConfig, fileName: string, signature: ISignature, image: Buffer): Options => {
   const area = options.area
   const path = options.path
   if (!options.version || options.version === 'v4') {
@@ -82,7 +82,7 @@ const postOptions = (options: TcyunConfig, fileName: string, signature: Signatur
 }
 
 const handle = async (ctx: PicGo): Promise<PicGo | boolean> => {
-  const tcYunOptions = ctx.getConfig<TcyunConfig>('picBed.tcyun')
+  const tcYunOptions = ctx.getConfig<ITcyunConfig>('picBed.tcyun')
   if (!tcYunOptions) {
     throw new Error('Can\'t find tencent COS config')
   }
@@ -92,57 +92,59 @@ const handle = async (ctx: PicGo): Promise<PicGo | boolean> => {
     const path = tcYunOptions.path
     const useV4 = !tcYunOptions.version || tcYunOptions.version === 'v4'
     for (const img of imgList) {
-      const signature = generateSignature(tcYunOptions, img.fileName)
-      if (!signature) {
-        return false
-      }
-      let image = img.buffer
-      if (!image && img.base64Image) {
-        image = Buffer.from(img.base64Image, 'base64')
-      }
-      const options = postOptions(tcYunOptions, img.fileName, signature, image)
-      const res = await ctx.Request.request(options)
-        .then((res: any) => res)
-        .catch((err: Error) => {
-          console.log(err)
-          return {
-            statusCode: 400,
-            body: {
-              msg: '认证失败！'
+      if (img.fileName && img.buffer) {
+        const signature = generateSignature(tcYunOptions, img.fileName)
+        if (!signature) {
+          return false
+        }
+        let image = img.buffer
+        if (!image && img.base64Image) {
+          image = Buffer.from(img.base64Image, 'base64')
+        }
+        const options = postOptions(tcYunOptions, img.fileName, signature, image)
+        const res = await ctx.Request.request(options)
+          .then((res: any) => res)
+          .catch((err: Error) => {
+            console.log(err)
+            return {
+              statusCode: 400,
+              body: {
+                msg: '认证失败！'
+              }
             }
+          })
+        let body
+        if (useV4 && typeof res === 'string') {
+          body = JSON.parse(res)
+        } else {
+          body = res
+        }
+        if (body.statusCode === 400) {
+          throw new Error('Upload failed')
+        }
+        if (useV4 && body.message === 'SUCCESS') {
+          delete img.base64Image
+          delete img.buffer
+          if (customUrl) {
+            img.imgUrl = `${customUrl}/${path}${img.fileName}`
+          } else {
+            img.imgUrl = body.data.source_url
           }
-        })
-      let body
-      if (useV4 && typeof res === 'string') {
-        body = JSON.parse(res)
-      } else {
-        body = res
-      }
-      if (body.statusCode === 400) {
-        throw new Error('Upload failed')
-      }
-      if (useV4 && body.message === 'SUCCESS') {
-        delete img.base64Image
-        delete img.buffer
-        if (customUrl) {
-          img.imgUrl = `${customUrl}/${path}${img.fileName}`
+        } else if (!useV4 && body && body.statusCode === 200) {
+          delete img.base64Image
+          delete img.buffer
+          if (customUrl) {
+            img.imgUrl = `${customUrl}/${path}${img.fileName}`
+          } else {
+            img.imgUrl = `https://${tcYunOptions.bucket}.cos.${tcYunOptions.area}.myqcloud.com/${path}${img.fileName}`
+          }
         } else {
-          img.imgUrl = body.data.source_url
+          ctx.emit('notification', {
+            title: '上传失败',
+            body: res.body.msg
+          })
+          throw new Error('Upload failed')
         }
-      } else if (!useV4 && body && body.statusCode === 200) {
-        delete img.base64Image
-        delete img.buffer
-        if (customUrl) {
-          img.imgUrl = `${customUrl}/${path}${img.fileName}`
-        } else {
-          img.imgUrl = `https://${tcYunOptions.bucket}.cos.${tcYunOptions.area}.myqcloud.com/${path}${img.fileName}`
-        }
-      } else {
-        ctx.emit('notification', {
-          title: '上传失败',
-          body: res.body.msg
-        })
-        throw new Error('Upload failed')
       }
     }
     return ctx
@@ -167,8 +169,8 @@ const handle = async (ctx: PicGo): Promise<PicGo | boolean> => {
   }
 }
 
-const config = (ctx: PicGo): PluginConfig[] => {
-  const userConfig = ctx.getConfig<TcyunConfig>('picBed.tcyun')
+const config = (ctx: PicGo): IPluginConfig[] => {
+  const userConfig = ctx.getConfig<ITcyunConfig>('picBed.tcyun')
   const config = [
     {
       name: 'secretId',

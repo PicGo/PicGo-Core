@@ -3,7 +3,7 @@ import lodashId from 'lodash-id'
 import FileSync from 'lowdb/adapters/FileSync'
 import json from 'comment-json'
 import PicGo from '../core/PicGo'
-import { Config } from './interfaces'
+import { IConfig } from './interfaces'
 
 class DB {
   private readonly ctx: PicGo
@@ -54,13 +54,13 @@ class DB {
     return this.read().get(key).unset(value).write()
   }
 
-  saveConfig (config: Partial<Config>): void {
+  saveConfig (config: Partial<IConfig>): void {
     Object.keys(config).forEach((name: string) => {
       this.set(name, config[name])
     })
   }
 
-  removeConfig (config: Config): void {
+  removeConfig (config: IConfig): void {
     Object.keys(config).forEach((name: string) => {
       this.unset(name, config[name])
     })

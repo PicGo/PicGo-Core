@@ -1,11 +1,11 @@
 import PicGo from '../../core/PicGo'
-import { PluginConfig, AliyunConfig } from '../../utils/interfaces'
+import { IPluginConfig, IAliyunConfig } from '../../utils/interfaces'
 import crypto from 'crypto'
 import mime from 'mime-types'
 import { Options } from 'request-promise-native'
 
 // generate OSS signature
-const generateSignature = (options: AliyunConfig, fileName: string): string => {
+const generateSignature = (options: IAliyunConfig, fileName: string): string => {
   const date = new Date().toUTCString()
   const signString = `PUT\n\n${JSON.stringify(mime.lookup(fileName))}\n${date}\n/${options.bucket}/${options.path}${fileName}`
 
@@ -13,7 +13,7 @@ const generateSignature = (options: AliyunConfig, fileName: string): string => {
   return `OSS ${options.accessKeyId}:${signature}`
 }
 
-const postOptions = (options: AliyunConfig, fileName: string, signature: string, image: Buffer): Options => {
+const postOptions = (options: IAliyunConfig, fileName: string, signature: string, image: Buffer): Options => {
   return {
     method: 'PUT',
     url: `https://${options.bucket}.${options.area}.aliyuncs.com/${encodeURI(options.path)}${encodeURI(fileName)}`,
@@ -29,7 +29,7 @@ const postOptions = (options: AliyunConfig, fileName: string, signature: string,
 }
 
 const handle = async (ctx: PicGo): Promise<PicGo> => {
-  const aliYunOptions = ctx.getConfig<AliyunConfig>('picBed.aliyun')
+  const aliYunOptions = ctx.getConfig<IAliyunConfig>('picBed.aliyun')
   if (!aliYunOptions) {
     throw new Error('Can\'t find aliYun OSS config')
   }
@@ -38,24 +38,26 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
     const customUrl = aliYunOptions.customUrl
     const path = aliYunOptions.path
     for (const img of imgList) {
-      const signature = generateSignature(aliYunOptions, img.fileName)
-      let image = img.buffer
-      if (!image && img.base64Image) {
-        image = Buffer.from(img.base64Image, 'base64')
-      }
-      const options = postOptions(aliYunOptions, img.fileName, signature, image)
-      const body = await ctx.Request.request(options)
-      if (body.statusCode === 200) {
-        delete img.base64Image
-        delete img.buffer
-        const optionUrl = aliYunOptions.options || ''
-        if (customUrl) {
-          img.imgUrl = `${customUrl}/${path}${img.fileName}${optionUrl}`
-        } else {
-          img.imgUrl = `https://${aliYunOptions.bucket}.${aliYunOptions.area}.aliyuncs.com/${path}${img.fileName}${optionUrl}`
+      if (img.fileName && img.buffer) {
+        const signature = generateSignature(aliYunOptions, img.fileName)
+        let image = img.buffer
+        if (!image && img.base64Image) {
+          image = Buffer.from(img.base64Image, 'base64')
         }
-      } else {
-        throw new Error('Upload failed')
+        const options = postOptions(aliYunOptions, img.fileName, signature, image)
+        const body = await ctx.Request.request(options)
+        if (body.statusCode === 200) {
+          delete img.base64Image
+          delete img.buffer
+          const optionUrl = aliYunOptions.options || ''
+          if (customUrl) {
+            img.imgUrl = `${customUrl}/${path}${img.fileName}${optionUrl}`
+          } else {
+            img.imgUrl = `https://${aliYunOptions.bucket}.${aliYunOptions.area}.aliyuncs.com/${path}${img.fileName}${optionUrl}`
+          }
+        } else {
+          throw new Error('Upload failed')
+        }
       }
     }
     return ctx
@@ -68,8 +70,8 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
   }
 }
 
-const config = (ctx: PicGo): PluginConfig[] => {
-  const userConfig = ctx.getConfig<AliyunConfig>('picBed.aliyun')
+const config = (ctx: PicGo): IPluginConfig[] => {
+  const userConfig = ctx.getConfig<IAliyunConfig>('picBed.aliyun')
   const config = [
     {
       name: 'accessKeyId',

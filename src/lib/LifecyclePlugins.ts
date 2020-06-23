@@ -1,8 +1,8 @@
-import { Plugin } from '../utils/interfaces'
+import { IPlugin } from '../utils/interfaces'
 
 class LifecyclePlugins {
   static currentPlugin: string | null
-  private readonly list: Map<string, Plugin>
+  private readonly list: Map<string, IPlugin>
   private readonly pluginIdMap: Map<string, string[]>
   private readonly name: string
 
@@ -12,14 +12,14 @@ class LifecyclePlugins {
     this.pluginIdMap = new Map()
   }
 
-  register (id: string, plugin: Plugin): void {
-    if (id === '') throw new TypeError('id is required!')
+  register (id: string, plugin: IPlugin): void {
+    if (!id) throw new TypeError('id is required!')
     if (typeof plugin.handle !== 'function') throw new TypeError('plugin.handle must be a function!')
     if (this.list.has(id)) throw new TypeError(`${this.name} duplicate id: ${id}!`)
     this.list.set(id, plugin)
-    if (LifecyclePlugins.currentPlugin !== null) {
+    if (LifecyclePlugins.currentPlugin) {
       if (this.pluginIdMap.has(LifecyclePlugins.currentPlugin)) {
-        this.pluginIdMap.get(LifecyclePlugins.currentPlugin).push(id)
+        this.pluginIdMap.get(LifecyclePlugins.currentPlugin)?.push(id)
       } else {
         this.pluginIdMap.set(LifecyclePlugins.currentPlugin, [id])
       }
@@ -29,7 +29,7 @@ class LifecyclePlugins {
   unregister (pluginName: string): void {
     if (this.pluginIdMap.has(pluginName)) {
       const pluginList = this.pluginIdMap.get(pluginName)
-      pluginList.forEach((plugin: string) => {
+      pluginList?.forEach((plugin: string) => {
         this.list.delete(plugin)
       })
     }
@@ -39,11 +39,11 @@ class LifecyclePlugins {
     return this.name
   }
 
-  get (id: string): Plugin {
+  get (id: string): IPlugin | undefined {
     return this.list.get(id)
   }
 
-  getList (): Plugin[] {
+  getList (): IPlugin[] {
     return [...this.list.values()]
   }
 

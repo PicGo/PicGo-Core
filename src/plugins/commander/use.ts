@@ -1,7 +1,7 @@
 import PicGo from '../../core/PicGo'
-import { Plugin } from '../../utils/interfaces'
+import { IPlugin, Undefinable } from '../../utils/interfaces'
 
-const use: Plugin = {
+const use: IPlugin = {
   handle: async (ctx: PicGo) => {
     const cmd: typeof ctx.cmd = ctx.cmd
     cmd.program
@@ -13,7 +13,7 @@ const use: Plugin = {
           try {
             // // load third-party plugins
             // await ctx.pluginLoader.load()
-            let prompts = []
+            let prompts: any[] = []
             const config = {
               uploader: {
                 type: 'list',
@@ -27,7 +27,7 @@ const use: Plugin = {
                 name: 'transformer',
                 message: 'Use a transformer',
                 choices: ctx.helper.transformer.getIdList(),
-                default: ctx.getConfig<string | undefined>('picBed.transformer') || 'path'
+                default: ctx.getConfig<Undefinable<string>>('picBed.transformer') ?? 'path'
               },
               plugins: {
                 type: 'checkbox',
@@ -52,7 +52,7 @@ const use: Plugin = {
 
             // handle for plugins option from Array to object
             if (answer.plugins) {
-              const plugins = ctx.getConfig('picgoPlugins')
+              const plugins = ctx.getConfig<object>('picgoPlugins')
               Object.keys(plugins).map((item: string) => {
                 if (answer.plugins.includes(item)) {
                   plugins[item] = true

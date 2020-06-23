@@ -4,7 +4,7 @@ import fs from 'fs-extra'
 import path from 'path'
 import { imageSize } from 'image-size'
 import {
-  ImgSize,
+  IImgSize,
   IPathTransformedImgInfo
 } from './interfaces'
 
@@ -25,9 +25,9 @@ export const handleUrlEncode = (url: string): string => {
   return url
 }
 
-export const getImageSize = (file: Buffer): ImgSize => {
+export const getImageSize = (file: Buffer): IImgSize => {
   try {
-    const { width, height } = imageSize(file)
+    const { width = 0, height = 0 } = imageSize(file)
     return {
       real: true,
       width,
@@ -75,7 +75,7 @@ export const getURLFile = async (url: string): Promise<IPathTransformedImgInfo> 
         const res = await requestPromise(requestOptions)
           .on('response', (response: request.Response): void => {
             const contentType = response.headers['content-type']
-            if (contentType.includes('image')) {
+            if (contentType?.includes('image')) {
               isImage = true
               extname = `.${contentType.split('image/')[1]}`
             }

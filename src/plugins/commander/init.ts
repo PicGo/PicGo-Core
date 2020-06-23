@@ -5,10 +5,10 @@ import fs from 'fs-extra'
 import { generate } from '../../utils/initUtils'
 import { homedir } from 'os'
 import download from 'download-git-repo'
-import { Options, Plugin } from '../../utils/interfaces'
+import { IOptions, IPlugin } from '../../utils/interfaces'
 import rm from 'rimraf'
 
-const run = (ctx: PicGo, options: Options): void => {
+const run = (ctx: PicGo, options: IOptions): void => {
   // const name = options.inPlace ? path.relative('../', process.cwd()) : options.project
   if (options.offline) { // offline mode
     if (fs.existsSync(options.template)) {
@@ -27,9 +27,9 @@ const run = (ctx: PicGo, options: Options): void => {
 /**
  * download template & generate
  * @param { PicGo } ctx
- * @param { Options } options
+ * @param { IOptions } options
  */
-const downloadAndGenerate = (ctx: PicGo, options: Options): void => {
+const downloadAndGenerate = (ctx: PicGo, options: IOptions): void => {
   if (fs.existsSync(options.tmp)) {
     rm.sync(options.tmp)
   }
@@ -43,7 +43,7 @@ const downloadAndGenerate = (ctx: PicGo, options: Options): void => {
   })
 }
 
-const init: Plugin = {
+const init: IPlugin = {
   handle: async (ctx: PicGo) => {
     const cmd: typeof ctx.cmd = ctx.cmd
     cmd.program
