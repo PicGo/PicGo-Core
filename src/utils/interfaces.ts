@@ -138,13 +138,11 @@ export interface Config {
     github?: GithubConfig
     aliyun?: AliyunConfig
     imgur?: ImgurConfig
-    transformer: {
-      [propName: string]: any
-    }
+    transformer?: string
     proxy: string
   }
   picgoPlugins: {
-    [propName: string]: any
+    [propName: string]: boolean
   }
   debug?: boolean
   silent?: boolean
