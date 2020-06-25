@@ -1,4 +1,5 @@
 {
+    "files.trimTrailingWhitespace": true,
     "editor.formatOnSave": false,
     "eslint.validate": [
         "javascript",
