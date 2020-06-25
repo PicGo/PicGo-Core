@@ -9,7 +9,7 @@ import { IPathTransformedImgInfo, ImgInfo, ImgSize } from '../../utils/interface
 
 const handle = async (ctx: PicGo): Promise<PicGo> => {
   let results: ImgInfo[] = ctx.output
-  await Promise.all(ctx.input.map(async (item: string) => {
+  await Promise.all(ctx.input.map(async (item: string, index: number) => {
     let info: IPathTransformedImgInfo
     if (isUrl(item)) {
       info = await getURLFile(item)
@@ -19,13 +19,13 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
     if (info.success) {
       try {
         const imgSize = getImgSize(ctx, info.buffer, item)
-        results.push({
+        results[index] = {
           buffer: info.buffer,
           fileName: info.fileName,
           width: imgSize.width,
           height: imgSize.height,
           extname: info.extname
-        })
+        }
       } catch (e) {
         ctx.log.error(e)
       }
@@ -33,6 +33,8 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
       ctx.log.error(info.reason)
     }
   }))
+  // remove empty item
+  ctx.output = results.filter(item => item)
   return ctx
 }
 
