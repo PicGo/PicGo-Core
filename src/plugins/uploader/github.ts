@@ -59,7 +59,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
 }
 
 const config = (ctx: PicGo): IPluginConfig[] => {
-  const userConfig = ctx.getConfig<IGithubConfig>('picBed.github')
+  const userConfig = ctx.getConfig<IGithubConfig>('picBed.github') || {}
   const config = [
     {
       name: 'repo',

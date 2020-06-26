@@ -170,7 +170,7 @@ const handle = async (ctx: PicGo): Promise<PicGo | boolean> => {
 }
 
 const config = (ctx: PicGo): IPluginConfig[] => {
-  const userConfig = ctx.getConfig<ITcyunConfig>('picBed.tcyun')
+  const userConfig = ctx.getConfig<ITcyunConfig>('picBed.tcyun') || {}
   const config = [
     {
       name: 'secretId',

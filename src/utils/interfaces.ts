@@ -44,6 +44,7 @@ export interface IPathTransformedImgInfo extends IImgInfo {
 export interface ISmmsConfig {
   token: string
 }
+/** 七牛云图床配置项 */
 export interface IQiniuConfig {
   accessKey: string
   secretKey: string
@@ -73,7 +74,7 @@ export interface IUpyunConfig {
   /** 加速域名，注意要加 `http://` 或者 `https://` */
   url: string
 }
-/** 又拍云图床配置项 */
+/** 腾讯云图床配置项 */
 export interface ITcyunConfig {
   secretId: string
   secretKey: string
@@ -117,15 +118,14 @@ export interface IAliyunConfig {
   /** 针对图片的一些后缀处理参数 PicGo 2.2.0+ PicGo-Core 1.4.0+ */
   options: string
 }
+/** Imgur 图床配置项 */
 export interface IImgurConfig {
   /** imgur 的 `clientId` */
   clientId: string
   /** 代理地址，仅支持 http 代理 */
   proxy: string
 }
-/**
- * for config options
- */
+/** PicGo 配置文件类型定义 */
 export interface IConfig {
   picBed: {
     uploader: string

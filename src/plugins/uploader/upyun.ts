@@ -78,7 +78,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
 }
 
 const config = (ctx: PicGo): IPluginConfig[] => {
-  const userConfig = ctx.getConfig<IUpyunConfig>('picBed.upyun')
+  const userConfig = ctx.getConfig<IUpyunConfig>('picBed.upyun') || {}
   const config = [
     {
       name: 'bucket',

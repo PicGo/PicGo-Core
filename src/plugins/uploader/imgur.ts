@@ -58,7 +58,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
 }
 
 const config = (ctx: PicGo): IPluginConfig[] => {
-  const userConfig = ctx.getConfig<IImgurConfig>('picBed.imgur')
+  const userConfig = ctx.getConfig<IImgurConfig>('picBed.imgur') || {}
   const config = [
     {
       name: 'clientId',

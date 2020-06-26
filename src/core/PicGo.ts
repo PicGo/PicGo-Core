@@ -105,7 +105,7 @@ class PicGo extends EventEmitter {
 
   /** get config by property path, return full config if `name` is not provided */
   getConfig<T> (name?: string): T {
-    if (name === undefined) {
+    if (!name) {
       return this.config as unknown as T
     } else {
       return get(this.config, name)

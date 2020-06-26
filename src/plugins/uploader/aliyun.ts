@@ -7,7 +7,10 @@ import { Options } from 'request-promise-native'
 // generate OSS signature
 const generateSignature = (options: IAliyunConfig, fileName: string): string => {
   const date = new Date().toUTCString()
-  const signString = `PUT\n\n${JSON.stringify(mime.lookup(fileName))}\n${date}\n/${options.bucket}/${options.path}${fileName}`
+  const mimeType = mime.lookup(fileName)
+  if (!mimeType) throw Error(`No mime type found for file ${fileName}`)
+
+  const signString = `PUT\n\n${mimeType}\n${date}\n/${options.bucket}/${options.path}${fileName}`
 
   const signature = crypto.createHmac('sha1', options.accessKeySecret).update(signString).digest('base64')
   return `OSS ${options.accessKeyId}:${signature}`
@@ -71,7 +74,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
 }
 
 const config = (ctx: PicGo): IPluginConfig[] => {
-  const userConfig = ctx.getConfig<IAliyunConfig>('picBed.aliyun')
+  const userConfig = ctx.getConfig<IAliyunConfig>('picBed.aliyun') || {}
   const config = [
     {
       name: 'accessKeyId',

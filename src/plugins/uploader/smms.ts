@@ -59,7 +59,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
 }
 
 const config = (ctx: PicGo): IPluginConfig[] => {
-  const userConfig = ctx.getConfig<ISmmsConfig>('picBed.smms')
+  const userConfig = ctx.getConfig<ISmmsConfig>('picBed.smms') || {}
   const config = [
     {
       name: 'token',

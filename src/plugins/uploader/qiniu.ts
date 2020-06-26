@@ -75,7 +75,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
 }
 
 const config = (ctx: PicGo): IPluginConfig[] => {
-  const userConfig = ctx.getConfig<IQiniuConfig>('picBed.qiniu')
+  const userConfig = ctx.getConfig<IQiniuConfig>('picBed.qiniu') || {}
   const config = [
     {
       name: 'accessKey',
