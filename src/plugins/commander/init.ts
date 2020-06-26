@@ -45,7 +45,7 @@ const downloadAndGenerate = (ctx: PicGo, options: IOptions): void => {
 
 const init: IPlugin = {
   handle: async (ctx: PicGo) => {
-    const cmd: typeof ctx.cmd = ctx.cmd
+    const cmd = ctx.cmd
     cmd.program
       .command('init')
       .arguments('<template> [project]')

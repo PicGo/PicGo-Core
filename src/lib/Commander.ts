@@ -1,6 +1,6 @@
 import PicGo from '../core/PicGo'
-import program from 'commander'
-import inquirer from 'inquirer'
+import program, { CommanderStatic } from 'commander'
+import inquirer, { Inquirer } from 'inquirer'
 import { IPlugin } from '../utils/interfaces'
 import commanders from '../plugins/commander'
 import pkg from '../../package.json'
@@ -10,8 +10,8 @@ class Commander {
     [propName: string]: IPlugin
   }
 
-  program: typeof program
-  inquirer: typeof inquirer
+  program: CommanderStatic
+  inquirer: Inquirer
   private readonly ctx: PicGo
 
   constructor (ctx: PicGo) {

@@ -14,7 +14,7 @@ const handleConfig = async (ctx: PicGo, prompts: IPluginConfig, module: string, 
 
 const setting = {
   handle: (ctx: PicGo) => {
-    const cmd: typeof ctx.cmd = ctx.cmd
+    const cmd = ctx.cmd
     cmd.program
       .command('set')
       .alias('config')

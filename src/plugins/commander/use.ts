@@ -3,7 +3,7 @@ import { IPlugin, Undefinable } from '../../utils/interfaces'
 
 const use: IPlugin = {
   handle: async (ctx: PicGo) => {
-    const cmd: typeof ctx.cmd = ctx.cmd
+    const cmd = ctx.cmd
     cmd.program
       .command('use')
       .arguments('[module]')

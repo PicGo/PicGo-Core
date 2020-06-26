@@ -1,10 +1,10 @@
 import PicGo from '../core/PicGo'
-import request, { RequestPromiseOptions } from 'request-promise-native'
+import request, { RequestPromiseOptions, RequestPromiseAPI } from 'request-promise-native'
 import { Undefinable } from '../utils/interfaces'
 
 class Request {
   ctx: PicGo
-  request: typeof request
+  request: RequestPromiseAPI
   constructor (ctx: PicGo) {
     this.ctx = ctx
     this.init()
