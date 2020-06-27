@@ -87,7 +87,7 @@ class PluginLoader {
     this.ctx.helper.beforeTransformPlugins.unregister(name)
     this.ctx.helper.beforeUploadPlugins.unregister(name)
     this.ctx.helper.afterUploadPlugins.unregister(name)
-    this.ctx.removeConfig('picgoPlugin', name)
+    this.ctx.removeConfig('picgoPlugins', name)
   }
 
   // get plugin by name
