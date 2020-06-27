@@ -1,3 +1,26 @@
+## :tada: 1.4.9 (2020-06-27)
+
+
+### :sparkles: Features
+
+* add plugin running && error logs ([6adc070](https://github.com/PicGo/PicGo-Core/commit/6adc070))
+* **transformer:** add fallback to support more image formats such as HEIC ([0f5d2a9](https://github.com/PicGo/PicGo-Core/commit/0f5d2a9)), closes [#13](https://github.com/PicGo/PicGo-Core/issues/13)
+
+
+### :bug: Bug Fixes
+
+* multiline logs format ([444a42f](https://github.com/PicGo/PicGo-Core/commit/444a42f))
+* the issue of lost logs ([daa7508](https://github.com/PicGo/PicGo-Core/commit/daa7508))
+* the order of the uploaded list may not be the same as the order entered ([2bf1ed9](https://github.com/PicGo/PicGo-Core/commit/2bf1ed9)), closes [#40](https://github.com/PicGo/PicGo-Core/issues/40)
+* unregisterPlugin's bug ([966bfd8](https://github.com/PicGo/PicGo-Core/commit/966bfd8))
+
+
+### :package: Chore
+
+* add vscode workspace settings & migrate tslint to eslint ([50a4842](https://github.com/PicGo/PicGo-Core/commit/50a4842))
+
+
+
 ## :tada: 1.4.8 (2020-04-04)
 
 
