@@ -59,7 +59,10 @@ class Logger {
           if (typeof item === 'object' && type === 'error') {
             log += `\n------Error Stack Begin------\n${util.format(item.stack)}\n-------Error Stack End------- `
           } else {
-            log += `${JSON.stringify(item)} `
+            if (typeof item === 'object') {
+              item = JSON.stringify(item)
+            }
+            log += `${item} `
           }
         })
         log += '\n'
