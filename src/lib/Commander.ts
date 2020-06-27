@@ -1,17 +1,18 @@
 import PicGo from '../core/PicGo'
-import program from 'commander'
-import inquirer from 'inquirer'
-import { Plugin } from '../utils/interfaces'
+import program, { CommanderStatic } from 'commander'
+import inquirer, { Inquirer } from 'inquirer'
+import { IPlugin } from '../utils/interfaces'
 import commanders from '../plugins/commander'
 import pkg from '../../package.json'
 
 class Commander {
   list: {
-    [propName: string]: Plugin
+    [propName: string]: IPlugin
   }
-  program: typeof program
-  inquirer: typeof inquirer
-  private ctx: PicGo
+
+  program: CommanderStatic
+  inquirer: Inquirer
+  private readonly ctx: PicGo
 
   constructor (ctx: PicGo) {
     this.list = {}
@@ -42,10 +43,10 @@ class Commander {
     commanders(this.ctx)
   }
 
-  register (name: string, plugin: Plugin): void {
+  register (name: string, plugin: IPlugin): void {
     if (!name) throw new TypeError('name is required!')
     if (typeof plugin.handle !== 'function') throw new TypeError('plugin.handle must be a function!')
-    if (this.list[name]) throw new TypeError('duplicate name!')
+    if (name in this.list) throw new TypeError('duplicate name!')
 
     this.list[name] = plugin
   }
@@ -54,11 +55,11 @@ class Commander {
     Object.keys(this.list).map((item: string) => this.list[item].handle(this.ctx))
   }
 
-  get (name: string): Plugin {
+  get (name: string): IPlugin {
     return this.list[name]
   }
 
-  getList (): Plugin[] {
+  getList (): IPlugin[] {
     return Object.keys(this.list).map((item: string) => this.list[item])
   }
 }

@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events'
 import PicGo from './PicGo'
-import { Plugin } from '../utils/interfaces'
+import { IPlugin, Undefinable } from '../utils/interfaces'
 import { handleUrlEncode } from '../utils/common'
 import LifecyclePlugins from '../lib/LifecyclePlugins'
 
@@ -34,11 +34,13 @@ class Lifecycle extends EventEmitter {
       this.ctx.emit('uploadProgress', -1)
       this.ctx.emit('failed', e)
       this.ctx.log.error(e)
-      if (this.ctx.getConfig('debug')) {
+      if (this.ctx.getConfig<Undefinable<string>>('debug')) {
         throw e
       }
+      return this.ctx
     }
   }
+
   private async beforeTransform (): Promise<PicGo> {
     this.ctx.emit('uploadProgress', 0)
     this.ctx.emit('beforeTransform', this.ctx)
@@ -46,18 +48,20 @@ class Lifecycle extends EventEmitter {
     await this.handlePlugins(this.ctx.helper.beforeTransformPlugins)
     return this.ctx
   }
+
   private async doTransform (): Promise<PicGo> {
     this.ctx.emit('uploadProgress', 30)
     this.ctx.log.info('Transforming...')
-    let type = this.ctx.getConfig('picBed.transformer') || 'path'
+    const type = this.ctx.getConfig<Undefinable<string>>('picBed.transformer') || 'path'
     let transformer = this.ctx.helper.transformer.get(type)
     if (!transformer) {
       transformer = this.ctx.helper.transformer.get('path')
-      this.ctx.log.warn(`Can't find transformer - ${type}, swtich to default transformer - path`)
+      this.ctx.log.warn(`Can't find transformer - ${type}, switch to default transformer - path`)
     }
-    await transformer.handle(this.ctx)
+    await transformer?.handle(this.ctx)
     return this.ctx
   }
+
   private async beforeUpload (): Promise<PicGo> {
     this.ctx.emit('uploadProgress', 60)
     this.ctx.log.info('Before upload')
@@ -65,27 +69,29 @@ class Lifecycle extends EventEmitter {
     await this.handlePlugins(this.ctx.helper.beforeUploadPlugins)
     return this.ctx
   }
+
   private async doUpload (): Promise<PicGo> {
     this.ctx.log.info('Uploading...')
-    let type = this.ctx.getConfig('picBed.uploader') || this.ctx.getConfig('picBed.current') || 'smms'
+    let type = this.ctx.getConfig<Undefinable<string>>('picBed.uploader') || this.ctx.getConfig<Undefinable<string>>('picBed.current') || 'smms'
     let uploader = this.ctx.helper.uploader.get(type)
     if (!uploader) {
       type = 'smms'
       uploader = this.ctx.helper.uploader.get('smms')
-      this.ctx.log.warn(`Can't find uploader - ${type}, swtich to default uploader - smms`)
+      this.ctx.log.warn(`Can't find uploader - ${type}, switch to default uploader - smms`)
     }
-    await uploader.handle(this.ctx)
-    for (let i in this.ctx.output) {
-      this.ctx.output[i].type = type
+    await uploader?.handle(this.ctx)
+    for (const outputImg of this.ctx.output) {
+      outputImg.type = type
     }
     return this.ctx
   }
+
   private async afterUpload (): Promise<PicGo> {
     this.ctx.emit('afterUpload', this.ctx)
     this.ctx.emit('uploadProgress', 100)
     await this.handlePlugins(this.ctx.helper.afterUploadPlugins)
     let msg = ''
-    let length = this.ctx.output.length
+    const length = this.ctx.output.length
     for (let i = 0; i < length; i++) {
       msg += handleUrlEncode(this.ctx.output[i].imgUrl)
       if (i !== length - 1) {
@@ -103,7 +109,7 @@ class Lifecycle extends EventEmitter {
     const plugins = lifeCyclePlugins.getList()
     const pluginNames = lifeCyclePlugins.getIdList()
     const lifeCycleName = lifeCyclePlugins.getName()
-    await Promise.all(plugins.map(async (plugin: Plugin, index: number) => {
+    await Promise.all(plugins.map(async (plugin: IPlugin, index: number) => {
       try {
         this.ctx.log.info(`${lifeCycleName}: ${pluginNames[index]} running`)
         await plugin.handle(this.ctx)

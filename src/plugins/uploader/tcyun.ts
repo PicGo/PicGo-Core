@@ -1,17 +1,25 @@
 import PicGo from '../../core/PicGo'
 import crypto from 'crypto'
 import mime from 'mime-types'
-import { PluginConfig } from '../../utils/interfaces'
+import { IPluginConfig, ITcyunConfig } from '../../utils/interfaces'
+import { Options } from 'request-promise-native'
 
 // generate COS signature string
 
-const generateSignature = (options: any, fileName: string): any => {
+export interface ISignature {
+  signature: string
+  appId: string
+  bucket: string
+  signTime: string
+}
+
+const generateSignature = (options: ITcyunConfig, fileName: string): ISignature => {
   const secretId = options.secretId
   const secretKey = options.secretKey
   const appId = options.appId
   const bucket = options.bucket
   let signature
-  let signTime
+  let signTime: string = ''
   if (!options.version || options.version === 'v4') {
     const random = Math.floor(Math.random() * 10000000000)
     const current = Math.floor(new Date().getTime() / 1000) - 1
@@ -41,7 +49,7 @@ const generateSignature = (options: any, fileName: string): any => {
   }
 }
 
-const postOptions = (options: any, fileName: string, signature: any, image: Buffer): any => {
+const postOptions = (options: ITcyunConfig, fileName: string, signature: ISignature, image: Buffer): Options => {
   const area = options.area
   const path = options.path
   if (!options.version || options.version === 'v4') {
@@ -74,7 +82,7 @@ const postOptions = (options: any, fileName: string, signature: any, image: Buff
 }
 
 const handle = async (ctx: PicGo): Promise<PicGo | boolean> => {
-  const tcYunOptions = ctx.getConfig('picBed.tcyun')
+  const tcYunOptions = ctx.getConfig<ITcyunConfig>('picBed.tcyun')
   if (!tcYunOptions) {
     throw new Error('Can\'t find tencent COS config')
   }
@@ -83,58 +91,60 @@ const handle = async (ctx: PicGo): Promise<PicGo | boolean> => {
     const customUrl = tcYunOptions.customUrl
     const path = tcYunOptions.path
     const useV4 = !tcYunOptions.version || tcYunOptions.version === 'v4'
-    for (let i in imgList) {
-      const signature = generateSignature(tcYunOptions, imgList[i].fileName)
-      if (!signature) {
-        return false
-      }
-      let image = imgList[i].buffer
-      if (!image && imgList[i].base64Image) {
-        image = Buffer.from(imgList[i].base64Image, 'base64')
-      }
-      const options = postOptions(tcYunOptions, imgList[i].fileName, signature, image)
-      const res = await ctx.Request.request(options)
-        .then((res: any) => res)
-        .catch((err: Error) => {
-          console.log(err)
-          return {
-            statusCode: 400,
-            body: {
-              msg: '认证失败！'
+    for (const img of imgList) {
+      if (img.fileName && img.buffer) {
+        const signature = generateSignature(tcYunOptions, img.fileName)
+        if (!signature) {
+          return false
+        }
+        let image = img.buffer
+        if (!image && img.base64Image) {
+          image = Buffer.from(img.base64Image, 'base64')
+        }
+        const options = postOptions(tcYunOptions, img.fileName, signature, image)
+        const res = await ctx.Request.request(options)
+          .then((res: any) => res)
+          .catch((err: Error) => {
+            console.log(err)
+            return {
+              statusCode: 400,
+              body: {
+                msg: '认证失败！'
+              }
             }
+          })
+        let body
+        if (useV4 && typeof res === 'string') {
+          body = JSON.parse(res)
+        } else {
+          body = res
+        }
+        if (body.statusCode === 400) {
+          throw new Error('Upload failed')
+        }
+        if (useV4 && body.message === 'SUCCESS') {
+          delete img.base64Image
+          delete img.buffer
+          if (customUrl) {
+            img.imgUrl = `${customUrl}/${path}${img.fileName}`
+          } else {
+            img.imgUrl = body.data.source_url
           }
-        })
-      let body
-      if (useV4 && typeof res === 'string') {
-        body = JSON.parse(res)
-      } else {
-        body = res
-      }
-      if (body.statusCode === 400) {
-        throw new Error('Upload failed')
-      }
-      if (useV4 && body.message === 'SUCCESS') {
-        delete imgList[i].base64Image
-        delete imgList[i].buffer
-        if (customUrl) {
-          imgList[i]['imgUrl'] = `${customUrl}/${path}${imgList[i].fileName}`
+        } else if (!useV4 && body && body.statusCode === 200) {
+          delete img.base64Image
+          delete img.buffer
+          if (customUrl) {
+            img.imgUrl = `${customUrl}/${path}${img.fileName}`
+          } else {
+            img.imgUrl = `https://${tcYunOptions.bucket}.cos.${tcYunOptions.area}.myqcloud.com/${path}${img.fileName}`
+          }
         } else {
-          imgList[i]['imgUrl'] = body.data.source_url
+          ctx.emit('notification', {
+            title: '上传失败',
+            body: res.body.msg
+          })
+          throw new Error('Upload failed')
         }
-      } else if (!useV4 && body && body.statusCode === 200) {
-        delete imgList[i].base64Image
-        delete imgList[i].buffer
-        if (customUrl) {
-          imgList[i]['imgUrl'] = `${customUrl}/${path}${imgList[i].fileName}`
-        } else {
-          imgList[i]['imgUrl'] = `https://${tcYunOptions.bucket}.cos.${tcYunOptions.area}.myqcloud.com/${path}${imgList[i].fileName}`
-        }
-      } else {
-        ctx.emit('notification', {
-          title: '上传失败',
-          body: res.body.msg
-        })
-        throw new Error('Upload failed')
       }
     }
     return ctx
@@ -145,25 +155,22 @@ const handle = async (ctx: PicGo): Promise<PicGo | boolean> => {
         body = JSON.parse(err.error)
         ctx.emit('notification', {
           title: '上传失败',
-          body: `错误码：${body.code}，请打开浏览器粘贴地址查看相关原因`,
+          body: `错误码：${body.code as string}，请打开浏览器粘贴地址查看相关原因`,
           text: 'https://cloud.tencent.com/document/product/436/8432'
         })
       }
     } else {
       ctx.emit('notification', {
         title: '上传失败',
-        body: `请检查你的配置项是否正确`
+        body: '请检查你的配置项是否正确'
       })
     }
     throw err
   }
 }
 
-const config = (ctx: PicGo): PluginConfig[] => {
-  let userConfig = ctx.getConfig('picBed.tcyun')
-  if (!userConfig) {
-    userConfig = {}
-  }
+const config = (ctx: PicGo): IPluginConfig[] => {
+  const userConfig = ctx.getConfig<ITcyunConfig>('picBed.tcyun') || {}
   const config = [
     {
       name: 'secretId',

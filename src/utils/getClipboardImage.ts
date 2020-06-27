@@ -4,14 +4,14 @@ import { spawn } from 'child_process'
 import dayjs from 'dayjs'
 import os from 'os'
 import fs from 'fs-extra'
-import { ClipboardImage } from '../utils/interfaces'
+import { IClipboardImage } from '../utils/interfaces'
 
 const getCurrentPlatform = (): string => {
-  let platform = process.platform
+  const platform = process.platform
   if (platform !== 'win32') {
     return platform
   } else {
-    let currentOS = os.release().split('.')[0]
+    const currentOS = os.release().split('.')[0]
     if (currentOS === '10') {
       return 'win10'
     } else {
@@ -21,20 +21,20 @@ const getCurrentPlatform = (): string => {
 }
 
 // Thanks to vs-picgo: https://github.com/Spades-S/vs-picgo/blob/master/src/extension.ts
-const getClipboardImage = (ctx: PicGo): Promise<ClipboardImage> => {
+const getClipboardImage = async (ctx: PicGo): Promise<IClipboardImage> => {
   const imagePath = path.join(ctx.baseDir, `${dayjs().format('YYYYMMDDHHmmss')}.png`)
-  return new Promise<ClipboardImage>((resolve: Function): void => {
-    let platform: string = getCurrentPlatform()
-    let execution = null
+  return await new Promise<IClipboardImage>((resolve: Function): void => {
+    const platform: string = getCurrentPlatform()
+    let execution
     // for PicGo GUI
-    let env = ctx.getConfig('PICGO_ENV') === 'GUI'
+    const env = ctx.getConfig('PICGO_ENV') === 'GUI'
     const platformPaths: {
       [index: string]: string
     } = {
-      'darwin': env ? path.join(ctx.baseDir,'mac.applescript') : './clipboard/mac.applescript',
-      'win32': env ? path.join(ctx.baseDir, 'windows.ps1') : './clipboard/windows.ps1',
-      'win10': env ? path.join(ctx.baseDir, 'windows10.ps1') : './clipboard/windows10.ps1',
-      'linux': env ? path.join(ctx.baseDir, 'linux.sh') : './clipboard/linux.sh'
+      darwin: env ? path.join(ctx.baseDir, 'mac.applescript') : './clipboard/mac.applescript',
+      win32: env ? path.join(ctx.baseDir, 'windows.ps1') : './clipboard/windows.ps1',
+      win10: env ? path.join(ctx.baseDir, 'windows10.ps1') : './clipboard/windows10.ps1',
+      linux: env ? path.join(ctx.baseDir, 'linux.sh') : './clipboard/linux.sh'
     }
     const scriptPath = env ? platformPaths[platform] : path.join(__dirname, platformPaths[platform])
     if (platform === 'darwin') {
@@ -66,7 +66,7 @@ const getClipboardImage = (ctx: PicGo): Promise<ClipboardImage> => {
           })
         }
       }
-      let imgPath = data.toString().trim()
+      const imgPath = data.toString().trim()
       let isExistFile = false
       // in macOS if your copy the file in system, it's basename will not equal to our default basename
       if (path.basename(imgPath) !== path.basename(imagePath)) {

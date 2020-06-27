@@ -1,4 +1,5 @@
 {
+    "files.trimTrailingWhitespace": true,
     "editor.formatOnSave": false,
     "eslint.validate": [
         "javascript",
@@ -11,5 +12,20 @@
     },
     "eslint.enable": true,
     "eslint.alwaysShowStatus": true,
-    "editor.tabSize": 2
+    "editor.tabSize": 2,
+    "cSpell.words": [
+        "Molunerfinn",
+        "aliyun",
+        "commitlint",
+        "copyfiles",
+        "imgur",
+        "picgo",
+        "qiniu",
+        "smms",
+        "tcyun",
+        "uploader",
+        "uploaders",
+        "upyun",
+        "weibo"
+    ]
 }

@@ -1,21 +1,22 @@
 import PicGo from '../core/PicGo'
-import request from 'request-promise-native'
+import request, { RequestPromiseOptions, RequestPromiseAPI } from 'request-promise-native'
+import { Undefinable } from '../utils/interfaces'
 
 class Request {
   ctx: PicGo
-  request: typeof request
+  request: RequestPromiseAPI
   constructor (ctx: PicGo) {
     this.ctx = ctx
     this.init()
   }
 
   init (): void {
-    let options = {
+    const options: RequestPromiseOptions = {
       jar: request.jar()
     }
-    const proxy = this.ctx.getConfig('picBed.proxy')
+    const proxy = this.ctx.getConfig<Undefinable<string>>('picBed.proxy')
     if (proxy) {
-      options['proxy'] = proxy
+      options.proxy = proxy
     }
     this.request = request.defaults(options)
   }

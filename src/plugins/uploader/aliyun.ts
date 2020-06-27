@@ -1,18 +1,22 @@
 import PicGo from '../../core/PicGo'
-import { PluginConfig } from '../../utils/interfaces'
+import { IPluginConfig, IAliyunConfig } from '../../utils/interfaces'
 import crypto from 'crypto'
 import mime from 'mime-types'
+import { Options } from 'request-promise-native'
 
 // generate OSS signature
-const generateSignature = (options: any, fileName: string): string => {
+const generateSignature = (options: IAliyunConfig, fileName: string): string => {
   const date = new Date().toUTCString()
-  const signString = `PUT\n\n${mime.lookup(fileName)}\n${date}\n/${options.bucket}/${options.path}${fileName}`
+  const mimeType = mime.lookup(fileName)
+  if (!mimeType) throw Error(`No mime type found for file ${fileName}`)
+
+  const signString = `PUT\n\n${mimeType}\n${date}\n/${options.bucket}/${options.path}${fileName}`
 
   const signature = crypto.createHmac('sha1', options.accessKeySecret).update(signString).digest('base64')
   return `OSS ${options.accessKeyId}:${signature}`
 }
 
-const postOptions = (options: any, fileName: string, signature: string, image: Buffer): any => {
+const postOptions = (options: IAliyunConfig, fileName: string, signature: string, image: Buffer): Options => {
   return {
     method: 'PUT',
     url: `https://${options.bucket}.${options.area}.aliyuncs.com/${encodeURI(options.path)}${encodeURI(fileName)}`,
@@ -28,7 +32,7 @@ const postOptions = (options: any, fileName: string, signature: string, image: B
 }
 
 const handle = async (ctx: PicGo): Promise<PicGo> => {
-  const aliYunOptions = ctx.getConfig('picBed.aliyun')
+  const aliYunOptions = ctx.getConfig<IAliyunConfig>('picBed.aliyun')
   if (!aliYunOptions) {
     throw new Error('Can\'t find aliYun OSS config')
   }
@@ -36,25 +40,27 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
     const imgList = ctx.output
     const customUrl = aliYunOptions.customUrl
     const path = aliYunOptions.path
-    for (let i in imgList) {
-      const signature = generateSignature(aliYunOptions, imgList[i].fileName)
-      let image = imgList[i].buffer
-      if (!image && imgList[i].base64Image) {
-        image = Buffer.from(imgList[i].base64Image, 'base64')
-      }
-      const options = postOptions(aliYunOptions, imgList[i].fileName, signature, image)
-      let body = await ctx.Request.request(options)
-      if (body.statusCode === 200) {
-        delete imgList[i].base64Image
-        delete imgList[i].buffer
-        const optionUrl = aliYunOptions.options || ''
-        if (customUrl) {
-          imgList[i]['imgUrl'] = `${customUrl}/${path}${imgList[i].fileName}${optionUrl}`
-        } else {
-          imgList[i]['imgUrl'] = `https://${aliYunOptions.bucket}.${aliYunOptions.area}.aliyuncs.com/${path}${imgList[i].fileName}${optionUrl}`
+    for (const img of imgList) {
+      if (img.fileName && img.buffer) {
+        const signature = generateSignature(aliYunOptions, img.fileName)
+        let image = img.buffer
+        if (!image && img.base64Image) {
+          image = Buffer.from(img.base64Image, 'base64')
         }
-      } else {
-        throw new Error('Upload failed')
+        const options = postOptions(aliYunOptions, img.fileName, signature, image)
+        const body = await ctx.Request.request(options)
+        if (body.statusCode === 200) {
+          delete img.base64Image
+          delete img.buffer
+          const optionUrl = aliYunOptions.options || ''
+          if (customUrl) {
+            img.imgUrl = `${customUrl}/${path}${img.fileName}${optionUrl}`
+          } else {
+            img.imgUrl = `https://${aliYunOptions.bucket}.${aliYunOptions.area}.aliyuncs.com/${path}${img.fileName}${optionUrl}`
+          }
+        } else {
+          throw new Error('Upload failed')
+        }
       }
     }
     return ctx
@@ -67,11 +73,8 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
   }
 }
 
-const config = (ctx: PicGo): PluginConfig[] => {
-  let userConfig = ctx.getConfig('picBed.aliyun')
-  if (!userConfig) {
-    userConfig = {}
-  }
+const config = (ctx: PicGo): IPluginConfig[] => {
+  const userConfig = ctx.getConfig<IAliyunConfig>('picBed.aliyun') || {}
   const config = [
     {
       name: 'accessKeyId',

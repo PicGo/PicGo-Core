@@ -3,11 +3,11 @@ import lodashId from 'lodash-id'
 import FileSync from 'lowdb/adapters/FileSync'
 import json from 'comment-json'
 import PicGo from '../core/PicGo'
-import { Config } from './interfaces'
+import { IConfig } from './interfaces'
 
 class DB {
-  private ctx: PicGo
-  private db: lowdb.LowdbSync<any>
+  private readonly ctx: PicGo
+  private readonly db: lowdb.LowdbSync<any>
   constructor (ctx: PicGo) {
     this.ctx = ctx
     const adapter = new FileSync(this.ctx.configPath, {
@@ -21,38 +21,46 @@ class DB {
 
     if (!this.db.has('picBed').value()) {
       this.db.set('picBed', {
+        uploader: 'smms',
         current: 'smms'
-      }).write()
+      }).write().catch((e) => { this.ctx.log.error(e) })
     }
     if (!this.db.has('picgoPlugins').value()) {
-      this.db.set('picgoPlugins', {}).write()
+      this.db.set('picgoPlugins', {}).write().catch((e) => { this.ctx.log.error(e) })
     }
   }
+
   read (): any {
     return this.db.read()
   }
+
   get (key: string = ''): any {
     return this.read().get(key).value()
   }
+
   set (key: string, value: any): void {
     return this.read().set(key, value).write()
   }
+
   has (key: string): boolean {
     return this.read().has(key).value()
   }
+
   insert (key: string, value: any): void {
-    // @ts-ignore
     return this.read().get(key).insert(value).write()
   }
+
   unset (key: string, value: any): boolean {
     return this.read().get(key).unset(value).write()
   }
-  saveConfig (config: Config): void {
+
+  saveConfig (config: Partial<IConfig>): void {
     Object.keys(config).forEach((name: string) => {
       this.set(name, config[name])
     })
   }
-  removeConfig (config: Config): void {
+
+  removeConfig (config: IConfig): void {
     Object.keys(config).forEach((name: string) => {
       this.unset(name, config[name])
     })
@@ -72,6 +80,6 @@ export default DB
 // }
 
 // export {
-  // initConfig,
-  // saveConfig
+// initConfig,
+// saveConfig
 // }

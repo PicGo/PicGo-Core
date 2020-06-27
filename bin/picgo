@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 const path = require('path')
 const minimist = require('minimist')
-let argv = minimist(process.argv.slice(2))
+const argv = minimist(process.argv.slice(2))
 let configPath = argv.c || argv.config || ''
 if (configPath !== true && configPath !== '') {
   configPath = path.resolve(configPath)
