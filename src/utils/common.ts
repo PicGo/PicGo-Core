@@ -7,6 +7,7 @@ import {
   IImgSize,
   IPathTransformedImgInfo
 } from './interfaces'
+import { URL } from 'url'
 
 export const isUrl = (url: string): boolean => (url.startsWith('http://') || url.startsWith('https://'))
 export const isUrlEncode = (url: string): boolean => {
@@ -82,9 +83,10 @@ export const getURLFile = async (url: string): Promise<IPathTransformedImgInfo> 
           })
         clearTimeout(timeoutId)
         if (isImage) {
+          const urlPath = new URL(requestOptions.url).pathname
           resolve({
             buffer: res,
-            fileName: path.basename(requestOptions.url.split('?')[0]),
+            fileName: path.basename(urlPath),
             extname,
             success: true
           })
