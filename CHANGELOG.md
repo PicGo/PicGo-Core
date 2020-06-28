@@ -1,3 +1,12 @@
+## :tada: 1.4.10 (2020-06-28)
+
+
+### :bug: Bug Fixes
+
+* url image hash bug ([e405221](https://github.com/PicGo/PicGo-Core/commit/e405221))
+
+
+
 ## :tada: 1.4.9 (2020-06-27)
 
 
