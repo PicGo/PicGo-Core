@@ -20,13 +20,23 @@ class DB {
     this.db._.mixin(lodashId)
 
     if (!this.db.has('picBed').value()) {
-      this.db.set('picBed', {
-        uploader: 'smms',
-        current: 'smms'
-      }).write().catch((e) => { this.ctx.log.error(e) })
+      try {
+        this.db.set('picBed', {
+          uploader: 'smms',
+          current: 'smms'
+        }).write()
+      } catch (e) {
+        this.ctx.log.error(e)
+        throw e
+      }
     }
     if (!this.db.has('picgoPlugins').value()) {
-      this.db.set('picgoPlugins', {}).write().catch((e) => { this.ctx.log.error(e) })
+      try {
+        this.db.set('picgoPlugins', {}).write()
+      } catch (e) {
+        this.ctx.log.error(e)
+        throw e
+      }
     }
   }
 
