@@ -1,3 +1,12 @@
+## :tada: 1.4.11 (2020-07-12)
+
+
+### :bug: Bug Fixes
+
+* initailize db function error ([df7d526](https://github.com/PicGo/PicGo-Core/commit/df7d526))
+
+
+
 ## :tada: 1.4.10 (2020-06-28)
 
 
