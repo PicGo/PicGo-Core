@@ -46,7 +46,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
         const options = postOptions(qiniuOptions, img.fileName, getToken(qiniuOptions), base64Image)
         const res = await ctx.Request.request(options)
         const body = JSON.parse(res)
-        if (body.key) {
+        if (body?.key) {
           delete img.base64Image
           delete img.buffer
           const baseUrl = qiniuOptions.url
@@ -64,11 +64,14 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
     return ctx
   } catch (err) {
     if (err.message !== 'Upload failed') {
-      const error = JSON.parse(err.response.body)
-      ctx.emit('notification', {
-        title: '上传失败',
-        body: error.error
-      })
+      // err.response maybe undefined
+      if (err.response) {
+        const error = JSON.parse(err.response.body || '{}')
+        ctx.emit('notification', {
+          title: '上传失败',
+          body: error.error
+        })
+      }
     }
     throw err
   }
