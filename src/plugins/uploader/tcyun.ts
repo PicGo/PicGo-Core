@@ -105,7 +105,7 @@ const handle = async (ctx: PicGo): Promise<PicGo | boolean> => {
         const res = await ctx.Request.request(options)
           .then((res: any) => res)
           .catch((err: Error) => {
-            console.log(err)
+            ctx.log.error(err)
             return {
               statusCode: 400,
               body: {
@@ -120,7 +120,7 @@ const handle = async (ctx: PicGo): Promise<PicGo | boolean> => {
           body = res
         }
         if (body.statusCode === 400) {
-          throw new Error('Upload failed')
+          throw new Error(body.msg || body.message)
         }
         if (useV4 && body.message === 'SUCCESS') {
           delete img.base64Image
@@ -139,31 +139,21 @@ const handle = async (ctx: PicGo): Promise<PicGo | boolean> => {
             img.imgUrl = `https://${tcYunOptions.bucket}.cos.${tcYunOptions.area}.myqcloud.com/${path}${img.fileName}`
           }
         } else {
-          ctx.emit('notification', {
-            title: '上传失败',
-            body: res.body.msg
-          })
-          throw new Error('Upload failed')
+          throw new Error(res.body.msg)
         }
       }
     }
     return ctx
   } catch (err) {
-    if (err.message !== 'Upload failed') {
-      let body
-      if (!tcYunOptions.version || tcYunOptions.version === 'v4') {
-        body = JSON.parse(err.error)
+    if (!tcYunOptions.version || tcYunOptions.version === 'v4') {
+      try {
+        const body = JSON.parse(err.error)
         ctx.emit('notification', {
           title: '上传失败',
           body: `错误码：${body.code as string}，请打开浏览器粘贴地址查看相关原因`,
           text: 'https://cloud.tencent.com/document/product/436/8432'
         })
-      }
-    } else {
-      ctx.emit('notification', {
-        title: '上传失败',
-        body: '请检查你的配置项是否正确'
-      })
+      } catch (e) {}
     }
     throw err
   }
