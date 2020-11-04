@@ -63,7 +63,7 @@ export const getFSFile = async (filePath: string): Promise<IPathTransformedImgIn
 export const getURLFile = async (url: string): Promise<IPathTransformedImgInfo> => {
   const requestOptions = {
     method: 'GET',
-    url,
+    url: handleUrlEncode(url),
     encoding: null
   }
   let isImage = false
