@@ -1,3 +1,14 @@
+## :tada: 1.4.12 (2020-11-04)
+
+
+### :bug: Bug Fixes
+
+* let tcyun error info more detail ([ddf645f](https://github.com/PicGo/PicGo-Core/commit/ddf645f))
+* not encode before uploading an image with url ([c0aee32](https://github.com/PicGo/PicGo-Core/commit/c0aee32))
+* qiniu error handler ([de94212](https://github.com/PicGo/PicGo-Core/commit/de94212))
+
+
+
 ## :tada: 1.4.11 (2020-07-12)
 
 
