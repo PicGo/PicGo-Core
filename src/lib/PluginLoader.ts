@@ -3,12 +3,15 @@ import fs from 'fs-extra'
 import path from 'path'
 import resolve from 'resolve'
 
+/**
+ * Local plugin loader, file system is required
+ */
 class PluginLoader {
   ctx: PicGo
-  list: string[]
+  private list: string[] = []
+  private readonly fullList: Set<string> = new Set()
   constructor (ctx: PicGo) {
     this.ctx = ctx
-    this.list = []
     this.init()
   }
 
@@ -57,6 +60,7 @@ class PluginLoader {
   }
 
   registerPlugin (name: string): void {
+    this.fullList.add(name)
     if (this.ctx.getConfig(`picgoPlugins.${name}`) === true || (this.ctx.getConfig(`picgoPlugins.${name}`) === undefined)) {
       try {
         this.list.push(name)
@@ -70,6 +74,7 @@ class PluginLoader {
         )
       } catch (e) {
         this.list = this.list.filter((item: string) => item !== name)
+        this.fullList.delete(name)
         this.ctx.log.error(e)
         this.ctx.emit('notification', {
           title: `Plugin ${name} Load Error`,
@@ -81,6 +86,7 @@ class PluginLoader {
 
   unregisterPlugin (name: string): void {
     this.list = this.list.filter((item: string) => item !== name)
+    this.fullList.delete(name)
     this.ctx.setCurrentPluginName(name)
     this.ctx.helper.uploader.unregister(name)
     this.ctx.helper.transformer.unregister(name)
@@ -97,9 +103,18 @@ class PluginLoader {
     return require(pluginDir + name)(this.ctx)
   }
 
-  // get plugin name list
+  /**
+   * Get the list of enabled plugins
+   */
   getList (): string[] {
     return this.list
+  }
+
+  /**
+   * Get the full list of plugins, whether it is enabled or not
+   */
+  getFullList (): string[] {
+    return [...this.fullList]
   }
 }
 export default PluginLoader

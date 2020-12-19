@@ -71,7 +71,7 @@ const setting = {
                     {
                       type: 'list',
                       name: 'plugin',
-                      choices: ctx.pluginLoader.getList(),
+                      choices: ctx.pluginLoader.getFullList(),
                       message: 'Choose a plugin'
                     }
                   ]

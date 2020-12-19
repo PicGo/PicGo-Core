@@ -33,7 +33,7 @@ const use: IPlugin = {
                 type: 'checkbox',
                 name: 'plugins',
                 message: 'Use plugins',
-                choices: ctx.pluginLoader.getList(),
+                choices: ctx.pluginLoader.getFullList(),
                 default: Object.keys(ctx.getConfig('picgoPlugins')).filter((item: string) => ctx.getConfig(`picgoPlugins.${item}`))
               }
             }
