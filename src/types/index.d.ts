@@ -1,10 +1,10 @@
 import PicGo from '../core/PicGo'
 import LifecyclePlugins from '../lib/LifecyclePlugins'
-import Logger from 'src/lib/Logger'
-import Commander from 'src/lib/Commander'
-import PluginHandler from 'src/lib/PluginHandler'
-import PluginLoader from 'src/lib/PluginLoader'
-import Request from 'src/lib/Request'
+import Logger from '../lib/Logger'
+import Commander from '../lib/Commander'
+import PluginHandler from '../lib/PluginHandler'
+import PluginLoader from '../lib/PluginLoader'
+import Request from '../lib/Request'
 
 interface IPicGo extends NodeJS.EventEmitter {
   configPath: string
@@ -73,7 +73,7 @@ interface IStringKeyMap<T> {
 }
 
 interface ICLIConfigs {
-  [module: string]: IStringKeyMap
+  [module: string]: IStringKeyMap<any>
 }
 
 /** SM.MS 图床配置项 */
