@@ -1,3 +1,18 @@
+## :tada: 1.4.13 (2020-12-19)
+
+
+### :sparkles: Features
+
+* new addPlugin api for node projects ([5a18432](https://github.com/PicGo/PicGo-Core/commit/5a18432))
+
+
+### :bug: Bug Fixes
+
+* **type:** some type error ([233a6ca](https://github.com/PicGo/PicGo-Core/commit/233a6ca))
+* pluginLoader can't get the full plugin list ([83535b9](https://github.com/PicGo/PicGo-Core/commit/83535b9)), closes [#60](https://github.com/PicGo/PicGo-Core/issues/60)
+
+
+
 ## :tada: 1.4.12 (2020-11-04)
 
 
