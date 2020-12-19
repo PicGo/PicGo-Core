@@ -1,5 +1,5 @@
 import PicGo from '../../core/PicGo'
-import { IPluginConfig, IImgurConfig } from '../../utils/interfaces'
+import { IPluginConfig, IImgurConfig } from 'src/types'
 import { Options } from 'request-promise-native'
 
 const postOptions = (options: IImgurConfig, fileName: string, imgBase64: string): Options => {

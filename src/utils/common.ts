@@ -68,7 +68,7 @@ export const getURLFile = async (url: string): Promise<IPathTransformedImgInfo> 
   }
   let isImage = false
   let extname = ''
-  let timeoutId
+  let timeoutId: NodeJS.Timeout
   // tslint:disable-next-line: typedef
   const requestFn = new Promise<IPathTransformedImgInfo>((resolve, reject) => {
     (async () => {

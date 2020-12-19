@@ -1,5 +1,5 @@
 import PicGo from '../../core/PicGo'
-import { IPluginConfig, IAliyunConfig } from '../../utils/interfaces'
+import { IPluginConfig, IAliyunConfig } from 'src/types'
 import crypto from 'crypto'
 import mime from 'mime-types'
 import { Options } from 'request-promise-native'

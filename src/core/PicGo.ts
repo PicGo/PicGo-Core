@@ -10,26 +10,26 @@ import uploaders from '../plugins/uploader'
 import transformers from '../plugins/transformer'
 import PluginLoader from '../lib/PluginLoader'
 import { get, set, unset } from 'lodash'
-import { IHelper, IImgInfo, IConfig } from '../utils/interfaces'
+import { IHelper, IImgInfo, IConfig, IPicGo, IStringKeyMap } from 'src/types'
 import getClipboardImage from '../utils/getClipboardImage'
 import Request from '../lib/Request'
 import DB from '../utils/db'
 import PluginHandler from '../lib/PluginHandler'
 
-class PicGo extends EventEmitter {
-  private config: IConfig
-  private lifecycle: Lifecycle
-  private db: DB
+class PicGo extends EventEmitter implements IPicGo {
+  private config!: IConfig
+  private lifecycle!: Lifecycle
+  private db!: DB
   configPath: string
-  baseDir: string
-  helper: IHelper
+  baseDir!: string
+  helper!: IHelper
   log: Logger
   cmd: Commander
   output: IImgInfo[]
   input: any[]
-  pluginLoader: PluginLoader
+  pluginLoader!: PluginLoader
   pluginHandler: PluginHandler
-  Request: Request
+  Request!: Request
 
   constructor (configPath: string = '') {
     super()
@@ -127,7 +127,7 @@ class PicGo extends EventEmitter {
 
   // set config for ctx but will not be saved to db
   // it's more lightweight
-  setConfig (config: object): void {
+  setConfig (config: IStringKeyMap<any>): void {
     Object.keys(config).forEach((name: string) => {
       set(this.config, name, config[name])
     })
@@ -139,10 +139,10 @@ class PicGo extends EventEmitter {
     unset(this.getConfig(key), propName)
   }
 
-  async upload (input?: any[]): Promise<string | Error> {
+  async upload (input?: any[]): Promise<IImgInfo[] | Error> {
     if (this.configPath === '') {
       this.log.error('The configuration file only supports JSON format.')
-      return ''
+      return []
     }
     // upload from clipboard
     if (input === undefined || input.length === 0) {
@@ -163,17 +163,17 @@ class PicGo extends EventEmitter {
             }
           })
           await this.lifecycle.start([imgPath])
+          return this.output
         }
       } catch (e) {
         this.log.error(e)
         this.emit('failed', e)
         throw e
       }
-      return ''
     } else {
       // upload from path
       await this.lifecycle.start(input)
-      return ''
+      return this.output
     }
   }
 }

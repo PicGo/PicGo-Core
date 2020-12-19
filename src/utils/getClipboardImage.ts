@@ -4,7 +4,7 @@ import { spawn } from 'child_process'
 import dayjs from 'dayjs'
 import os from 'os'
 import fs from 'fs-extra'
-import { IClipboardImage } from '../utils/interfaces'
+import { IClipboardImage } from 'src/types'
 
 const getCurrentPlatform = (): string => {
   const platform = process.platform

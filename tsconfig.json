@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "module": "commonjs",
@@ -14,14 +15,14 @@
     "declaration": true,
     "outDir": "dist",
     "skipLibCheck": true,
-    // It's shit.
-    // "baseUrl": "src",
-    // "paths": {
-    //   "@core/*": ["core/*"],
-    //   "@lib/*": ["lib/*"],
-    //   "@plugins/*": ["plugins/*"],
-    //   "@utils/*": ["utils/*"]
-    // },
+    "baseUrl": ".",
+    "typeRoots": [
+      "./node_modules/@types",
+      "./src/types",
+    ],
+    "paths": {
+      "*": ["*", "./src/types/*"]
+    },
     "lib": [
       "es2017",
       "es2015",

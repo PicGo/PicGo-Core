@@ -1,12 +1,36 @@
-/** This file is deprecated */
-
 import PicGo from '../core/PicGo'
 import LifecyclePlugins from '../lib/LifecyclePlugins'
+import Logger from 'src/lib/Logger'
+import Commander from 'src/lib/Commander'
+import PluginHandler from 'src/lib/PluginHandler'
+import PluginLoader from 'src/lib/PluginLoader'
+import Request from 'src/lib/Request'
+
+interface IPicGo extends NodeJS.EventEmitter {
+  configPath: string
+  baseDir: string
+  log: Logger
+  cmd: Commander
+  output: IImgInfo[]
+  input: any[]
+  pluginLoader: PluginLoader
+  pluginHandler: PluginHandler
+  Request: Request
+  helper: IHelper
+
+  registerCommands: () => void
+  getConfig: <T>(name?: string) => T
+  saveConfig: (config: IStringKeyMap<any>) => void
+  removeConfig: (key: string, propName: string) => void
+  setConfig: (config: IStringKeyMap<any>) => void
+  unsetConfig: (key: string, propName: string) => void
+  upload: (input?: any[]) => Promise<IImgInfo[] | Error>
+}
 
 /**
  * for plugin config
  */
-export interface IPluginConfig {
+interface IPluginConfig {
   name: string
   type: string
   required: boolean
@@ -17,7 +41,7 @@ export interface IPluginConfig {
 /**
  * for lifecycle plugins
  */
-export interface IHelper {
+interface IHelper {
   transformer: LifecyclePlugins
   uploader: LifecyclePlugins
   beforeTransformPlugins: LifecyclePlugins
@@ -25,10 +49,12 @@ export interface IHelper {
   afterUploadPlugins: LifecyclePlugins
 }
 
+type ILogColor = 'blue' | 'green' | 'yellow' | 'red'
+
 /**
  * for uploading image info
  */
-export interface IImgInfo {
+interface IImgInfo {
   buffer?: Buffer
   base64Image?: string
   fileName?: string
@@ -38,16 +64,24 @@ export interface IImgInfo {
   [propName: string]: any
 }
 
-export interface IPathTransformedImgInfo extends IImgInfo {
+interface IPathTransformedImgInfo extends IImgInfo {
   success: boolean
 }
 
+interface IStringKeyMap<T> {
+  [key: string]: T extends T ? T : any
+}
+
+interface ICLIConfigs {
+  [module: string]: IStringKeyMap
+}
+
 /** SM.MS 图床配置项 */
-export interface ISmmsConfig {
+interface ISmmsConfig {
   token: string
 }
 /** 七牛云图床配置项 */
-export interface IQiniuConfig {
+interface IQiniuConfig {
   accessKey: string
   secretKey: string
   /** 存储空间名 */
@@ -62,7 +96,7 @@ export interface IQiniuConfig {
   path: string
 }
 /** 又拍云图床配置项 */
-export interface IUpyunConfig {
+interface IUpyunConfig {
   /** 存储空间名，及你的服务名 */
   bucket: string
   /** 操作员 */
@@ -77,7 +111,7 @@ export interface IUpyunConfig {
   url: string
 }
 /** 腾讯云图床配置项 */
-export interface ITcyunConfig {
+interface ITcyunConfig {
   secretId: string
   secretKey: string
   /** 存储桶名，v4 和 v5 版本不一样 */
@@ -93,7 +127,7 @@ export interface ITcyunConfig {
   version: 'v5' | 'v4'
 }
 /** GitHub 图床配置项 */
-export interface IGithubConfig {
+interface IGithubConfig {
   /** 仓库名，格式是 `username/reponame` */
   repo: string
   /** github token */
@@ -102,11 +136,11 @@ export interface IGithubConfig {
   path: string
   /** 自定义域名，注意要加 `http://` 或者 `https://` */
   customUrl: string
-  /** 分支名，默认是 `master` */
+  /** 分支名，默认是 `main` */
   branch: string
 }
 /** 阿里云图床配置项 */
-export interface IAliyunConfig {
+interface IAliyunConfig {
   accessKeyId: string
   accessKeySecret: string
   /** 存储空间名 */
@@ -121,14 +155,14 @@ export interface IAliyunConfig {
   options: string
 }
 /** Imgur 图床配置项 */
-export interface IImgurConfig {
+interface IImgurConfig {
   /** imgur 的 `clientId` */
   clientId: string
   /** 代理地址，仅支持 http 代理 */
   proxy: string
 }
 /** PicGo 配置文件类型定义 */
-export interface IConfig {
+interface IConfig {
   picBed: {
     uploader: string
     current?: string
@@ -153,12 +187,13 @@ export interface IConfig {
   }
   /** 下载插件时 npm 命令自定义的 registry */
   registry: string
+  [configOptions: string]: any
 }
 
 /**
  * for plugin
  */
-export interface IPlugin {
+interface IPlugin {
   handle: ((ctx: PicGo) => Promise<any>) | ((ctx: PicGo) => void)
   [propName: string]: any
 }
@@ -166,7 +201,7 @@ export interface IPlugin {
 /**
  * for spawn output
  */
-export interface IResult {
+interface IResult {
   code: number
   data: string
 }
@@ -174,7 +209,7 @@ export interface IResult {
 /**
  * for transformer - path
  */
-export interface IImgSize {
+interface IImgSize {
   width: number
   height: number
   real?: boolean
@@ -183,7 +218,11 @@ export interface IImgSize {
 /**
  * for initUtils
  */
-export interface IOptions {
+interface IFileTree {
+  [filePath: string]: string | Buffer
+}
+
+interface IOptions {
   template: string // template name
   dest: string // destination for template to generate
   hasSlash: boolean // check if is officail template
@@ -197,7 +236,7 @@ export interface IOptions {
 /**
  * for clipboard image
  */
-export interface IClipboardImage {
+interface IClipboardImage {
   imgPath: string
   isExistFile: boolean
 }
@@ -205,13 +244,13 @@ export interface IClipboardImage {
 /**
  * for install command environment variable
  */
-export interface IProcessEnv {
+interface IProcessEnv {
   [propName: string]: Undefinable<string>
 }
 
-export type ILogArgvType = string | number
+type ILogArgvType = string | number
 
-export type ILogArgvTypeWithError = ILogArgvType | Error
+type ILogArgvTypeWithError = ILogArgvType | Error
 
-export type Nullable<T> = T | null
-export type Undefinable<T> = T | undefined
+type Nullable<T> = T | null
+type Undefinable<T> = T | undefined

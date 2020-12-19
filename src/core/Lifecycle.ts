@@ -1,11 +1,10 @@
 import { EventEmitter } from 'events'
 import PicGo from './PicGo'
-import { IPlugin, Undefinable } from '../utils/interfaces'
+import { IPlugin, Undefinable } from 'src/types'
 import { handleUrlEncode } from '../utils/common'
 import LifecyclePlugins from '../lib/LifecyclePlugins'
 
 class Lifecycle extends EventEmitter {
-  configPath: string
   ctx: PicGo
 
   constructor (ctx: PicGo) {

@@ -3,8 +3,10 @@ import match from 'minimatch'
 import { IOptions } from './interfaces'
 import fs from 'fs-extra'
 import path from 'path'
+// @ts-expect-error
 import globby from 'globby'
 import ejs from 'ejs'
+import { IFileTree } from 'src/types'
 
 /**
  * Generate template files to destination files.
@@ -87,7 +89,7 @@ const getOptions = (templatePath: string): any => {
  * @param {arry} files
  */
 const render = (files: string[], source: string, options: any): any => {
-  const fileTree = {}
+  const fileTree: IFileTree = {}
   files.forEach((filePath: string): void => {
     const file = fs.readFileSync(path.join(source, filePath), 'utf8')
     const content = ejs.render(file, options)

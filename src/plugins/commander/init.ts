@@ -4,15 +4,16 @@ import path from 'path'
 import fs from 'fs-extra'
 import { generate } from '../../utils/initUtils'
 import { homedir } from 'os'
+// @ts-expect-error
 import download from 'download-git-repo'
-import { IOptions, IPlugin } from '../../utils/interfaces'
+import { IOptions, IPlugin } from 'src/types'
 import rm from 'rimraf'
 
 const run = (ctx: PicGo, options: IOptions): void => {
   // const name = options.inPlace ? path.relative('../', process.cwd()) : options.project
   if (options.offline) { // offline mode
     if (fs.existsSync(options.template)) {
-      generate(ctx, options).catch((e) => { this.ctx.log.error(e) })
+      generate(ctx, options).catch((e) => { ctx.log.error(e) })
     } else {
       ctx.log.error(`Local template ${options.template} not found`)
     }
@@ -39,7 +40,7 @@ const downloadAndGenerate = (ctx: PicGo, options: IOptions): void => {
       return ctx.log.error(err)
     }
     ctx.log.success('Template files are downloaded!')
-    generate(ctx, options).catch((e) => { this.ctx.log.error(e) })
+    generate(ctx, options).catch((e) => { ctx.log.error(e) })
   })
 }
 
@@ -102,7 +103,7 @@ const init: IPlugin = {
               throw e
             }
           }
-        })().catch((e) => { this.ctx.log.error(e) })
+        })().catch((e) => { ctx.log.error(e) })
       })
       .on('--help', () => {
         console.log()

@@ -2,7 +2,7 @@ import PicGo from '../../core/PicGo'
 import path from 'path'
 import fs from 'fs-extra'
 import { isUrl } from '../../utils/common'
-import { IPlugin } from '../../utils/interfaces'
+import { IPlugin } from 'src/types'
 
 const upload: IPlugin = {
   handle: (ctx: PicGo) => {
@@ -26,7 +26,7 @@ const upload: IPlugin = {
               return exist
             })
           await ctx.upload(inputList)
-        })().catch((e) => { this.ctx.log.error(e) })
+        })().catch((e) => { ctx.log.error(e) })
       })
   }
 }

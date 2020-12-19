@@ -1,7 +1,7 @@
 import PicGo from '../../core/PicGo'
 import crypto from 'crypto'
 import mime from 'mime-types'
-import { IPluginConfig, ITcyunConfig } from '../../utils/interfaces'
+import { IPluginConfig, ITcyunConfig } from 'src/types'
 import { Options } from 'request-promise-native'
 
 // generate COS signature string

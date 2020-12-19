@@ -27,5 +27,6 @@
         "uploaders",
         "upyun",
         "weibo"
-    ]
+    ],
+    "typescript.tsdk": "node_modules\\typescript\\lib"
 }

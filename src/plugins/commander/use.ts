@@ -1,5 +1,5 @@
 import PicGo from '../../core/PicGo'
-import { IPlugin, Undefinable } from '../../utils/interfaces'
+import { IPlugin, Undefinable, ICLIConfigs, IStringKeyMap } from 'src/types'
 
 const use: IPlugin = {
   handle: async (ctx: PicGo) => {
@@ -14,7 +14,7 @@ const use: IPlugin = {
             // // load third-party plugins
             // await ctx.pluginLoader.load()
             let prompts: any[] = []
-            const config = {
+            const config: ICLIConfigs = {
               uploader: {
                 type: 'list',
                 name: 'uploader',
@@ -52,7 +52,7 @@ const use: IPlugin = {
 
             // handle for plugins option from Array to object
             if (answer.plugins) {
-              const plugins = ctx.getConfig<object>('picgoPlugins')
+              const plugins = ctx.getConfig<IStringKeyMap<boolean>>('picgoPlugins')
               Object.keys(plugins).map((item: string) => {
                 if (answer.plugins.includes(item)) {
                   plugins[item] = true
@@ -78,7 +78,7 @@ const use: IPlugin = {
               throw e
             }
           }
-        })().catch((e) => { this.ctx.log.error(e) })
+        })().catch((e) => { ctx.log.error(e) })
       })
   }
 }

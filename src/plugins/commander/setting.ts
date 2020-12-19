@@ -1,5 +1,5 @@
 import PicGo from '../../core/PicGo'
-import { IPluginConfig } from '../../utils/interfaces'
+import { IPluginConfig, IStringKeyMap } from 'src/types'
 
 // handle modules config -> save to picgo config file
 const handleConfig = async (ctx: PicGo, prompts: IPluginConfig, module: string, name: string): Promise<void> => {
@@ -47,7 +47,7 @@ const setting = {
                       default: ctx.getConfig('picBed.uploader') || ctx.getConfig('picBed.current')
                     }
                   ]
-                  const answer = await ctx.cmd.inquirer.prompt<string>(prompts)
+                  const answer = await ctx.cmd.inquirer.prompt<IStringKeyMap<any>>(prompts)
                   const item = ctx.helper[module].get(answer[module])
                   if (item?.config) {
                     await handleConfig(ctx, item.config(ctx), module, answer[module])
@@ -92,7 +92,7 @@ const setting = {
               throw e
             }
           }
-        })().catch((e) => { this.ctx.log.error(e) })
+        })().catch((e) => { ctx.log.error(e) })
       })
   }
 }

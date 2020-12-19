@@ -9,8 +9,9 @@ import {
   ILogArgvType,
   ILogArgvTypeWithError,
   IConfig,
-  Undefinable
-} from '../utils/interfaces'
+  Undefinable,
+  ILogColor
+} from 'src/types'
 
 class Logger {
   private readonly level = {
@@ -21,8 +22,8 @@ class Logger {
   }
 
   private readonly ctx: PicGo
-  private logLevel: string
-  private logPath: string
+  private logLevel!: string
+  private logPath!: string
   constructor (ctx: PicGo) {
     this.ctx = ctx
   }
@@ -31,7 +32,7 @@ class Logger {
     // if configPath is invalid then this.ctx.config === undefined
     // if not then check config.silent
     if (this.ctx.getConfig<IConfig>() === undefined || !this.ctx.getConfig<Undefinable<string>>('silent')) {
-      const logHeader = chalk[this.level[type]](`[PicGo ${type.toUpperCase()}]:`)
+      const logHeader = chalk[this.level[type] as ILogColor](`[PicGo ${type.toUpperCase()}]:`)
       console.log(logHeader, ...msg)
       this.logLevel = this.ctx.getConfig('settings.logLevel')
       const logPath = this.checkLogPathChange()

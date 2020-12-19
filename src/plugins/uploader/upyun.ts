@@ -1,5 +1,5 @@
 import PicGo from '../../core/PicGo'
-import { IPluginConfig, IUpyunConfig } from '../../utils/interfaces'
+import { IPluginConfig, IUpyunConfig } from 'src/types'
 import crypto from 'crypto'
 import MD5 from 'md5'
 import { Options } from 'request-promise-native'

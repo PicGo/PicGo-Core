@@ -1,9 +1,10 @@
 import lowdb from 'lowdb'
+// @ts-expect-error
 import lodashId from 'lodash-id'
 import FileSync from 'lowdb/adapters/FileSync'
 import json from 'comment-json'
 import PicGo from '../core/PicGo'
-import { IConfig } from './interfaces'
+import { IConfig } from 'src/types'
 
 class DB {
   private readonly ctx: PicGo
