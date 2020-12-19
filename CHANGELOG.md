@@ -1,3 +1,12 @@
+## :tada: 1.4.14 (2020-12-19)
+
+
+### :bug: Bug Fixes
+
+* types error ([303a4ec](https://github.com/PicGo/PicGo-Core/commit/303a4ec))
+
+
+
 ## :tada: 1.4.13 (2020-12-19)
 
 
