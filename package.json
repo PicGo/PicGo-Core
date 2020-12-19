@@ -15,7 +15,7 @@
     "lint": "eslint src/**/*.ts && npm run build",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc -p . && npm run copy",
-    "copy": "copyfiles -f src/utils/clipboard/* dist/src/utils/clipboard",
+    "copy": "copyfiles -f src/utils/clipboard/* dist/src/utils/clipboard && copyfiles -f src/types/* dist/src/types",
     "dev": "tsc -w -p .",
     "patch": "npm version patch && git push origin master && git push origin --tags",
     "minor": "npm version minor && git push origin master && git push origin --tags",

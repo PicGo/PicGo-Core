@@ -1,5 +1,5 @@
 import PicGo from '../../core/PicGo'
-import { IPlugin } from 'src/types'
+import { IPlugin } from '../../types'
 
 const proxy: IPlugin = {
   handle: (ctx: PicGo) => {

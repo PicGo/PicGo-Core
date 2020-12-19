@@ -5,7 +5,7 @@ import {
   getFSFile,
   getURLFile
 } from '../../utils/common'
-import { IPathTransformedImgInfo, IImgInfo, IImgSize } from 'src/types'
+import { IPathTransformedImgInfo, IImgInfo, IImgSize } from '../../types'
 
 const handle = async (ctx: PicGo): Promise<PicGo> => {
   const results: IImgInfo[] = ctx.output

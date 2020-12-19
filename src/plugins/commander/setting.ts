@@ -1,5 +1,5 @@
 import PicGo from '../../core/PicGo'
-import { IPluginConfig, IStringKeyMap } from 'src/types'
+import { IPluginConfig, IStringKeyMap } from '../../types'
 
 // handle modules config -> save to picgo config file
 const handleConfig = async (ctx: PicGo, prompts: IPluginConfig, module: string, name: string): Promise<void> => {

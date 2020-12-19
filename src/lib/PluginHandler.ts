@@ -1,6 +1,6 @@
 import PicGo from '../core/PicGo'
 import spawn from 'cross-spawn'
-import { IResult, IProcessEnv, Undefinable } from 'src/types'
+import { IResult, IProcessEnv, Undefinable } from '../types'
 
 class PluginHandler {
   // Thanks to feflow -> https://github.com/feflow/feflow/blob/master/lib/internal/install/plugin.js

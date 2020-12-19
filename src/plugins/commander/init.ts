@@ -6,7 +6,7 @@ import { generate } from '../../utils/initUtils'
 import { homedir } from 'os'
 // @ts-expect-error
 import download from 'download-git-repo'
-import { IOptions, IPlugin } from 'src/types'
+import { IOptions, IPlugin } from '../../types'
 import rm from 'rimraf'
 
 const run = (ctx: PicGo, options: IOptions): void => {

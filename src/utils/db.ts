@@ -4,7 +4,7 @@ import lodashId from 'lodash-id'
 import FileSync from 'lowdb/adapters/FileSync'
 import json from 'comment-json'
 import PicGo from '../core/PicGo'
-import { IConfig } from 'src/types'
+import { IConfig } from '../types'
 
 class DB {
   private readonly ctx: PicGo

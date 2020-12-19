@@ -1,6 +1,6 @@
 import PicGo from '../../core/PicGo'
 import qiniu from 'qiniu'
-import { IPluginConfig, IQiniuConfig } from 'src/types'
+import { IPluginConfig, IQiniuConfig } from '../../types'
 import { Options } from 'request-promise-native'
 
 function postOptions (options: IQiniuConfig, fileName: string, token: string, imgBase64: string): Options {

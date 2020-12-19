@@ -1,5 +1,5 @@
 import PicGo from '../../core/PicGo'
-import { IPlugin, Undefinable, ICLIConfigs, IStringKeyMap } from 'src/types'
+import { IPlugin, Undefinable, ICLIConfigs, IStringKeyMap } from '../../types'
 
 const use: IPlugin = {
   handle: async (ctx: PicGo) => {

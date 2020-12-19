@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events'
 import PicGo from './PicGo'
-import { IPlugin, Undefinable } from 'src/types'
+import { IPlugin, Undefinable } from '../types'
 import { handleUrlEncode } from '../utils/common'
 import LifecyclePlugins from '../lib/LifecyclePlugins'
 

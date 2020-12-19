@@ -1,7 +1,7 @@
 import PicGo from '../core/PicGo'
 import program, { CommanderStatic } from 'commander'
 import inquirer, { Inquirer } from 'inquirer'
-import { IPlugin } from 'src/types'
+import { IPlugin } from '../types'
 import commanders from '../plugins/commander'
 import pkg from '../../package.json'
 

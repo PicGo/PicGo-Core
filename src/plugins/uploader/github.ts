@@ -1,5 +1,5 @@
 import PicGo from '../../core/PicGo'
-import { IPluginConfig, IGithubConfig } from 'src/types'
+import { IPluginConfig, IGithubConfig } from '../../types'
 import { Options } from 'request-promise-native'
 
 const postOptions = (fileName: string, options: IGithubConfig, data: any): Options => {

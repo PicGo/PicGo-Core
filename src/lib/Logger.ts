@@ -11,7 +11,7 @@ import {
   IConfig,
   Undefinable,
   ILogColor
-} from 'src/types'
+} from '../types'
 
 class Logger {
   private readonly level = {

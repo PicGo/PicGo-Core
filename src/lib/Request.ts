@@ -1,6 +1,6 @@
 import PicGo from '../core/PicGo'
 import request, { RequestPromiseOptions, RequestPromiseAPI } from 'request-promise-native'
-import { Undefinable } from 'src/types'
+import { Undefinable } from '../types'
 
 class Request {
   ctx: PicGo

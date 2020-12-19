@@ -1,4 +1,4 @@
-import { IPlugin } from 'src/types'
+import { IPlugin } from '../types'
 
 class LifecyclePlugins {
   static currentPlugin: string | null

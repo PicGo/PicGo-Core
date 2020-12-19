@@ -16,13 +16,13 @@
     "outDir": "dist",
     "skipLibCheck": true,
     "baseUrl": ".",
-    "typeRoots": [
-      "./node_modules/@types",
-      "./src/types",
-    ],
-    "paths": {
-      "*": ["*", "./src/types/*"]
-    },
+    // "typeRoots": [
+    //   "./node_modules/@types",
+    //   "./src/types",
+    // ],
+    // "paths": {
+    //   "*": ["*", "./src/types/*"]
+    // },
     "lib": [
       "es2017",
       "es2015",

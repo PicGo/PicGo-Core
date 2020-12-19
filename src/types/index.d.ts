@@ -199,6 +199,34 @@ interface IPlugin {
 }
 
 /**
+ * for picgo npm plugins
+ */
+
+type IPicGoPlugin = (ctx: IPicGo) => IPicGoPluginInterface
+
+/**
+ * interfaces for PicGo plugin
+ */
+interface IPicGoPluginInterface {
+  /**
+   * since PicGo-Core v1.5, register will inject ctx
+   */
+  register: (ctx?: PicGo) => void
+  /**
+   * this plugin's config
+   */
+  config?: (ctx?: PicGo) => IPluginConfig[]
+  /**
+   * register uploader name
+   */
+  uploader?: string
+  /**
+   * register transformer name
+   */
+  transformer?: string
+}
+
+/**
  * for spawn output
  */
 interface IResult {

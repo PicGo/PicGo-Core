@@ -2,7 +2,7 @@ import PicGo from '../../core/PicGo'
 import path from 'path'
 import fs from 'fs-extra'
 import { isUrl } from '../../utils/common'
-import { IPlugin } from 'src/types'
+import { IPlugin } from '../../types'
 
 const upload: IPlugin = {
   handle: (ctx: PicGo) => {

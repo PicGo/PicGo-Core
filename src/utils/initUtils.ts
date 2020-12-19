@@ -6,7 +6,7 @@ import path from 'path'
 // @ts-expect-error
 import globby from 'globby'
 import ejs from 'ejs'
-import { IFileTree } from 'src/types'
+import { IFileTree } from '../types'
 
 /**
  * Generate template files to destination files.
