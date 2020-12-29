@@ -1,6 +1,7 @@
 import PicGo from '../../core/PicGo'
 import { IPluginConfig, IGithubConfig } from '../../types'
 import { Options } from 'request-promise-native'
+import { IBuildInEvent } from '../../utils/enum'
 
 const postOptions = (fileName: string, options: IGithubConfig, data: any): Options => {
   const path = options.path || ''
@@ -50,7 +51,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
     }
     return ctx
   } catch (err) {
-    ctx.emit('notification', {
+    ctx.emit(IBuildInEvent.NOTIFICATION, {
       title: '上传失败',
       body: '服务端出错，请重试'
     })

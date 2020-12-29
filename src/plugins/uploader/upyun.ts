@@ -3,6 +3,7 @@ import { IPluginConfig, IUpyunConfig } from '../../types'
 import crypto from 'crypto'
 import MD5 from 'md5'
 import { Options } from 'request-promise-native'
+import { IBuildInEvent } from 'src/utils/enum'
 
 // generate COS signature string
 const generateSignature = (options: IUpyunConfig, fileName: string): string => {
@@ -61,13 +62,13 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
     return ctx
   } catch (err) {
     if (err.message === 'Upload failed') {
-      ctx.emit('notification', {
+      ctx.emit(IBuildInEvent.NOTIFICATION, {
         title: '上传失败',
         body: '请检查你的配置项是否正确'
       })
     } else {
       const body = JSON.parse(err.error)
-      ctx.emit('notification', {
+      ctx.emit(IBuildInEvent.NOTIFICATION, {
         title: '上传失败',
         body: `错误码：${body.code as string}，请打开浏览器粘贴地址查看相关原因`,
         text: 'http://docs.upyun.com/api/errno/'

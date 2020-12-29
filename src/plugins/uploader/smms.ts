@@ -1,6 +1,7 @@
 import PicGo from '../../core/PicGo'
 import { IPluginConfig, ISmmsConfig } from '../../types'
 import { Options } from 'request-promise-native'
+import { IBuildInEvent } from 'src/utils/enum'
 
 const postOptions = (fileName: string, image: Buffer, apiToken: string): Options => {
   return {
@@ -47,7 +48,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
         delete img.buffer
         img.imgUrl = body.images
       } else {
-        ctx.emit('notification', {
+        ctx.emit(IBuildInEvent.NOTIFICATION, {
           title: '上传失败',
           body: body.message
         })

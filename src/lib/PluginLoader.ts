@@ -2,6 +2,7 @@ import PicGo from '../core/PicGo'
 import fs from 'fs-extra'
 import path from 'path'
 import resolve from 'resolve'
+import { IBuildInEvent } from '../utils/enum'
 
 /**
  * Local plugin loader, file system is required
@@ -76,7 +77,7 @@ class PluginLoader {
         this.list = this.list.filter((item: string) => item !== name)
         this.fullList.delete(name)
         this.ctx.log.error(e)
-        this.ctx.emit('notification', {
+        this.ctx.emit(IBuildInEvent.NOTIFICATION, {
           title: `Plugin ${name} Load Error`,
           body: e
         })

@@ -1,6 +1,7 @@
 import PicGo from '../core/PicGo'
 import spawn from 'cross-spawn'
 import { IResult, IProcessEnv, Undefinable } from '../types'
+import { IBuildInEvent } from 'src/utils/enum'
 
 class PluginHandler {
   // Thanks to feflow -> https://github.com/feflow/feflow/blob/master/lib/internal/install/plugin.js
@@ -105,11 +106,11 @@ class PluginHandler {
         npm.on('error', (err: Error) => {
           this.ctx.log.error(err)
           this.ctx.log.error('NPM is not installed')
-          this.ctx.emit('failed', 'NPM is not installed')
+          this.ctx.emit(IBuildInEvent.FAILED, 'NPM is not installed')
         })
       } catch (e) {
         this.ctx.log.error(e)
-        this.ctx.emit('failed')
+        this.ctx.emit(IBuildInEvent.FAILED, e)
       }
     })
   }

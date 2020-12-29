@@ -3,6 +3,7 @@ import { IPluginConfig, IAliyunConfig } from '../../types'
 import crypto from 'crypto'
 import mime from 'mime-types'
 import { Options } from 'request-promise-native'
+import { IBuildInEvent } from '../../utils/enum'
 
 // generate OSS signature
 const generateSignature = (options: IAliyunConfig, fileName: string): string => {
@@ -65,7 +66,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
     }
     return ctx
   } catch (err) {
-    ctx.emit('notification', {
+    ctx.emit(IBuildInEvent.NOTIFICATION, {
       title: '上传失败',
       body: '请检查你的配置项是否正确'
     })

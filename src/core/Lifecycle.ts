@@ -3,6 +3,7 @@ import PicGo from './PicGo'
 import { IPlugin, Undefinable } from '../types'
 import { handleUrlEncode } from '../utils/common'
 import LifecyclePlugins from '../lib/LifecyclePlugins'
+import { IBuildInEvent } from '../utils/enum'
 
 class Lifecycle extends EventEmitter {
   ctx: PicGo
@@ -30,8 +31,8 @@ class Lifecycle extends EventEmitter {
       return this.ctx
     } catch (e) {
       this.ctx.log.warn('failed')
-      this.ctx.emit('uploadProgress', -1)
-      this.ctx.emit('failed', e)
+      this.ctx.emit(IBuildInEvent.UPLOAD_PROGRESS, -1)
+      this.ctx.emit(IBuildInEvent.FAILED, e)
       this.ctx.log.error(e)
       if (this.ctx.getConfig<Undefinable<string>>('debug')) {
         throw e
@@ -41,15 +42,15 @@ class Lifecycle extends EventEmitter {
   }
 
   private async beforeTransform (): Promise<PicGo> {
-    this.ctx.emit('uploadProgress', 0)
-    this.ctx.emit('beforeTransform', this.ctx)
+    this.ctx.emit(IBuildInEvent.UPLOAD_PROGRESS, 0)
+    this.ctx.emit(IBuildInEvent.BEFORE_TRANSFORM, this.ctx)
     this.ctx.log.info('Before transform')
     await this.handlePlugins(this.ctx.helper.beforeTransformPlugins)
     return this.ctx
   }
 
   private async doTransform (): Promise<PicGo> {
-    this.ctx.emit('uploadProgress', 30)
+    this.ctx.emit(IBuildInEvent.UPLOAD_PROGRESS, 30)
     this.ctx.log.info('Transforming...')
     const type = this.ctx.getConfig<Undefinable<string>>('picBed.transformer') || 'path'
     let transformer = this.ctx.helper.transformer.get(type)
@@ -62,9 +63,9 @@ class Lifecycle extends EventEmitter {
   }
 
   private async beforeUpload (): Promise<PicGo> {
-    this.ctx.emit('uploadProgress', 60)
+    this.ctx.emit(IBuildInEvent.UPLOAD_PROGRESS, 60)
     this.ctx.log.info('Before upload')
-    this.ctx.emit('beforeUpload', this.ctx)
+    this.ctx.emit(IBuildInEvent.BEFORE_UPLOAD, this.ctx)
     await this.handlePlugins(this.ctx.helper.beforeUploadPlugins)
     return this.ctx
   }
@@ -86,8 +87,8 @@ class Lifecycle extends EventEmitter {
   }
 
   private async afterUpload (): Promise<PicGo> {
-    this.ctx.emit('afterUpload', this.ctx)
-    this.ctx.emit('uploadProgress', 100)
+    this.ctx.emit(IBuildInEvent.AFTER_UPLOAD, this.ctx)
+    this.ctx.emit(IBuildInEvent.UPLOAD_PROGRESS, 100)
     await this.handlePlugins(this.ctx.helper.afterUploadPlugins)
     let msg = ''
     const length = this.ctx.output.length
@@ -99,7 +100,7 @@ class Lifecycle extends EventEmitter {
       delete this.ctx.output[i].base64Image
       delete this.ctx.output[i].buffer
     }
-    this.ctx.emit('finished', this.ctx)
+    this.ctx.emit(IBuildInEvent.FINISHED, this.ctx)
     this.ctx.log.success(`\n${msg}`)
     return this.ctx
   }

@@ -5,6 +5,7 @@ import dayjs from 'dayjs'
 import os from 'os'
 import fs from 'fs-extra'
 import { IClipboardImage } from '../types'
+import { IBuildInEvent } from './enum'
 
 const getCurrentPlatform = (): string => {
   const platform = process.platform
@@ -60,7 +61,7 @@ const getClipboardImage = async (ctx: PicGo): Promise<IClipboardImage> => {
     execution.stdout.on('data', (data: Buffer) => {
       if (platform === 'linux') {
         if (data.toString().trim() === 'no xclip') {
-          return ctx.emit('notification', {
+          return ctx.emit(IBuildInEvent.NOTIFICATION, {
             title: 'xclip not found',
             body: 'Please install xclip before run picgo'
           })

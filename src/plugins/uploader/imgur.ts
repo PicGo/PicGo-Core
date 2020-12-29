@@ -1,6 +1,7 @@
 import PicGo from '../../core/PicGo'
 import { IPluginConfig, IImgurConfig } from '../../types'
 import { Options } from 'request-promise-native'
+import { IBuildInEvent } from '../../utils/enum'
 
 const postOptions = (options: IImgurConfig, fileName: string, imgBase64: string): Options => {
   const clientId = options.clientId
@@ -48,7 +49,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
     }
     return ctx
   } catch (err) {
-    ctx.emit('notification', {
+    ctx.emit(IBuildInEvent.NOTIFICATION, {
       title: '上传失败',
       body: '请检查你的配置以及网络',
       text: 'http://docs.imgur.com/api/errno/'

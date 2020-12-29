@@ -3,6 +3,7 @@ import crypto from 'crypto'
 import mime from 'mime-types'
 import { IPluginConfig, ITcyunConfig } from '../../types'
 import { Options } from 'request-promise-native'
+import { IBuildInEvent } from 'src/utils/enum'
 
 // generate COS signature string
 
@@ -148,7 +149,7 @@ const handle = async (ctx: PicGo): Promise<PicGo | boolean> => {
     if (!tcYunOptions.version || tcYunOptions.version === 'v4') {
       try {
         const body = JSON.parse(err.error)
-        ctx.emit('notification', {
+        ctx.emit(IBuildInEvent.NOTIFICATION, {
           title: '上传失败',
           body: `错误码：${body.code as string}，请打开浏览器粘贴地址查看相关原因`,
           text: 'https://cloud.tencent.com/document/product/436/8432'

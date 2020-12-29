@@ -2,6 +2,7 @@ import PicGo from '../../core/PicGo'
 import qiniu from 'qiniu'
 import { IPluginConfig, IQiniuConfig } from '../../types'
 import { Options } from 'request-promise-native'
+import { IBuildInEvent } from '../../utils/enum'
 
 function postOptions (options: IQiniuConfig, fileName: string, token: string, imgBase64: string): Options {
   const area = selectArea(options.area || 'z0')
@@ -53,7 +54,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
           const options = qiniuOptions.options
           img.imgUrl = `${baseUrl}/${body.key as string}${options}`
         } else {
-          ctx.emit('notification', {
+          ctx.emit(IBuildInEvent.NOTIFICATION, {
             title: '上传失败',
             body: res.body.msg
           })
@@ -67,7 +68,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
       // err.response maybe undefined
       if (err.response) {
         const error = JSON.parse(err.response.body || '{}')
-        ctx.emit('notification', {
+        ctx.emit(IBuildInEvent.NOTIFICATION, {
           title: '上传失败',
           body: error.error
         })

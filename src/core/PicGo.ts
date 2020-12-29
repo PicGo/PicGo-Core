@@ -15,6 +15,7 @@ import getClipboardImage from '../utils/getClipboardImage'
 import Request from '../lib/Request'
 import DB from '../utils/db'
 import PluginHandler from '../lib/PluginHandler'
+import { IBuildInEvent } from '../utils/enum'
 
 class PicGo extends EventEmitter implements IPicGo {
   private config!: IConfig
@@ -88,7 +89,7 @@ class PicGo extends EventEmitter implements IPicGo {
       this.pluginLoader.load()
       this.lifecycle = new Lifecycle(this)
     } catch (e) {
-      this.emit('uploadProgress', -1)
+      this.emit(IBuildInEvent.UPLOAD_PROGRESS, -1)
       this.log.error(e)
       throw e
     }
@@ -183,7 +184,7 @@ class PicGo extends EventEmitter implements IPicGo {
         }
       } catch (e) {
         this.log.error(e)
-        this.emit('failed', e)
+        this.emit(IBuildInEvent.FAILED, e)
         throw e
       }
     } else {
