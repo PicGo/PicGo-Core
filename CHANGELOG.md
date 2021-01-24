@@ -1,3 +1,12 @@
+## :tada: 1.4.15 (2021-01-24)
+
+
+### :sparkles: Features
+
+* add local plugin install/uninstall/update support & imporve plugin name handler ([f8ec464](https://github.com/PicGo/PicGo-Core/commit/f8ec464))
+
+
+
 ## :tada: 1.4.14 (2020-12-19)
 
 
