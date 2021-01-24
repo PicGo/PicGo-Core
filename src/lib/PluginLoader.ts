@@ -111,6 +111,10 @@ class PluginLoader {
     return this.list
   }
 
+  hasPlugin (name: string): boolean {
+    return this.fullList.has(name)
+  }
+
   /**
    * Get the full list of plugins, whether it is enabled or not
    */

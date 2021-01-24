@@ -1,6 +1,5 @@
 import PicGo from '../core/PicGo'
 import LifecyclePlugins from '../lib/LifecyclePlugins'
-import Logger from '../lib/Logger'
 import Commander from '../lib/Commander'
 import PluginHandler from '../lib/PluginHandler'
 import PluginLoader from '../lib/PluginLoader'
@@ -9,7 +8,7 @@ import Request from '../lib/Request'
 interface IPicGo extends NodeJS.EventEmitter {
   configPath: string
   baseDir: string
-  log: Logger
+  log: ILogger
   cmd: Commander
   output: IImgInfo[]
   input: any[]
@@ -198,6 +197,20 @@ interface IPlugin {
   [propName: string]: any
 }
 
+type IPluginNameType = 'simple' | 'scope' | 'normal' | 'unknown'
+
+interface IPluginProcessResult {
+  success: boolean
+  /**
+   * the package.json's name filed
+   */
+  pkgName: string
+  /**
+   * the plugin name or the fs absolute path
+   */
+  fullName: string
+}
+
 /**
  * for picgo npm plugins
  */
@@ -282,3 +295,10 @@ type ILogArgvTypeWithError = ILogArgvType | Error
 
 type Nullable<T> = T | null
 type Undefinable<T> = T | undefined
+
+interface ILogger {
+  success: (...msg: ILogArgvType[]) => void
+  info: (...msg: ILogArgvType[]) => void
+  error: (...msg: ILogArgvType[]) => void
+  warn: (...msg: ILogArgvType[]) => void
+}

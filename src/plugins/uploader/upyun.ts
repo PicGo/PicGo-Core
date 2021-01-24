@@ -3,7 +3,7 @@ import { IPluginConfig, IUpyunConfig } from '../../types'
 import crypto from 'crypto'
 import MD5 from 'md5'
 import { Options } from 'request-promise-native'
-import { IBuildInEvent } from 'src/utils/enum'
+import { IBuildInEvent } from '../../utils/enum'
 
 // generate COS signature string
 const generateSignature = (options: IUpyunConfig, fileName: string): string => {

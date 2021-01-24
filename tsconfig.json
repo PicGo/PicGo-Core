@@ -15,7 +15,7 @@
     "declaration": true,
     "outDir": "dist",
     "skipLibCheck": true,
-    "baseUrl": ".",
+    // "baseUrl": ".",
     // "typeRoots": [
     //   "./node_modules/@types",
     //   "./src/types",

@@ -1,7 +1,7 @@
 import PicGo from '../../core/PicGo'
 import { IPluginConfig, ISmmsConfig } from '../../types'
 import { Options } from 'request-promise-native'
-import { IBuildInEvent } from 'src/utils/enum'
+import { IBuildInEvent } from '../../utils/enum'
 
 const postOptions = (fileName: string, image: Buffer, apiToken: string): Options => {
   return {

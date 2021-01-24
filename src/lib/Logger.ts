@@ -10,10 +10,11 @@ import {
   ILogArgvTypeWithError,
   IConfig,
   Undefinable,
-  ILogColor
+  ILogColor,
+  ILogger
 } from '../types'
 
-class Logger {
+class Logger implements ILogger {
   private readonly level = {
     [ILogType.success]: 'green',
     [ILogType.info]: 'blue',

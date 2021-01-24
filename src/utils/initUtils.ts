@@ -1,12 +1,11 @@
 import PicGo from '../core/PicGo'
 import match from 'minimatch'
-import { IOptions } from './interfaces'
+import { IOptions, IFileTree } from '../types'
 import fs from 'fs-extra'
 import path from 'path'
 // @ts-expect-error
 import globby from 'globby'
 import ejs from 'ejs'
-import { IFileTree } from '../types'
 
 /**
  * Generate template files to destination files.

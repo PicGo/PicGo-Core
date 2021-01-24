@@ -3,7 +3,7 @@ import crypto from 'crypto'
 import mime from 'mime-types'
 import { IPluginConfig, ITcyunConfig } from '../../types'
 import { Options } from 'request-promise-native'
-import { IBuildInEvent } from 'src/utils/enum'
+import { IBuildInEvent } from '../../utils/enum'
 
 // generate COS signature string
 
