@@ -237,6 +237,7 @@ export const getProcessPluginName = (nameOrPath: string, logger: ILogger | Conso
  * 4. /absolutePath/.../picgo-plugin-xxx -> picgo-plugin-xxx
  * 5. an exception: [package.json's name] !== [folder name]
  * then use [package.json's name], usually match the scope package.
+ * 6. if plugin name has version: picgo-plugin-xxx@x.x.x then remove the version
  * @param nameOrPath
  */
 export const getNormalPluginName = (nameOrPath: string, logger: ILogger | Console = console): string => {
@@ -244,9 +245,9 @@ export const getNormalPluginName = (nameOrPath: string, logger: ILogger | Consol
   switch (pluginNameType) {
     case 'normal':
     case 'scope':
-      return nameOrPath
+      return removePluginVersion(nameOrPath)
     case 'simple':
-      return handleCompletePluginName(nameOrPath)
+      return removePluginVersion(handleCompletePluginName(nameOrPath))
     default: {
       // now, the nameOrPath must be path
       // the nameOrPath here will be ensured with unix style
@@ -281,4 +282,23 @@ export const getNormalPluginName = (nameOrPath: string, logger: ILogger | Consol
 export const handleUnixStylePath = (pathStr: string): string => {
   const pathArr = pathStr.split(path.sep)
   return pathArr.join('/')
+}
+
+/**
+ * remove plugin version when register plugin name
+ * 1. picgo-plugin-xxx@1.0.0 -> picgo-plugin-xxx
+ * @param nameOrPath
+ */
+export const removePluginVersion = (nameOrPath: string): string => {
+  if (!nameOrPath.includes('@')) {
+    return nameOrPath
+  } else {
+    const matchArr = nameOrPath.match(/(.+\/)?(picgo-plugin-\w+)(@.+)*/)
+    if (!matchArr) {
+      console.warn('can not remove plugin version')
+      return nameOrPath
+    } else {
+      return matchArr[2]
+    }
+  }
 }
