@@ -1,3 +1,14 @@
+## :tada: 1.4.16 (2021-02-08)
+
+
+### :sparkles: Features
+
+* add proxy & registry options for pluginHandler ([b10b963](https://github.com/PicGo/PicGo-Core/commit/b10b963))
+* dynamic proxy getter with ctx.Request.request ([687805f](https://github.com/PicGo/PicGo-Core/commit/687805f)), closes [#64](https://github.com/PicGo/PicGo-Core/issues/64)
+* supporting install specific version of plugin ([35e15b0](https://github.com/PicGo/PicGo-Core/commit/35e15b0))
+
+
+
 ## :tada: 1.4.15 (2021-01-24)
 
 
