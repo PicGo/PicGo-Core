@@ -10,8 +10,14 @@ const pluginHandler: IPlugin = {
       .description('install picgo plugin')
       .alias('add')
       .option('-p, --proxy <proxy>', 'Add proxy for installing')
+      .option('-r, --registry <registry>', 'Choose a registry for installing')
       .action((plugins: string[], program: any) => {
-        ctx.pluginHandler.install(plugins, program.proxy).catch((e) => { ctx.log.error(e) })
+        const { proxy, registry } = program
+        const options = {
+          proxy,
+          registry
+        }
+        ctx.pluginHandler.install(plugins, options).catch((e) => { ctx.log.error(e) })
       })
     cmd.program
       .command('uninstall <plugins...>')
@@ -23,8 +29,15 @@ const pluginHandler: IPlugin = {
     cmd.program
       .command('update <plugins...>')
       .description('update picgo plugin')
-      .action((plugins: string[]) => {
-        ctx.pluginHandler.update(plugins).catch((e) => { ctx.log.error(e) })
+      .option('-p, --proxy <proxy>', 'Add proxy for installing')
+      .option('-r, --registry <registry>', 'Choose a registry for installing')
+      .action((plugins: string[], program: any) => {
+        const { proxy, registry } = program
+        const options = {
+          proxy,
+          registry
+        }
+        ctx.pluginHandler.update(plugins, options).catch((e) => { ctx.log.error(e) })
       })
   }
 }

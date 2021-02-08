@@ -8,7 +8,6 @@ import { ILogType } from '../utils/enum'
 import {
   ILogArgvType,
   ILogArgvTypeWithError,
-  IConfig,
   Undefinable,
   ILogColor,
   ILogger
@@ -30,27 +29,16 @@ class Logger implements ILogger {
   }
 
   private handleLog (type: ILogType, ...msg: ILogArgvTypeWithError[]): void {
-    // if configPath is invalid then this.ctx.config === undefined
-    // if not then check config.silent
-    if (this.ctx.getConfig<IConfig>() === undefined || !this.ctx.getConfig<Undefinable<string>>('silent')) {
+    // check config.silent
+    if (!this.ctx.getConfig<Undefinable<string>>('silent')) {
       const logHeader = chalk[this.level[type] as ILogColor](`[PicGo ${type.toUpperCase()}]:`)
       console.log(logHeader, ...msg)
       this.logLevel = this.ctx.getConfig('settings.logLevel')
-      const logPath = this.checkLogPathChange()
-      // The incoming logPath is a value
-      // lock the path with a closure
+      this.logPath = this.ctx.getConfig<Undefinable<string>>('settings.logPath') || path.join(this.ctx.baseDir, './picgo.log')
       setTimeout(() => {
-        this.handleWriteLog(logPath, type, ...msg)
+        this.handleWriteLog(this.logPath, type, ...msg)
       }, 0)
     }
-  }
-
-  private checkLogPathChange (): string {
-    const logPath = this.ctx.getConfig<Undefinable<string>>('settings.logPath') || path.join(this.ctx.baseDir, './picgo.log')
-    if (logPath !== this.logPath) {
-      this.logPath = logPath
-    }
-    return logPath
   }
 
   private handleWriteLog (logPath: string, type: string, ...msg: ILogArgvTypeWithError[]): void {

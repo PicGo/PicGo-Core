@@ -1,17 +1,24 @@
 import PicGo from '../core/PicGo'
 import spawn from 'cross-spawn'
-import { IResult, IProcessEnv, Undefinable, IPluginProcessResult } from '../types'
+import {
+  IResult,
+  IProcessEnv,
+  IPluginProcessResult,
+  IPluginHandler,
+  IPluginHandlerOptions,
+  Undefinable
+} from '../types'
 import { IBuildInEvent } from '../utils/enum'
 import { getProcessPluginName, getNormalPluginName } from '../utils/common'
 
-class PluginHandler {
+class PluginHandler implements IPluginHandler {
   // Thanks to feflow -> https://github.com/feflow/feflow/blob/master/lib/internal/install/plugin.js
-  ctx: PicGo
+  private readonly ctx: PicGo
   constructor (ctx: PicGo) {
     this.ctx = ctx
   }
 
-  async install (plugins: string[], proxy: string = '', env?: IProcessEnv): Promise<void> {
+  async install (plugins: string[], options: IPluginHandlerOptions = {}, env?: IProcessEnv): Promise<void> {
     const installedPlugins: string[] = []
     const processPlugins = plugins
       .map((item: string) => handlePluginNameProcess(this.ctx, item))
@@ -35,7 +42,7 @@ class PluginHandler {
       // install plugins must use fullNameList:
       // 1. install remote pacage
       // 2. install local pacage
-      const result = await this.execCommand('install', fullNameList, this.ctx.baseDir, proxy, env)
+      const result = await this.execCommand('install', fullNameList, this.ctx.baseDir, options, env)
       if (!result.code) {
         pkgNameList.forEach((pluginName: string) => {
           this.ctx.pluginLoader.registerPlugin(pluginName)
@@ -103,13 +110,13 @@ class PluginHandler {
     }
   }
 
-  async update (plugins: string[], proxy: string = '', env?: IProcessEnv): Promise<void> {
+  async update (plugins: string[], options: IPluginHandlerOptions = {}, env?: IProcessEnv): Promise<void> {
     const processPlugins = plugins.map((item: string) => handlePluginNameProcess(this.ctx, item)).filter(item => item.success)
     const pkgNameList = processPlugins.map(item => item.pkgName)
     if (pkgNameList.length > 0) {
       // update plugins must use pkgNameList:
       // npm update will use the package.json's name
-      const result = await this.execCommand('update', pkgNameList, this.ctx.baseDir, proxy, env)
+      const result = await this.execCommand('update', pkgNameList, this.ctx.baseDir, options, env)
       if (!result.code) {
         this.ctx.log.success('插件更新成功')
         this.ctx.emit('updateSuccess', {
@@ -134,8 +141,10 @@ class PluginHandler {
     }
   }
 
-  async execCommand (cmd: string, modules: string[], where: string, proxy: string = '', env: IProcessEnv = {}): Promise<IResult> {
-    const registry = this.ctx.getConfig<Undefinable<string>>('registry')
+  private async execCommand (cmd: string, modules: string[], where: string, options: IPluginHandlerOptions = {}, env: IProcessEnv = {}): Promise<IResult> {
+    // options first
+    const registry = options.registry || this.ctx.getConfig<Undefinable<string>>('settings.registry')
+    const proxy = options.proxy || this.ctx.getConfig<Undefinable<string>>('settings.proxy')
     return await new Promise((resolve: any): void => {
       let args = [cmd].concat(modules).concat('--color=always').concat('--save')
       if (registry) {

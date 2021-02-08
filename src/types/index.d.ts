@@ -1,7 +1,5 @@
-import PicGo from '../core/PicGo'
 import LifecyclePlugins from '../lib/LifecyclePlugins'
 import Commander from '../lib/Commander'
-import PluginHandler from '../lib/PluginHandler'
 import PluginLoader from '../lib/PluginLoader'
 import Request from '../lib/Request'
 
@@ -13,9 +11,11 @@ interface IPicGo extends NodeJS.EventEmitter {
   output: IImgInfo[]
   input: any[]
   pluginLoader: PluginLoader
-  pluginHandler: PluginHandler
+  pluginHandler: IPluginHandler
   Request: Request
   helper: IHelper
+  VERSION: string
+  GUI_VERSION?: string
 
   registerCommands: () => void
   getConfig: <T>(name?: string) => T
@@ -173,7 +173,7 @@ interface IConfig {
     aliyun?: IAliyunConfig
     imgur?: IImgurConfig
     transformer?: string
-    proxy: string
+    proxy?: string
   }
   picgoPlugins: {
     [propName: string]: boolean
@@ -181,11 +181,13 @@ interface IConfig {
   debug?: boolean
   silent?: boolean
   settings?: {
-    logLevel: string
-    logPath: string
+    logLevel?: string
+    logPath?: string
+    /** for npm */
+    registry?: string
+    /** for npm */
+    proxy?: string
   }
-  /** 下载插件时 npm 命令自定义的 registry */
-  registry: string
   [configOptions: string]: any
 }
 
@@ -211,10 +213,20 @@ interface IPluginProcessResult {
   fullName: string
 }
 
+interface IPluginHandler {
+  install: (plugins: string[], options: IPluginHandlerOptions, env?: IProcessEnv) => Promise<void>
+  update: (plugins: string[], options: IPluginHandlerOptions, env?: IProcessEnv) => Promise<void>
+  uninstall: (plugins: string[]) => Promise<void>
+}
+
+interface IPluginHandlerOptions {
+  proxy?: string
+  registry?: string
+}
+
 /**
  * for picgo npm plugins
  */
-
 type IPicGoPlugin = (ctx: IPicGo) => IPicGoPluginInterface
 
 /**
@@ -224,11 +236,11 @@ interface IPicGoPluginInterface {
   /**
    * since PicGo-Core v1.5, register will inject ctx
    */
-  register: (ctx?: PicGo) => void
+  register: (ctx?: IPicGo) => void
   /**
    * this plugin's config
    */
-  config?: (ctx?: PicGo) => IPluginConfig[]
+  config?: (ctx?: IPicGo) => IPluginConfig[]
   /**
    * register uploader name
    */

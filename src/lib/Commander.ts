@@ -3,7 +3,7 @@ import program, { CommanderStatic } from 'commander'
 import inquirer, { Inquirer } from 'inquirer'
 import { IPlugin } from '../types'
 import commanders from '../plugins/commander'
-import pkg from '../../package.json'
+import { version } from '../../package.json'
 
 class Commander {
   list: {
@@ -23,7 +23,7 @@ class Commander {
 
   init (): void {
     this.program
-      .version(pkg.version, '-v, --version')
+      .version(version, '-v, --version')
       .option('-d, --debug', 'debug mode', () => {
         this.ctx.setConfig({
           debug: true

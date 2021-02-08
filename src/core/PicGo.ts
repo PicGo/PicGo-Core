@@ -16,6 +16,7 @@ import Request from '../lib/Request'
 import DB from '../utils/db'
 import PluginHandler from '../lib/PluginHandler'
 import { IBuildInEvent } from '../utils/enum'
+import { version } from '../../package.json'
 
 class PicGo extends EventEmitter implements IPicGo {
   private config!: IConfig
@@ -31,6 +32,8 @@ class PicGo extends EventEmitter implements IPicGo {
   pluginLoader!: PluginLoader
   pluginHandler: PluginHandler
   Request!: Request
+  VERSION: string = version
+  GUI_VERSION?: string
 
   constructor (configPath: string = '') {
     super()
