@@ -1,0 +1,1 @@
+export const CONFIG_CHANGE = 'CONFIG_CHANGE'

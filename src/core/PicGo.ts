@@ -17,6 +17,9 @@ import DB from '../utils/db'
 import PluginHandler from '../lib/PluginHandler'
 import { IBuildInEvent } from '../utils/enum'
 import { version } from '../../package.json'
+import { CONFIG_CHANGE } from '../utils/buildInEvent'
+import { eventBus } from '../utils/eventBus'
+import { RequestPromiseAPI } from 'request-promise-native'
 
 class PicGo extends EventEmitter implements IPicGo {
   private config!: IConfig
@@ -134,6 +137,10 @@ class PicGo extends EventEmitter implements IPicGo {
   setConfig (config: IStringKeyMap<any>): void {
     Object.keys(config).forEach((name: string) => {
       set(this.config, name, config[name])
+      eventBus.emit(CONFIG_CHANGE, {
+        configName: name,
+        value: config[name]
+      })
     })
   }
 
@@ -157,6 +164,12 @@ class PicGo extends EventEmitter implements IPicGo {
       this.log.warn('Please provide valid plugin')
       this.log.error(e)
     }
+  }
+
+  // for v1.5.0+
+  get request (): RequestPromiseAPI {
+    // TODO: replace request with got: https://github.com/sindresorhus/got
+    return this.Request.request
   }
 
   async upload (input?: any[]): Promise<IImgInfo[] | Error> {

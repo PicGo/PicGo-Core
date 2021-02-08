@@ -2,6 +2,7 @@ import LifecyclePlugins from '../lib/LifecyclePlugins'
 import Commander from '../lib/Commander'
 import PluginLoader from '../lib/PluginLoader'
 import Request from '../lib/Request'
+import { RequestPromiseAPI } from 'request-promise-native'
 
 interface IPicGo extends NodeJS.EventEmitter {
   configPath: string
@@ -16,6 +17,7 @@ interface IPicGo extends NodeJS.EventEmitter {
   helper: IHelper
   VERSION: string
   GUI_VERSION?: string
+  request: RequestPromiseAPI
 
   registerCommands: () => void
   getConfig: <T>(name?: string) => T
@@ -313,4 +315,9 @@ interface ILogger {
   info: (...msg: ILogArgvType[]) => void
   error: (...msg: ILogArgvType[]) => void
   warn: (...msg: ILogArgvType[]) => void
+}
+
+interface IConfigChangePayload<T> {
+  configName: string
+  value: T
 }
