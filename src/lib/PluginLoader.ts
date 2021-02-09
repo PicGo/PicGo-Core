@@ -106,6 +106,7 @@ class PluginLoader implements IPluginLoader {
   unregisterPlugin (name: string): void {
     this.list = this.list.filter((item: string) => item !== name)
     this.fullList.delete(name)
+    this.pluginMap.delete(name)
     this.ctx.setCurrentPluginName(name)
     this.ctx.helper.uploader.unregister(name)
     this.ctx.helper.transformer.unregister(name)
