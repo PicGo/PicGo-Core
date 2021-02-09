@@ -1,3 +1,12 @@
+## :tada: 1.4.17 (2021-02-09)
+
+
+### :bug: Bug Fixes
+
+* **type:** type error in index.d.ts ([f617658](https://github.com/PicGo/PicGo-Core/commit/f617658)), closes [#69](https://github.com/PicGo/PicGo-Core/issues/69)
+
+
+
 ## :tada: 1.4.16 (2021-02-08)
 
 
