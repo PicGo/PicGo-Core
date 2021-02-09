@@ -10,7 +10,7 @@ import uploaders from '../plugins/uploader'
 import transformers from '../plugins/transformer'
 import PluginLoader from '../lib/PluginLoader'
 import { get, set, unset } from 'lodash'
-import { IHelper, IImgInfo, IConfig, IPicGo, IStringKeyMap, IPicGoPlugin } from '../types'
+import { IHelper, IImgInfo, IConfig, IPicGo, IStringKeyMap } from '../types'
 import getClipboardImage from '../utils/getClipboardImage'
 import Request from '../lib/Request'
 import DB from '../utils/db'
@@ -148,22 +148,6 @@ class PicGo extends EventEmitter implements IPicGo {
   unsetConfig (key: string, propName: string): void {
     if (!key || !propName) return
     unset(this.getConfig(key), propName)
-  }
-
-  /**
-   * for node project adding a plugin by a simple way
-   */
-  addPlugin (name: string, plugin: IPicGoPlugin): void {
-    if (!name || !plugin || (typeof plugin !== 'function')) {
-      this.log.warn('Please provide valid plugin')
-      return
-    }
-    try {
-      plugin(this).register()
-    } catch (e) {
-      this.log.warn('Please provide valid plugin')
-      this.log.error(e)
-    }
   }
 
   // for v1.5.0+

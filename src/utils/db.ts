@@ -3,13 +3,12 @@ import lowdb from 'lowdb'
 import lodashId from 'lodash-id'
 import FileSync from 'lowdb/adapters/FileSync'
 import json from 'comment-json'
-import PicGo from '../core/PicGo'
-import { IConfig } from '../types'
+import { IConfig, IPicGo } from '../types'
 
 class DB {
-  private readonly ctx: PicGo
+  private readonly ctx: IPicGo
   private readonly db: lowdb.LowdbSync<any>
-  constructor (ctx: PicGo) {
+  constructor (ctx: IPicGo) {
     this.ctx = ctx
     const adapter = new FileSync(this.ctx.configPath, {
       serialize (obj: object): string {

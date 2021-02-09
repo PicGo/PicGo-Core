@@ -1,8 +1,7 @@
-import PicGo from '../../core/PicGo'
-import { IPluginConfig, IStringKeyMap } from '../../types'
+import { IPicGo, IPluginConfig, IStringKeyMap } from '../../types'
 
 // handle modules config -> save to picgo config file
-const handleConfig = async (ctx: PicGo, prompts: IPluginConfig, module: string, name: string): Promise<void> => {
+const handleConfig = async (ctx: IPicGo, prompts: IPluginConfig[], module: string, name: string): Promise<void> => {
   const answer = await ctx.cmd.inquirer.prompt(prompts)
   const configName = module === 'uploader'
     ? `picBed.${name}` : module === 'transformer'
@@ -13,7 +12,7 @@ const handleConfig = async (ctx: PicGo, prompts: IPluginConfig, module: string, 
 }
 
 const setting = {
-  handle: (ctx: PicGo) => {
+  handle: (ctx: IPicGo) => {
     const cmd = ctx.cmd
     cmd.program
       .command('set')
@@ -60,8 +59,8 @@ const setting = {
                     name = `picgo-plugin-${name}`
                   }
                   if (Object.keys(ctx.getConfig('picgoPlugins')).includes(name)) {
-                    if (ctx.pluginLoader.getPlugin(name).config) {
-                      await handleConfig(ctx, ctx.pluginLoader.getPlugin(name).config(ctx), 'plugin', name)
+                    if (ctx.pluginLoader.getPlugin(name)?.config) {
+                      await handleConfig(ctx, ctx.pluginLoader.getPlugin(name)!.config!(ctx), 'plugin', name)
                     }
                   } else {
                     return ctx.log.error(`No plugin named ${name}`)
@@ -76,8 +75,8 @@ const setting = {
                     }
                   ]
                   const answer = await ctx.cmd.inquirer.prompt<any>(prompts)
-                  if (ctx.pluginLoader.getPlugin(answer.plugin).config) {
-                    await handleConfig(ctx, ctx.pluginLoader.getPlugin(answer.plugin).config(ctx), 'plugin', answer.plugin)
+                  if (ctx.pluginLoader.getPlugin(answer.plugin)?.config) {
+                    await handleConfig(ctx, ctx.pluginLoader.getPlugin(answer.plugin)!.config!(ctx), 'plugin', answer.plugin)
                   }
                 }
                 break

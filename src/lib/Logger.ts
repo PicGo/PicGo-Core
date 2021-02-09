@@ -1,5 +1,4 @@
 import chalk from 'chalk'
-import PicGo from '../core/PicGo'
 import dayjs from 'dayjs'
 import fs from 'fs-extra'
 import path from 'path'
@@ -10,7 +9,8 @@ import {
   ILogArgvTypeWithError,
   Undefinable,
   ILogColor,
-  ILogger
+  ILogger,
+  IPicGo
 } from '../types'
 
 class Logger implements ILogger {
@@ -21,10 +21,10 @@ class Logger implements ILogger {
     [ILogType.error]: 'red'
   }
 
-  private readonly ctx: PicGo
+  private readonly ctx: IPicGo
   private logLevel!: string
   private logPath!: string
-  constructor (ctx: PicGo) {
+  constructor (ctx: IPicGo) {
     this.ctx = ctx
   }
 

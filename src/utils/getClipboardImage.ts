@@ -1,10 +1,9 @@
-import PicGo from '../core/PicGo'
 import path from 'path'
 import { spawn } from 'child_process'
 import dayjs from 'dayjs'
 import os from 'os'
 import fs from 'fs-extra'
-import { IClipboardImage } from '../types'
+import { IPicGo, IClipboardImage } from '../types'
 import { IBuildInEvent } from './enum'
 
 const getCurrentPlatform = (): string => {
@@ -22,7 +21,7 @@ const getCurrentPlatform = (): string => {
 }
 
 // Thanks to vs-picgo: https://github.com/Spades-S/vs-picgo/blob/master/src/extension.ts
-const getClipboardImage = async (ctx: PicGo): Promise<IClipboardImage> => {
+const getClipboardImage = async (ctx: IPicGo): Promise<IClipboardImage> => {
   const imagePath = path.join(ctx.baseDir, `${dayjs().format('YYYYMMDDHHmmss')}.png`)
   return await new Promise<IClipboardImage>((resolve: Function): void => {
     const platform: string = getCurrentPlatform()

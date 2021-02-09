@@ -1,15 +1,13 @@
-import PicGo from '../../core/PicGo'
-import { IPlugin } from '../../types'
+import { IPicGo, IPlugin } from '../../types'
 
 const proxy: IPlugin = {
-  handle: (ctx: PicGo) => {
+  handle: (ctx: IPicGo) => {
     const cmd = ctx.cmd
     cmd.program
       .option('-p, --proxy <url>', 'set proxy for uploading', (proxy: string) => {
         ctx.setConfig({
           'picBed.proxy': proxy
         })
-        ctx.Request.init()
       })
   }
 }

@@ -1,11 +1,11 @@
-import PicGo from '../../core/PicGo'
-import { IPlugin } from '../../types'
+import { IPicGo, IPlugin } from '../../types'
 
 const config: IPlugin = {
-  handle: (ctx: PicGo) => {
+  handle: (ctx: IPicGo) => {
     const cmd = ctx.cmd
     cmd.program
       .option('-c, --config <path>', 'set config path')
+      // will handle in `bin/picgo`
   }
 }
 

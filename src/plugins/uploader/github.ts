@@ -1,5 +1,4 @@
-import PicGo from '../../core/PicGo'
-import { IPluginConfig, IGithubConfig } from '../../types'
+import { IPicGo, IPluginConfig, IGithubConfig } from '../../types'
 import { Options } from 'request-promise-native'
 import { IBuildInEvent } from '../../utils/enum'
 
@@ -18,7 +17,7 @@ const postOptions = (fileName: string, options: IGithubConfig, data: any): Optio
   }
 }
 
-const handle = async (ctx: PicGo): Promise<PicGo> => {
+const handle = async (ctx: IPicGo): Promise<IPicGo> => {
   const githubOptions = ctx.getConfig<IGithubConfig>('picBed.github')
   if (!githubOptions) {
     throw new Error('Can\'t find github config')
@@ -59,7 +58,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
   }
 }
 
-const config = (ctx: PicGo): IPluginConfig[] => {
+const config = (ctx: IPicGo): IPluginConfig[] => {
   const userConfig = ctx.getConfig<IGithubConfig>('picBed.github') || {}
   const config = [
     {

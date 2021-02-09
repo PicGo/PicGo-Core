@@ -1,5 +1,4 @@
-import PicGo from '../../core/PicGo'
-import { IPluginConfig, IImgurConfig } from '../../types'
+import { IPicGo, IPluginConfig, IImgurConfig } from '../../types'
 import { Options } from 'request-promise-native'
 import { IBuildInEvent } from '../../utils/enum'
 
@@ -25,7 +24,7 @@ const postOptions = (options: IImgurConfig, fileName: string, imgBase64: string)
   return obj
 }
 
-const handle = async (ctx: PicGo): Promise<PicGo> => {
+const handle = async (ctx: IPicGo): Promise<IPicGo> => {
   const imgurOptions = ctx.getConfig<IImgurConfig>('picBed.imgur')
   if (!imgurOptions) {
     throw new Error('Can\'t find imgur config')
@@ -58,7 +57,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
   }
 }
 
-const config = (ctx: PicGo): IPluginConfig[] => {
+const config = (ctx: IPicGo): IPluginConfig[] => {
   const userConfig = ctx.getConfig<IImgurConfig>('picBed.imgur') || {}
   const config = [
     {

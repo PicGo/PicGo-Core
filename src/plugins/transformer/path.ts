@@ -1,13 +1,12 @@
-import PicGo from '../../core/PicGo'
 import {
   isUrl,
   getImageSize,
   getFSFile,
   getURLFile
 } from '../../utils/common'
-import { IPathTransformedImgInfo, IImgInfo, IImgSize } from '../../types'
+import { IPicGo, IPathTransformedImgInfo, IImgInfo, IImgSize } from '../../types'
 
-const handle = async (ctx: PicGo): Promise<PicGo> => {
+const handle = async (ctx: IPicGo): Promise<IPicGo> => {
   const results: IImgInfo[] = ctx.output
   await Promise.all(ctx.input.map(async (item: string, index: number) => {
     let info: IPathTransformedImgInfo
@@ -38,7 +37,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
   return ctx
 }
 
-const getImgSize = (ctx: PicGo, file: Buffer, path: string): IImgSize => {
+const getImgSize = (ctx: IPicGo, file: Buffer, path: string): IImgSize => {
   const imageSize = getImageSize(file)
   if (!imageSize.real) {
     ctx.log.warn(`can't get ${path}'s image size`)

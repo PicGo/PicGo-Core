@@ -19,6 +19,7 @@ module.exports = {
     ],
     '@typescript-eslint/prefer-nullish-coalescing': 0,
     '@typescript-eslint/return-await': 0,
-    '@typescript-eslint/no-floating-promises': 0
+    '@typescript-eslint/no-floating-promises': 0,
+    '@typescript-eslint/no-non-null-assertion': 0
   }
 }

@@ -1,8 +1,7 @@
-import PicGo from '../../core/PicGo'
-import { IPlugin } from '../../types'
+import { IPicGo, IPlugin } from '../../types'
 
 const pluginHandler: IPlugin = {
-  handle: (ctx: PicGo) => {
+  handle: (ctx: IPicGo) => {
     // const pluginHandler = new PluginHandler(ctx)
     const cmd = ctx.cmd
     cmd.program
@@ -37,7 +36,7 @@ const pluginHandler: IPlugin = {
           proxy,
           registry
         }
-        ctx.pluginHandler.update(plugins, options).catch((e) => { ctx.log.error(e) })
+        ctx.pluginHandler.update(plugins, options).catch((e: Error) => { ctx.log.error(e) })
       })
   }
 }

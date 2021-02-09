@@ -1,11 +1,10 @@
-import PicGo from '../../core/PicGo'
 import path from 'path'
 import fs from 'fs-extra'
 import { isUrl } from '../../utils/common'
-import { IPlugin } from '../../types'
+import { IPicGo, IPlugin } from '../../types'
 
 const upload: IPlugin = {
-  handle: (ctx: PicGo) => {
+  handle: (ctx: IPicGo) => {
     const cmd = ctx.cmd
     cmd.program
       .command('upload')

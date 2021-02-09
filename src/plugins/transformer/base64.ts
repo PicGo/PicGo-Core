@@ -1,6 +1,5 @@
-import PicGo from '../../core/PicGo'
-
-const handle = async (ctx: PicGo): Promise<PicGo> => {
+import { IPicGo } from '../../types'
+const handle = async (ctx: IPicGo): Promise<IPicGo> => {
   ctx.output.push(...ctx.input)
   return ctx
 }

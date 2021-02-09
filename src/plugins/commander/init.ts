@@ -1,4 +1,3 @@
-import PicGo from '../../core/PicGo'
 import chalk from 'chalk'
 import path from 'path'
 import fs from 'fs-extra'
@@ -6,10 +5,10 @@ import { generate } from '../../utils/initUtils'
 import { homedir } from 'os'
 // @ts-expect-error
 import download from 'download-git-repo'
-import { IOptions, IPlugin } from '../../types'
+import { IOptions, IPlugin, IPicGo } from '../../types'
 import rm from 'rimraf'
 
-const run = (ctx: PicGo, options: IOptions): void => {
+const run = (ctx: IPicGo, options: IOptions): void => {
   // const name = options.inPlace ? path.relative('../', process.cwd()) : options.project
   if (options.offline) { // offline mode
     if (fs.existsSync(options.template)) {
@@ -30,7 +29,7 @@ const run = (ctx: PicGo, options: IOptions): void => {
  * @param { PicGo } ctx
  * @param { IOptions } options
  */
-const downloadAndGenerate = (ctx: PicGo, options: IOptions): void => {
+const downloadAndGenerate = (ctx: IPicGo, options: IOptions): void => {
   if (fs.existsSync(options.tmp)) {
     rm.sync(options.tmp)
   }
@@ -45,7 +44,7 @@ const downloadAndGenerate = (ctx: PicGo, options: IOptions): void => {
 }
 
 const init: IPlugin = {
-  handle: async (ctx: PicGo) => {
+  handle: async (ctx: IPicGo) => {
     const cmd = ctx.cmd
     cmd.program
       .command('init')

@@ -1,5 +1,4 @@
-import PicGo from '../../core/PicGo'
-import { IPluginConfig, IUpyunConfig } from '../../types'
+import { IPicGo, IPluginConfig, IUpyunConfig } from '../../types'
 import crypto from 'crypto'
 import MD5 from 'md5'
 import { Options } from 'request-promise-native'
@@ -33,7 +32,7 @@ const postOptions = (options: IUpyunConfig, fileName: string, signature: string,
   }
 }
 
-const handle = async (ctx: PicGo): Promise<PicGo> => {
+const handle = async (ctx: IPicGo): Promise<IPicGo> => {
   const upyunOptions = ctx.getConfig<IUpyunConfig>('picBed.upyun')
   if (!upyunOptions) {
     throw new Error('Can\'t find upYun config')
@@ -78,7 +77,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
   }
 }
 
-const config = (ctx: PicGo): IPluginConfig[] => {
+const config = (ctx: IPicGo): IPluginConfig[] => {
   const userConfig = ctx.getConfig<IUpyunConfig>('picBed.upyun') || {}
   const config = [
     {

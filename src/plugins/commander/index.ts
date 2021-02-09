@@ -1,4 +1,3 @@
-import PicGo from '../../core/PicGo'
 import pluginHandler from './pluginHandler'
 import config from './config'
 import upload from './upload'
@@ -6,8 +5,9 @@ import setting from './setting'
 import use from './use'
 import proxy from './proxy'
 import init from './init'
+import { IPicGo } from '../../types'
 
-export default (ctx: PicGo): void => {
+export default (ctx: IPicGo): void => {
   ctx.cmd.register('pluginHandler', pluginHandler)
   ctx.cmd.register('config', config)
   ctx.cmd.register('setting', setting)

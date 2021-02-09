@@ -1,7 +1,6 @@
-import PicGo from '../../core/PicGo'
 import crypto from 'crypto'
 import mime from 'mime-types'
-import { IPluginConfig, ITcyunConfig } from '../../types'
+import { IPicGo, IPluginConfig, ITcyunConfig } from '../../types'
 import { Options } from 'request-promise-native'
 import { IBuildInEvent } from '../../utils/enum'
 
@@ -82,7 +81,7 @@ const postOptions = (options: ITcyunConfig, fileName: string, signature: ISignat
   }
 }
 
-const handle = async (ctx: PicGo): Promise<PicGo | boolean> => {
+const handle = async (ctx: IPicGo): Promise<IPicGo | boolean> => {
   const tcYunOptions = ctx.getConfig<ITcyunConfig>('picBed.tcyun')
   if (!tcYunOptions) {
     throw new Error('Can\'t find tencent COS config')
@@ -160,7 +159,7 @@ const handle = async (ctx: PicGo): Promise<PicGo | boolean> => {
   }
 }
 
-const config = (ctx: PicGo): IPluginConfig[] => {
+const config = (ctx: IPicGo): IPluginConfig[] => {
   const userConfig = ctx.getConfig<ITcyunConfig>('picBed.tcyun') || {}
   const config = [
     {

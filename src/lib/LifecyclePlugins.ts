@@ -1,6 +1,6 @@
-import { IPlugin } from '../types'
+import { IPlugin, ILifecyclePlugins } from '../types'
 
-class LifecyclePlugins {
+class LifecyclePlugins implements ILifecyclePlugins {
   static currentPlugin: string | null
   private readonly list: Map<string, IPlugin>
   private readonly pluginIdMap: Map<string, string[]>

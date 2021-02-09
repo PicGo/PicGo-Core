@@ -1,19 +1,17 @@
-import LifecyclePlugins from '../lib/LifecyclePlugins'
-import Commander from '../lib/Commander'
-import PluginLoader from '../lib/PluginLoader'
-import Request from '../lib/Request'
 import { RequestPromiseAPI } from 'request-promise-native'
+import { CommanderStatic } from 'commander'
+import { Inquirer } from 'inquirer'
 
 interface IPicGo extends NodeJS.EventEmitter {
   configPath: string
   baseDir: string
   log: ILogger
-  cmd: Commander
+  cmd: ICommander
   output: IImgInfo[]
   input: any[]
-  pluginLoader: PluginLoader
+  pluginLoader: IPluginLoader
   pluginHandler: IPluginHandler
-  Request: Request
+  Request: IRequest
   helper: IHelper
   VERSION: string
   GUI_VERSION?: string
@@ -26,6 +24,7 @@ interface IPicGo extends NodeJS.EventEmitter {
   setConfig: (config: IStringKeyMap<any>) => void
   unsetConfig: (key: string, propName: string) => void
   upload: (input?: any[]) => Promise<IImgInfo[] | Error>
+  setCurrentPluginName: (name: string) => void
 }
 
 /**
@@ -42,12 +41,60 @@ interface IPluginConfig {
 /**
  * for lifecycle plugins
  */
+interface ILifecyclePlugins {
+  register: (id: string, plugin: IPlugin) => void
+  unregister: (id: string) => void
+  getName: () => string
+  get: (id: string) => IPlugin | undefined
+  getList: () => IPlugin[]
+  getIdList: () => string[]
+}
+
 interface IHelper {
-  transformer: LifecyclePlugins
-  uploader: LifecyclePlugins
-  beforeTransformPlugins: LifecyclePlugins
-  beforeUploadPlugins: LifecyclePlugins
-  afterUploadPlugins: LifecyclePlugins
+  transformer: ILifecyclePlugins
+  uploader: ILifecyclePlugins
+  beforeTransformPlugins: ILifecyclePlugins
+  beforeUploadPlugins: ILifecyclePlugins
+  afterUploadPlugins: ILifecyclePlugins
+}
+
+interface ICommander {
+  program: CommanderStatic
+  inquirer: Inquirer
+  get: (name: string) => IPlugin
+  getList: () => IPlugin[]
+  register: (name: string, plugin: IPlugin) => void
+}
+
+interface IPluginLoader {
+  load: () => boolean
+  /**
+   * register [local plugin] or [provided plugin]
+   *
+   * if the second param (plugin) is provided
+   *
+   * then picgo will register this plugin and enable it by default
+   *
+   * but picgo won't write any config to config file
+   *
+   * you should use ctx.setConfig to change the config context
+   */
+  registerPlugin: (name: string, plugin?: IPicGoPlugin) => void
+  unregisterPlugin: (name: string) => void
+  getPlugin: (name: string) => IPicGoPluginInterface | undefined
+  /**
+   * get enabled plugin list
+   */
+  getList: () => string[]
+  /**
+   * get all plugin list (enabled or not)
+   */
+  getFullList: () => string[]
+  hasPlugin: (name: string) => boolean
+}
+
+interface IRequest {
+  request: RequestPromiseAPI
 }
 
 type ILogColor = 'blue' | 'green' | 'yellow' | 'red'
@@ -197,7 +244,7 @@ interface IConfig {
  * for plugin
  */
 interface IPlugin {
-  handle: ((ctx: PicGo) => Promise<any>) | ((ctx: PicGo) => void)
+  handle: ((ctx: IPicGo) => Promise<any>) | ((ctx: IPicGo) => void)
   [propName: string]: any
 }
 
@@ -251,6 +298,17 @@ interface IPicGoPluginInterface {
    * register transformer name
    */
   transformer?: string
+  /**
+   * for picgo gui plugins
+   */
+  guiMenu?: (ctx: IPicGo) => IGuiMenuItem[]
+
+  [propName: string]: any
+}
+
+interface IGuiMenuItem {
+  label: string
+  handle: (ctx: IPicGo, guiApi: any) => Promise<void>
 }
 
 /**
@@ -313,7 +371,7 @@ type Undefinable<T> = T | undefined
 interface ILogger {
   success: (...msg: ILogArgvType[]) => void
   info: (...msg: ILogArgvType[]) => void
-  error: (...msg: ILogArgvType[]) => void
+  error: (...msg: ILogArgvTypeWithError[]) => void
   warn: (...msg: ILogArgvType[]) => void
 }
 

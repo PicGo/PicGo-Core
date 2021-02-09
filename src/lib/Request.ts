@@ -1,14 +1,13 @@
-import PicGo from '../core/PicGo'
 import request, { RequestPromiseOptions, RequestPromiseAPI } from 'request-promise-native'
-import { Undefinable, IConfigChangePayload, IConfig } from '../types'
+import { IPicGo, Undefinable, IConfigChangePayload, IConfig } from '../types'
 import { CONFIG_CHANGE } from '../utils/buildInEvent'
 import { eventBus } from '../utils/eventBus'
 
 class Request {
-  private readonly ctx: PicGo
+  private readonly ctx: IPicGo
   private proxy: Undefinable<string> = ''
   options: RequestPromiseOptions = {}
-  constructor (ctx: PicGo) {
+  constructor (ctx: IPicGo) {
     this.ctx = ctx
     this.init()
     eventBus.on(CONFIG_CHANGE, (data: IConfigChangePayload<string | IConfig['picBed']>) => {
@@ -25,10 +24,10 @@ class Request {
     })
   }
 
-  init (): void {
+  private init (): void {
     const proxy = this.ctx.getConfig<Undefinable<string>>('picBed.proxy')
     if (proxy) {
-      this.options.proxy = proxy
+      this.proxy = proxy
     }
   }
 

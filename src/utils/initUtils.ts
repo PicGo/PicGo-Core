@@ -1,6 +1,5 @@
-import PicGo from '../core/PicGo'
 import match from 'minimatch'
-import { IOptions, IFileTree } from '../types'
+import { IPicGo, IOptions, IFileTree } from '../types'
 import fs from 'fs-extra'
 import path from 'path'
 // @ts-expect-error
@@ -12,7 +11,7 @@ import ejs from 'ejs'
  * @param {PicGo} ctx
  * @param {IOptions} options
  */
-const generate = async (ctx: PicGo, options: IOptions): Promise<any> => {
+const generate = async (ctx: IPicGo, options: IOptions): Promise<any> => {
   try {
     const opts = getOptions(options.tmp)
     const source = path.join(options.tmp, 'template')
@@ -57,7 +56,7 @@ const generate = async (ctx: PicGo, options: IOptions): Promise<any> => {
  * @param exp condition expression
  * @param data options data
  */
-const filters = (ctx: PicGo, exp: any, data: any): boolean => {
+const filters = (ctx: IPicGo, exp: any, data: any): boolean => {
   // eslint-disable-next-line @typescript-eslint/restrict-plus-operands, no-new-func, @typescript-eslint/no-implied-eval
   const fn = new Function('data', 'with (data) { return ' + exp + '}')
   try {

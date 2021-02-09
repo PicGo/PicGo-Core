@@ -1,22 +1,23 @@
-import PicGo from '../core/PicGo'
 import fs from 'fs-extra'
 import path from 'path'
 import resolve from 'resolve'
 import { IBuildInEvent } from '../utils/enum'
+import { IPicGo, IPicGoPlugin, IPluginLoader, IPicGoPluginInterface } from '../types/index'
 
 /**
  * Local plugin loader, file system is required
  */
-class PluginLoader {
-  ctx: PicGo
+class PluginLoader implements IPluginLoader {
+  private readonly ctx: IPicGo
   private list: string[] = []
   private readonly fullList: Set<string> = new Set()
-  constructor (ctx: PicGo) {
+  private readonly pluginMap: Map<string, IPicGoPluginInterface> = new Map()
+  constructor (ctx: IPicGo) {
     this.ctx = ctx
     this.init()
   }
 
-  init (): void {
+  private init (): void {
     const packagePath = path.join(this.ctx.baseDir, 'package.json')
     if (!fs.existsSync(packagePath)) {
       const pkg = {
@@ -30,7 +31,7 @@ class PluginLoader {
   }
 
   // get plugin entry
-  resolvePlugin (ctx: PicGo, name: string): string {
+  private resolvePlugin (ctx: IPicGo, name: string): string {
     try {
       return resolve.sync(name, { basedir: ctx.baseDir })
     } catch (err) {
@@ -60,28 +61,45 @@ class PluginLoader {
     return true
   }
 
-  registerPlugin (name: string): void {
+  registerPlugin (name: string, plugin?: IPicGoPlugin): void {
+    if (!name || typeof name !== 'string') {
+      this.ctx.log.warn('Please provide valid plugin')
+      return
+    }
     this.fullList.add(name)
-    if (this.ctx.getConfig(`picgoPlugins.${name}`) === true || (this.ctx.getConfig(`picgoPlugins.${name}`) === undefined)) {
-      try {
+    try {
+      // register local plugin
+      if (!plugin) {
+        if (this.ctx.getConfig(`picgoPlugins.${name}`) === true || (this.ctx.getConfig(`picgoPlugins.${name}`) === undefined)) {
+          this.list.push(name)
+          this.ctx.setCurrentPluginName(name)
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          this.getPlugin(name)!.register()
+          const plugin = `picgoPlugins[${name}]`
+          this.ctx.saveConfig(
+            {
+              [plugin]: true
+            }
+          )
+        }
+      } else {
+        // register provided plugin
+        // && won't write config to files
         this.list.push(name)
         this.ctx.setCurrentPluginName(name)
-        this.getPlugin(name).register()
-        const plugin = `picgoPlugins[${name}]`
-        this.ctx.saveConfig(
-          {
-            [plugin]: true
-          }
-        )
-      } catch (e) {
-        this.list = this.list.filter((item: string) => item !== name)
-        this.fullList.delete(name)
-        this.ctx.log.error(e)
-        this.ctx.emit(IBuildInEvent.NOTIFICATION, {
-          title: `Plugin ${name} Load Error`,
-          body: e
-        })
+        const pluginInterface = plugin(this.ctx)
+        this.pluginMap.set(name, pluginInterface)
+        plugin(this.ctx).register()
       }
+    } catch (e) {
+      this.pluginMap.delete(name)
+      this.list = this.list.filter((item: string) => item !== name)
+      this.fullList.delete(name)
+      this.ctx.log.error(e)
+      this.ctx.emit(IBuildInEvent.NOTIFICATION, {
+        title: `Plugin ${name} Load Error`,
+        body: e
+      })
     }
   }
 
@@ -98,10 +116,15 @@ class PluginLoader {
   }
 
   // get plugin by name
-  getPlugin (name: string): any {
+  getPlugin (name: string): IPicGoPluginInterface | undefined {
+    if (this.pluginMap.has(name)) {
+      return this.pluginMap.get(name)
+    }
     const pluginDir = path.join(this.ctx.baseDir, 'node_modules/')
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    return require(pluginDir + name)(this.ctx)
+    const plugin = require(pluginDir + name)(this.ctx)
+    this.pluginMap.set(name, plugin)
+    return plugin
   }
 
   /**

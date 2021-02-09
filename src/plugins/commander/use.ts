@@ -1,8 +1,7 @@
-import PicGo from '../../core/PicGo'
-import { IPlugin, Undefinable, ICLIConfigs, IStringKeyMap } from '../../types'
+import { IPicGo, IPlugin, Undefinable, ICLIConfigs, IStringKeyMap } from '../../types'
 
 const use: IPlugin = {
-  handle: async (ctx: PicGo) => {
+  handle: async (ctx: IPicGo) => {
     const cmd = ctx.cmd
     cmd.program
       .command('use')

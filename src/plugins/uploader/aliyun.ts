@@ -1,5 +1,4 @@
-import PicGo from '../../core/PicGo'
-import { IPluginConfig, IAliyunConfig } from '../../types'
+import { IPicGo, IPluginConfig, IAliyunConfig } from '../../types'
 import crypto from 'crypto'
 import mime from 'mime-types'
 import { Options } from 'request-promise-native'
@@ -32,7 +31,7 @@ const postOptions = (options: IAliyunConfig, fileName: string, signature: string
   }
 }
 
-const handle = async (ctx: PicGo): Promise<PicGo> => {
+const handle = async (ctx: IPicGo): Promise<IPicGo> => {
   const aliYunOptions = ctx.getConfig<IAliyunConfig>('picBed.aliyun')
   if (!aliYunOptions) {
     throw new Error('Can\'t find aliYun OSS config')
@@ -74,7 +73,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
   }
 }
 
-const config = (ctx: PicGo): IPluginConfig[] => {
+const config = (ctx: IPicGo): IPluginConfig[] => {
   const userConfig = ctx.getConfig<IAliyunConfig>('picBed.aliyun') || {}
   const config = [
     {

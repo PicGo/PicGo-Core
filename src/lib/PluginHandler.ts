@@ -1,4 +1,3 @@
-import PicGo from '../core/PicGo'
 import spawn from 'cross-spawn'
 import {
   IResult,
@@ -6,15 +5,16 @@ import {
   IPluginProcessResult,
   IPluginHandler,
   IPluginHandlerOptions,
-  Undefinable
+  Undefinable,
+  IPicGo
 } from '../types'
 import { IBuildInEvent } from '../utils/enum'
 import { getProcessPluginName, getNormalPluginName } from '../utils/common'
 
 class PluginHandler implements IPluginHandler {
   // Thanks to feflow -> https://github.com/feflow/feflow/blob/master/lib/internal/install/plugin.js
-  private readonly ctx: PicGo
-  constructor (ctx: PicGo) {
+  private readonly ctx: IPicGo
+  constructor (ctx: IPicGo) {
     this.ctx = ctx
   }
 
@@ -191,7 +191,7 @@ class PluginHandler implements IPluginHandler {
  * @param ctx
  * @param nameOrPath
  */
-const handlePluginNameProcess = (ctx: PicGo, nameOrPath: string): IPluginProcessResult => {
+const handlePluginNameProcess = (ctx: IPicGo, nameOrPath: string): IPluginProcessResult => {
   const res = {
     success: false,
     fullName: '',

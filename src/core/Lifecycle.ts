@@ -1,19 +1,17 @@
 import { EventEmitter } from 'events'
-import PicGo from './PicGo'
-import { IPlugin, Undefinable } from '../types'
+import { ILifecyclePlugins, IPicGo, IPlugin, Undefinable } from '../types'
 import { handleUrlEncode } from '../utils/common'
-import LifecyclePlugins from '../lib/LifecyclePlugins'
 import { IBuildInEvent } from '../utils/enum'
 
 class Lifecycle extends EventEmitter {
-  ctx: PicGo
+  private ctx: IPicGo
 
-  constructor (ctx: PicGo) {
+  constructor (ctx: IPicGo) {
     super()
     this.ctx = ctx
   }
 
-  async start (input: any[]): Promise<PicGo> {
+  async start (input: any[]): Promise<IPicGo> {
     try {
       // images input
       if (!Array.isArray(input)) {
@@ -41,7 +39,7 @@ class Lifecycle extends EventEmitter {
     }
   }
 
-  private async beforeTransform (): Promise<PicGo> {
+  private async beforeTransform (): Promise<IPicGo> {
     this.ctx.emit(IBuildInEvent.UPLOAD_PROGRESS, 0)
     this.ctx.emit(IBuildInEvent.BEFORE_TRANSFORM, this.ctx)
     this.ctx.log.info('Before transform')
@@ -49,7 +47,7 @@ class Lifecycle extends EventEmitter {
     return this.ctx
   }
 
-  private async doTransform (): Promise<PicGo> {
+  private async doTransform (): Promise<IPicGo> {
     this.ctx.emit(IBuildInEvent.UPLOAD_PROGRESS, 30)
     this.ctx.log.info('Transforming...')
     const type = this.ctx.getConfig<Undefinable<string>>('picBed.transformer') || 'path'
@@ -62,7 +60,7 @@ class Lifecycle extends EventEmitter {
     return this.ctx
   }
 
-  private async beforeUpload (): Promise<PicGo> {
+  private async beforeUpload (): Promise<IPicGo> {
     this.ctx.emit(IBuildInEvent.UPLOAD_PROGRESS, 60)
     this.ctx.log.info('Before upload')
     this.ctx.emit(IBuildInEvent.BEFORE_UPLOAD, this.ctx)
@@ -70,7 +68,7 @@ class Lifecycle extends EventEmitter {
     return this.ctx
   }
 
-  private async doUpload (): Promise<PicGo> {
+  private async doUpload (): Promise<IPicGo> {
     this.ctx.log.info('Uploading...')
     let type = this.ctx.getConfig<Undefinable<string>>('picBed.uploader') || this.ctx.getConfig<Undefinable<string>>('picBed.current') || 'smms'
     let uploader = this.ctx.helper.uploader.get(type)
@@ -86,7 +84,7 @@ class Lifecycle extends EventEmitter {
     return this.ctx
   }
 
-  private async afterUpload (): Promise<PicGo> {
+  private async afterUpload (): Promise<IPicGo> {
     this.ctx.emit(IBuildInEvent.AFTER_UPLOAD, this.ctx)
     this.ctx.emit(IBuildInEvent.UPLOAD_PROGRESS, 100)
     await this.handlePlugins(this.ctx.helper.afterUploadPlugins)
@@ -105,7 +103,7 @@ class Lifecycle extends EventEmitter {
     return this.ctx
   }
 
-  private async handlePlugins (lifeCyclePlugins: LifecyclePlugins): Promise<PicGo> {
+  private async handlePlugins (lifeCyclePlugins: ILifecyclePlugins): Promise<IPicGo> {
     const plugins = lifeCyclePlugins.getList()
     const pluginNames = lifeCyclePlugins.getIdList()
     const lifeCycleName = lifeCyclePlugins.getName()

@@ -1,20 +1,19 @@
-import PicGo from '../core/PicGo'
 import program, { CommanderStatic } from 'commander'
 import inquirer, { Inquirer } from 'inquirer'
-import { IPlugin } from '../types'
+import { IPlugin, ICommander, IPicGo } from '../types'
 import commanders from '../plugins/commander'
 import { version } from '../../package.json'
 
-class Commander {
-  list: {
+class Commander implements ICommander {
+  private list: {
     [propName: string]: IPlugin
   }
 
   program: CommanderStatic
   inquirer: Inquirer
-  private readonly ctx: PicGo
+  private readonly ctx: IPicGo
 
-  constructor (ctx: PicGo) {
+  constructor (ctx: IPicGo) {
     this.list = {}
     this.program = program
     this.inquirer = inquirer

@@ -1,6 +1,5 @@
-import PicGo from '../../core/PicGo'
 import qiniu from 'qiniu'
-import { IPluginConfig, IQiniuConfig } from '../../types'
+import { IPluginConfig, IQiniuConfig, IPicGo } from '../../types'
 import { Options } from 'request-promise-native'
 import { IBuildInEvent } from '../../utils/enum'
 
@@ -34,7 +33,7 @@ function getToken (qiniuOptions: any): string {
   return putPolicy.uploadToken(mac)
 }
 
-const handle = async (ctx: PicGo): Promise<PicGo> => {
+const handle = async (ctx: IPicGo): Promise<IPicGo> => {
   const qiniuOptions = ctx.getConfig<IQiniuConfig>('picBed.qiniu')
   if (!qiniuOptions) {
     throw new Error('Can\'t find qiniu config')
@@ -78,7 +77,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
   }
 }
 
-const config = (ctx: PicGo): IPluginConfig[] => {
+const config = (ctx: IPicGo): IPluginConfig[] => {
   const userConfig = ctx.getConfig<IQiniuConfig>('picBed.qiniu') || {}
   const config = [
     {

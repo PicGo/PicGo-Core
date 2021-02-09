@@ -1,5 +1,4 @@
-import PicGo from '../../core/PicGo'
-import { IPluginConfig, ISmmsConfig } from '../../types'
+import { IPicGo, IPluginConfig, ISmmsConfig } from '../../types'
 import { Options } from 'request-promise-native'
 import { IBuildInEvent } from '../../utils/enum'
 
@@ -24,7 +23,7 @@ const postOptions = (fileName: string, image: Buffer, apiToken: string): Options
   }
 }
 
-const handle = async (ctx: PicGo): Promise<PicGo> => {
+const handle = async (ctx: IPicGo): Promise<IPicGo> => {
   const smmsConfig = ctx.getConfig<ISmmsConfig>('picBed.smms')
   if (!smmsConfig) {
     throw new Error('Can\'t find smms config, please provide api token, see https://sm.ms/home/apitoken')
@@ -59,7 +58,7 @@ const handle = async (ctx: PicGo): Promise<PicGo> => {
   return ctx
 }
 
-const config = (ctx: PicGo): IPluginConfig[] => {
+const config = (ctx: IPicGo): IPluginConfig[] => {
   const userConfig = ctx.getConfig<ISmmsConfig>('picBed.smms') || {}
   const config = [
     {
