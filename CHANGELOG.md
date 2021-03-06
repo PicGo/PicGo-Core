@@ -1,3 +1,12 @@
+## :tada: 1.4.18 (2021-03-06)
+
+
+### :bug: Bug Fixes
+
+* unregister plugin delete pluginMap ([85228d8](https://github.com/PicGo/PicGo-Core/commit/85228d8))
+
+
+
 ## :tada: 1.4.17 (2021-02-09)
 
 
