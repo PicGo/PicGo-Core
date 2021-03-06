@@ -3,28 +3,93 @@ import { CommanderStatic } from 'commander'
 import { Inquirer } from 'inquirer'
 
 interface IPicGo extends NodeJS.EventEmitter {
+  /**
+   * picgo configPath
+   *
+   * if do not provide, then it will use default configPath
+   */
   configPath: string
+  /**
+   * the picgo configPath's baseDir
+   */
   baseDir: string
+  /**
+   * picgo logger factory
+   */
   log: ILogger
+  /**
+   * picgo commander, for cli
+   */
   cmd: ICommander
+  /**
+   * after transformer, the input will be output
+   */
   output: IImgInfo[]
+  /**
+   * the origin input
+   */
   input: any[]
+  /**
+   * register\unregister\get picgo's plugin
+   */
   pluginLoader: IPluginLoader
+  /**
+   * install\uninstall\update picgo's plugin via npm
+   */
   pluginHandler: IPluginHandler
+  /**
+   * @deprecated will be removed in v1.5.0+
+   *
+   * use request instead.
+   *
+   * http request tool
+   */
   Request: IRequest
+  /**
+   * plugin system core part transformer\uploader\beforeTransformPlugins...
+   */
   helper: IHelper
+  /**
+   * picgo-core version
+   */
   VERSION: string
+  /**
+   * electron picgo's version
+   */
   GUI_VERSION?: string
+  /**
+   * will be released in v1.5.0+
+   *
+   * replace old Request
+   *
+   * http request tool
+   */
   request: RequestPromiseAPI
 
-  registerCommands: () => void
+  /**
+   * get picgo config
+   */
   getConfig: <T>(name?: string) => T
+  /**
+   * save picgo config to configPath
+   */
   saveConfig: (config: IStringKeyMap<any>) => void
+  /**
+   * remove some [propName] in config[key] && save config to configPath
+   */
   removeConfig: (key: string, propName: string) => void
+  /**
+   * set picgo config to ctx && will not save to configPath
+   */
   setConfig: (config: IStringKeyMap<any>) => void
+  /**
+   * unset picgo config to ctx && will not save to configPath
+   */
   unsetConfig: (key: string, propName: string) => void
+  /**
+   * upload gogogo
+   */
   upload: (input?: any[]) => Promise<IImgInfo[] | Error>
-  setCurrentPluginName: (name: string) => void
 }
 
 /**
@@ -67,7 +132,6 @@ interface ICommander {
 }
 
 interface IPluginLoader {
-  load: () => boolean
   /**
    * register [local plugin] or [provided plugin]
    *
@@ -222,10 +286,12 @@ interface IConfig {
     aliyun?: IAliyunConfig
     imgur?: IImgurConfig
     transformer?: string
+    /** for uploader */
     proxy?: string
+    [others: string]: any
   }
   picgoPlugins: {
-    [propName: string]: boolean
+    [pluginName: string]: boolean
   }
   debug?: boolean
   silent?: boolean
@@ -236,6 +302,7 @@ interface IConfig {
     registry?: string
     /** for npm */
     proxy?: string
+    [others: string]: any
   }
   [configOptions: string]: any
 }
@@ -285,11 +352,11 @@ interface IPicGoPluginInterface {
   /**
    * since PicGo-Core v1.5, register will inject ctx
    */
-  register: (ctx?: IPicGo) => void
+  register: (ctx: IPicGo) => void
   /**
    * this plugin's config
    */
-  config?: (ctx?: IPicGo) => IPluginConfig[]
+  config?: (ctx: IPicGo) => IPluginConfig[]
   /**
    * register uploader name
    */
@@ -303,11 +370,24 @@ interface IPicGoPluginInterface {
    */
   guiMenu?: (ctx: IPicGo) => IGuiMenuItem[]
 
+  /**
+   * for picgo gui plugins
+   * short key -> command
+   */
+  commands?: (ctx: IPicGo) => ICommandItem[]
+
   [propName: string]: any
 }
 
 interface IGuiMenuItem {
   label: string
+  handle: (ctx: IPicGo, guiApi: any) => Promise<void>
+}
+
+interface ICommandItem {
+  label: string
+  name: string
+  key: string
   handle: (ctx: IPicGo, guiApi: any) => Promise<void>
 }
 

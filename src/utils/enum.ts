@@ -5,6 +5,9 @@ export enum ILogType {
   error = 'error'
 }
 
+/**
+ * these events will be catched by users
+ */
 export enum IBuildInEvent {
   UPLOAD_PROGRESS = 'uploadProgress',
   FAILED = 'failed',
@@ -16,4 +19,11 @@ export enum IBuildInEvent {
   UNINSTALL = 'uninstall',
   UPDATE = 'update',
   NOTIFICATION = 'notification'
+}
+
+/**
+ * these events will be catched only by picgo
+ */
+export enum IBusEvent {
+  CONFIG_CHANGE = 'CONFIG_CHANGE'
 }

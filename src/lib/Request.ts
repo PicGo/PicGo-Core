@@ -1,6 +1,6 @@
 import request, { RequestPromiseOptions, RequestPromiseAPI } from 'request-promise-native'
 import { IPicGo, Undefinable, IConfigChangePayload, IConfig } from '../types'
-import { CONFIG_CHANGE } from '../utils/buildInEvent'
+import { IBusEvent } from '../utils/enum'
 import { eventBus } from '../utils/eventBus'
 
 class Request {
@@ -10,7 +10,7 @@ class Request {
   constructor (ctx: IPicGo) {
     this.ctx = ctx
     this.init()
-    eventBus.on(CONFIG_CHANGE, (data: IConfigChangePayload<string | IConfig['picBed']>) => {
+    eventBus.on(IBusEvent.CONFIG_CHANGE, (data: IConfigChangePayload<string | IConfig['picBed']>) => {
       switch (data.configName) {
         case 'picBed':
           if ((data.value as IConfig['picBed'])?.proxy) {

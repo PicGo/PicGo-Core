@@ -3,6 +3,7 @@ import path from 'path'
 import resolve from 'resolve'
 import { IBuildInEvent } from '../utils/enum'
 import { IPicGo, IPicGoPlugin, IPluginLoader, IPicGoPluginInterface } from '../types/index'
+import { setCurrentPluginName } from './LifecyclePlugins'
 
 /**
  * Local plugin loader, file system is required
@@ -72,9 +73,9 @@ class PluginLoader implements IPluginLoader {
       if (!plugin) {
         if (this.ctx.getConfig(`picgoPlugins.${name}`) === true || (this.ctx.getConfig(`picgoPlugins.${name}`) === undefined)) {
           this.list.push(name)
-          this.ctx.setCurrentPluginName(name)
+          setCurrentPluginName(name)
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          this.getPlugin(name)!.register()
+          this.getPlugin(name)!.register(this.ctx)
           const plugin = `picgoPlugins[${name}]`
           this.ctx.saveConfig(
             {
@@ -86,10 +87,10 @@ class PluginLoader implements IPluginLoader {
         // register provided plugin
         // && won't write config to files
         this.list.push(name)
-        this.ctx.setCurrentPluginName(name)
+        setCurrentPluginName(name)
         const pluginInterface = plugin(this.ctx)
         this.pluginMap.set(name, pluginInterface)
-        plugin(this.ctx).register()
+        plugin(this.ctx).register(this.ctx)
       }
     } catch (e) {
       this.pluginMap.delete(name)
@@ -107,7 +108,7 @@ class PluginLoader implements IPluginLoader {
     this.list = this.list.filter((item: string) => item !== name)
     this.fullList.delete(name)
     this.pluginMap.delete(name)
-    this.ctx.setCurrentPluginName(name)
+    setCurrentPluginName(name)
     this.ctx.helper.uploader.unregister(name)
     this.ctx.helper.transformer.unregister(name)
     this.ctx.helper.beforeTransformPlugins.unregister(name)

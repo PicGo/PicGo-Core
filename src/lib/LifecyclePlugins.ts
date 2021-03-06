@@ -52,4 +52,8 @@ class LifecyclePlugins implements ILifecyclePlugins {
   }
 }
 
+export const setCurrentPluginName = (name: string | null = null): void => {
+  LifecyclePlugins.currentPlugin = name
+}
+
 export default LifecyclePlugins

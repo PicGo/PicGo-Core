@@ -5,19 +5,18 @@ import { homedir } from 'os'
 import Commander from '../lib/Commander'
 import Logger from '../lib/Logger'
 import Lifecycle from './Lifecycle'
-import LifecyclePlugins from '../lib/LifecyclePlugins'
+import LifecyclePlugins, { setCurrentPluginName } from '../lib/LifecyclePlugins'
 import uploaders from '../plugins/uploader'
 import transformers from '../plugins/transformer'
 import PluginLoader from '../lib/PluginLoader'
 import { get, set, unset } from 'lodash'
-import { IHelper, IImgInfo, IConfig, IPicGo, IStringKeyMap } from '../types'
+import { IHelper, IImgInfo, IConfig, IPicGo, IStringKeyMap, IPluginLoader } from '../types'
 import getClipboardImage from '../utils/getClipboardImage'
 import Request from '../lib/Request'
 import DB from '../utils/db'
 import PluginHandler from '../lib/PluginHandler'
-import { IBuildInEvent } from '../utils/enum'
+import { IBuildInEvent, IBusEvent } from '../utils/enum'
 import { version } from '../../package.json'
-import { CONFIG_CHANGE } from '../utils/buildInEvent'
 import { eventBus } from '../utils/eventBus'
 import { RequestPromiseAPI } from 'request-promise-native'
 
@@ -25,6 +24,7 @@ class PicGo extends EventEmitter implements IPicGo {
   private config!: IConfig
   private lifecycle!: Lifecycle
   private db!: DB
+  private _pluginLoader!: PluginLoader
   configPath: string
   baseDir!: string
   helper!: IHelper
@@ -32,11 +32,19 @@ class PicGo extends EventEmitter implements IPicGo {
   cmd: Commander
   output: IImgInfo[]
   input: any[]
-  pluginLoader!: PluginLoader
   pluginHandler: PluginHandler
+  /**
+   * @deprecated will be removed in v1.5.0+
+   *
+   * use request instead
+   */
   Request!: Request
   VERSION: string = version
   GUI_VERSION?: string
+
+  get pluginLoader (): IPluginLoader {
+    return this._pluginLoader
+  }
 
   constructor (configPath: string = '') {
     super()
@@ -56,10 +64,6 @@ class PicGo extends EventEmitter implements IPicGo {
     this.pluginHandler = new PluginHandler(this)
     this.initConfig()
     this.init()
-  }
-
-  setCurrentPluginName (name: string): void {
-    LifecyclePlugins.currentPlugin = name
   }
 
   private initConfigPath (): void {
@@ -85,14 +89,14 @@ class PicGo extends EventEmitter implements IPicGo {
   private init (): void {
     try {
       this.Request = new Request(this)
-      this.pluginLoader = new PluginLoader(this)
+      this._pluginLoader = new PluginLoader(this)
       // load self plugins
-      this.setCurrentPluginName('picgo')
-      uploaders(this)
-      transformers(this)
-      this.setCurrentPluginName('')
+      setCurrentPluginName('picgo')
+      uploaders(this).register(this)
+      transformers(this).register(this)
+      setCurrentPluginName('')
       // load third-party plugins
-      this.pluginLoader.load()
+      this._pluginLoader.load()
       this.lifecycle = new Lifecycle(this)
     } catch (e) {
       this.emit(IBuildInEvent.UPLOAD_PROGRESS, -1)
@@ -101,8 +105,6 @@ class PicGo extends EventEmitter implements IPicGo {
     }
   }
 
-  /** register command-line commands
-   please manually remove listeners for avoiding listeners memory leak */
   registerCommands (): void {
     if (this.configPath !== '') {
       this.cmd.init()
@@ -110,7 +112,6 @@ class PicGo extends EventEmitter implements IPicGo {
     }
   }
 
-  /** get config by property path, return full config if `name` is not provided */
   getConfig<T> (name?: string): T {
     if (!name) {
       return this.config as unknown as T
@@ -119,38 +120,32 @@ class PicGo extends EventEmitter implements IPicGo {
     }
   }
 
-  /** save to db */
   saveConfig (config: object): void {
     this.setConfig(config)
     this.db.saveConfig(config)
   }
 
-  /** remove from db */
   removeConfig (key: string, propName: string): void {
     if (!key || !propName) return
     this.unsetConfig(key, propName)
     this.db.unset(key, propName)
   }
 
-  // set config for ctx but will not be saved to db
-  // it's more lightweight
   setConfig (config: IStringKeyMap<any>): void {
     Object.keys(config).forEach((name: string) => {
       set(this.config, name, config[name])
-      eventBus.emit(CONFIG_CHANGE, {
+      eventBus.emit(IBusEvent.CONFIG_CHANGE, {
         configName: name,
         value: config[name]
       })
     })
   }
 
-  // unset config for ctx but won't be saved to db
   unsetConfig (key: string, propName: string): void {
     if (!key || !propName) return
     unset(this.getConfig(key), propName)
   }
 
-  // for v1.5.0+
   get request (): RequestPromiseAPI {
     // TODO: replace request with got: https://github.com/sindresorhus/got
     return this.Request.request
