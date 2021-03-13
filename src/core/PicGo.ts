@@ -19,9 +19,10 @@ import { IBuildInEvent, IBusEvent } from '../utils/enum'
 import { version } from '../../package.json'
 import { eventBus } from '../utils/eventBus'
 import { RequestPromiseAPI } from 'request-promise-native'
+import { isConfigKeyInBlackList, isInputConfigValid } from '../utils/common'
 
 class PicGo extends EventEmitter implements IPicGo {
-  private config!: IConfig
+  private _config!: IConfig
   private lifecycle!: Lifecycle
   private db!: DB
   private _pluginLoader!: PluginLoader
@@ -83,7 +84,7 @@ class PicGo extends EventEmitter implements IPicGo {
 
   private initConfig (): void {
     this.db = new DB(this)
-    this.config = this.db.read().value()
+    this._config = this.db.read().value()
   }
 
   private init (): void {
@@ -114,26 +115,43 @@ class PicGo extends EventEmitter implements IPicGo {
 
   getConfig<T> (name?: string): T {
     if (!name) {
-      return this.config as unknown as T
+      return this._config as unknown as T
     } else {
-      return get(this.config, name)
+      return get(this._config, name)
     }
   }
 
-  saveConfig (config: object): void {
+  saveConfig (config: IStringKeyMap<any>): void {
+    if (!isInputConfigValid(config)) {
+      this.log.warn('the format of config is invalid, please provide object')
+      return
+    }
     this.setConfig(config)
     this.db.saveConfig(config)
   }
 
   removeConfig (key: string, propName: string): void {
     if (!key || !propName) return
+    if (isConfigKeyInBlackList(key)) {
+      this.log.warn(`the config.${key} can't be removed`)
+      return
+    }
     this.unsetConfig(key, propName)
     this.db.unset(key, propName)
   }
 
   setConfig (config: IStringKeyMap<any>): void {
+    if (!isInputConfigValid(config)) {
+      this.log.warn('the format of config is invalid, please provide object')
+      return
+    }
     Object.keys(config).forEach((name: string) => {
-      set(this.config, name, config[name])
+      if (isConfigKeyInBlackList(name)) {
+        this.log.warn(`the config.${name} can't be modified`)
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+        delete config[name]
+      }
+      set(this._config, name, config[name])
       eventBus.emit(IBusEvent.CONFIG_CHANGE, {
         configName: name,
         value: config[name]
@@ -143,6 +161,10 @@ class PicGo extends EventEmitter implements IPicGo {
 
   unsetConfig (key: string, propName: string): void {
     if (!key || !propName) return
+    if (isConfigKeyInBlackList(key)) {
+      this.log.warn(`the config.${key} can't be unset`)
+      return
+    }
     unset(this.getConfig(key), propName)
   }
 
@@ -178,7 +200,6 @@ class PicGo extends EventEmitter implements IPicGo {
           return this.output
         }
       } catch (e) {
-        this.log.error(e)
         this.emit(IBuildInEvent.FAILED, e)
         throw e
       }
