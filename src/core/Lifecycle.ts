@@ -49,13 +49,15 @@ class Lifecycle extends EventEmitter {
 
   private async doTransform (): Promise<IPicGo> {
     this.ctx.emit(IBuildInEvent.UPLOAD_PROGRESS, 30)
-    this.ctx.log.info('Transforming...')
     const type = this.ctx.getConfig<Undefinable<string>>('picBed.transformer') || 'path'
+    let currentTransformer = type
     let transformer = this.ctx.helper.transformer.get(type)
     if (!transformer) {
       transformer = this.ctx.helper.transformer.get('path')
+      currentTransformer = 'path'
       this.ctx.log.warn(`Can't find transformer - ${type}, switch to default transformer - path`)
     }
+    this.ctx.log.info(`Transforming... Current transformer is [${currentTransformer}]`)
     await transformer?.handle(this.ctx)
     return this.ctx
   }
@@ -69,14 +71,16 @@ class Lifecycle extends EventEmitter {
   }
 
   private async doUpload (): Promise<IPicGo> {
-    this.ctx.log.info('Uploading...')
     let type = this.ctx.getConfig<Undefinable<string>>('picBed.uploader') || this.ctx.getConfig<Undefinable<string>>('picBed.current') || 'smms'
     let uploader = this.ctx.helper.uploader.get(type)
+    let currentTransformer = type
     if (!uploader) {
       type = 'smms'
+      currentTransformer = 'smms'
       uploader = this.ctx.helper.uploader.get('smms')
       this.ctx.log.warn(`Can't find uploader - ${type}, switch to default uploader - smms`)
     }
+    this.ctx.log.info(`Uploading... Current uploader is [${currentTransformer}]`)
     await uploader?.handle(this.ctx)
     for (const outputImg of this.ctx.output) {
       outputImg.type = type

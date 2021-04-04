@@ -330,9 +330,14 @@ interface IPluginProcessResult {
 }
 
 interface IPluginHandler {
-  install: (plugins: string[], options: IPluginHandlerOptions, env?: IProcessEnv) => Promise<void>
-  update: (plugins: string[], options: IPluginHandlerOptions, env?: IProcessEnv) => Promise<void>
-  uninstall: (plugins: string[]) => Promise<void>
+  install: (plugins: string[], options: IPluginHandlerOptions, env?: IProcessEnv) => Promise<IPluginHandlerResult<boolean>>
+  update: (plugins: string[], options: IPluginHandlerOptions, env?: IProcessEnv) => Promise<IPluginHandlerResult<boolean>>
+  uninstall: (plugins: string[]) => Promise<IPluginHandlerResult<boolean>>
+}
+
+interface IPluginHandlerResult<T> {
+  success: T
+  body: T extends true ? string[] : string
 }
 
 interface IPluginHandlerOptions {

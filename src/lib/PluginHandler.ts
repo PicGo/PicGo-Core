@@ -6,7 +6,8 @@ import {
   IPluginHandler,
   IPluginHandlerOptions,
   Undefinable,
-  IPicGo
+  IPicGo,
+  IPluginHandlerResult
 } from '../types'
 import { IBuildInEvent } from '../utils/enum'
 import { getProcessPluginName, getNormalPluginName } from '../utils/common'
@@ -18,7 +19,7 @@ class PluginHandler implements IPluginHandler {
     this.ctx = ctx
   }
 
-  async install (plugins: string[], options: IPluginHandlerOptions = {}, env?: IProcessEnv): Promise<void> {
+  async install (plugins: string[], options: IPluginHandlerOptions = {}, env?: IProcessEnv): Promise<IPluginHandlerResult<boolean>> {
     const installedPlugins: string[] = []
     const processPlugins = plugins
       .map((item: string) => handlePluginNameProcess(this.ctx, item))
@@ -52,6 +53,11 @@ class PluginHandler implements IPluginHandler {
           title: '插件安装成功',
           body: [...pkgNameList, ...installedPlugins]
         })
+        const res: IPluginHandlerResult<true> = {
+          success: true,
+          body: [...pkgNameList, ...installedPlugins]
+        }
+        return res
       } else {
         const err = `插件安装失败，失败码为${result.code}，错误日志为${result.data}`
         this.ctx.log.error(err)
@@ -59,6 +65,11 @@ class PluginHandler implements IPluginHandler {
           title: '插件安装失败',
           body: err
         })
+        const res: IPluginHandlerResult<false> = {
+          success: false,
+          body: err
+        }
+        return res
       }
     } else if (installedPlugins.length === 0) {
       const err = '插件安装失败，请输入合法插件名或合法安装路径'
@@ -67,16 +78,26 @@ class PluginHandler implements IPluginHandler {
         title: '插件安装失败',
         body: err
       })
+      const res: IPluginHandlerResult<false> = {
+        success: false,
+        body: err
+      }
+      return res
     } else {
       this.ctx.log.success('插件安装成功')
       this.ctx.emit('installSuccess', {
         title: '插件安装成功',
         body: [...pkgNameList, ...installedPlugins]
       })
+      const res: IPluginHandlerResult<true> = {
+        success: true,
+        body: [...pkgNameList, ...installedPlugins]
+      }
+      return res
     }
   }
 
-  async uninstall (plugins: string[]): Promise<void> {
+  async uninstall (plugins: string[]): Promise<IPluginHandlerResult<boolean>> {
     const processPlugins = plugins.map((item: string) => handlePluginNameProcess(this.ctx, item)).filter(item => item.success)
     const pkgNameList = processPlugins.map(item => item.pkgName)
     if (pkgNameList.length > 0) {
@@ -92,6 +113,11 @@ class PluginHandler implements IPluginHandler {
           title: '插件卸载成功',
           body: pkgNameList
         })
+        const res: IPluginHandlerResult<true> = {
+          success: true,
+          body: pkgNameList
+        }
+        return res
       } else {
         const err = `插件卸载失败，失败码为${result.code}，错误日志为${result.data}`
         this.ctx.log.error(err)
@@ -99,6 +125,11 @@ class PluginHandler implements IPluginHandler {
           title: '插件卸载失败',
           body: err
         })
+        const res: IPluginHandlerResult<false> = {
+          success: false,
+          body: err
+        }
+        return res
       }
     } else {
       const err = '插件卸载失败，请输入合法插件名'
@@ -107,10 +138,15 @@ class PluginHandler implements IPluginHandler {
         title: '插件卸载失败',
         body: err
       })
+      const res: IPluginHandlerResult<false> = {
+        success: false,
+        body: err
+      }
+      return res
     }
   }
 
-  async update (plugins: string[], options: IPluginHandlerOptions = {}, env?: IProcessEnv): Promise<void> {
+  async update (plugins: string[], options: IPluginHandlerOptions = {}, env?: IProcessEnv): Promise<IPluginHandlerResult<boolean>> {
     const processPlugins = plugins.map((item: string) => handlePluginNameProcess(this.ctx, item)).filter(item => item.success)
     const pkgNameList = processPlugins.map(item => item.pkgName)
     if (pkgNameList.length > 0) {
@@ -123,6 +159,11 @@ class PluginHandler implements IPluginHandler {
           title: '插件更新成功',
           body: pkgNameList
         })
+        const res: IPluginHandlerResult<true> = {
+          success: true,
+          body: pkgNameList
+        }
+        return res
       } else {
         const err = `插件更新失败，失败码为${result.code}，错误日志为 \n ${result.data}`
         this.ctx.log.error(err)
@@ -130,6 +171,11 @@ class PluginHandler implements IPluginHandler {
           title: '插件更新失败',
           body: err
         })
+        const res: IPluginHandlerResult<false> = {
+          success: false,
+          body: err
+        }
+        return res
       }
     } else {
       const err = '插件更新失败，请输入合法插件名'
@@ -138,6 +184,11 @@ class PluginHandler implements IPluginHandler {
         title: '插件更新失败',
         body: err
       })
+      const res: IPluginHandlerResult<false> = {
+        success: false,
+        body: err
+      }
+      return res
     }
   }
 

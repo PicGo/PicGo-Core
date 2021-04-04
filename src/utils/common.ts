@@ -244,8 +244,9 @@ export const getNormalPluginName = (nameOrPath: string, logger: ILogger | Consol
   const pluginNameType = getPluginNameType(nameOrPath)
   switch (pluginNameType) {
     case 'normal':
-    case 'scope':
       return removePluginVersion(nameOrPath)
+    case 'scope':
+      return removePluginVersion(nameOrPath, true)
     case 'simple':
       return removePluginVersion(handleCompletePluginName(nameOrPath))
     default: {
@@ -287,13 +288,20 @@ export const handleUnixStylePath = (pathStr: string): string => {
 /**
  * remove plugin version when register plugin name
  * 1. picgo-plugin-xxx@1.0.0 -> picgo-plugin-xxx
+ * 2. @xxx/picgo-plugin-xxx@1.0.0 -> @xxx/picgo-plugin-xxx
  * @param nameOrPath
+ * @param scope
  */
-export const removePluginVersion = (nameOrPath: string): string => {
+export const removePluginVersion = (nameOrPath: string, scope: boolean = false): string => {
   if (!nameOrPath.includes('@')) {
     return nameOrPath
   } else {
-    const matchArr = nameOrPath.match(/(.+\/)?(picgo-plugin-\w+)(@.+)*/)
+    let reg = /(.+\/)?(picgo-plugin-\w+)(@.+)*/
+    // if is a scope pkg
+    if (scope) {
+      reg = /(.+\/)?(^@[^/]+\/picgo-plugin-\w+)(@.+)*/
+    }
+    const matchArr = nameOrPath.match(reg)
     if (!matchArr) {
       console.warn('can not remove plugin version')
       return nameOrPath
