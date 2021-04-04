@@ -1,3 +1,13 @@
+## :tada: 1.4.19 (2021-04-04)
+
+
+### :sparkles: Features
+
+* add current uploader && transformer log ([67b2bb1](https://github.com/PicGo/PicGo-Core/commit/67b2bb1))
+* limit some of config's capabilities ([f901505](https://github.com/PicGo/PicGo-Core/commit/f901505))
+
+
+
 ## :tada: 1.4.18 (2021-03-06)
 
 
