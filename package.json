@@ -21,7 +21,8 @@
     "minor": "npm version minor && git push origin master && git push origin --tags",
     "major": "npm version major && git push origin master && git push origin --tags",
     "cz": "git-cz",
-    "release": "bump-version"
+    "release": "bump-version",
+    "debug": "tsc -p . --sourcemap && npm run copy"
   },
   "keywords": [
     "picture",
