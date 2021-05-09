@@ -1,3 +1,17 @@
+## :tada: 1.4.20 (2021-05-09)
+
+
+### :sparkles: Features
+
+* add createContext for each upload process ([ecde023](https://github.com/PicGo/PicGo-Core/commit/ecde023))
+
+
+### :package: Chore
+
+* add debug launch.json ([9950259](https://github.com/PicGo/PicGo-Core/commit/9950259))
+
+
+
 ## :tada: 1.4.19 (2021-04-04)
 
 
