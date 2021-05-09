@@ -115,6 +115,7 @@ class PicGo extends EventEmitter implements IPicGo {
 
   getConfig<T> (name?: string): T {
     if (!name) {
+      console.log(this._config)
       return this._config as unknown as T
     } else {
       return get(this._config, name)
