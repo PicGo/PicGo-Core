@@ -1,3 +1,12 @@
+## :tada: 1.4.21 (2021-05-09)
+
+
+### :bug: Bug Fixes
+
+* output empty after uploading when using isolate context ([79c228b](https://github.com/PicGo/PicGo-Core/commit/79c228b))
+
+
+
 ## :tada: 1.4.20 (2021-05-09)
 
 
