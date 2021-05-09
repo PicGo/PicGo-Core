@@ -197,8 +197,8 @@ class PicGo extends EventEmitter implements IPicGo {
               fs.remove(imgPath).catch((e) => { this.log.error(e) })
             }
           })
-          await this.lifecycle.start([imgPath])
-          return this.output
+          const { output } = await this.lifecycle.start([imgPath])
+          return output
         }
       } catch (e) {
         this.emit(IBuildInEvent.FAILED, e)
@@ -206,8 +206,8 @@ class PicGo extends EventEmitter implements IPicGo {
       }
     } else {
       // upload from path
-      await this.lifecycle.start(input)
-      return this.output
+      const { output } = await this.lifecycle.start(input)
+      return output
     }
   }
 }

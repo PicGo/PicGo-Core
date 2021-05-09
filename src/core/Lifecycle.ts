@@ -98,9 +98,11 @@ class Lifecycle extends EventEmitter {
     let msg = ''
     const length = ctx.output.length
     for (let i = 0; i < length; i++) {
-      msg += handleUrlEncode(ctx.output[i].imgUrl)
-      if (i !== length - 1) {
-        msg += '\n'
+      if (typeof ctx.output[i].imgUrl !== 'undefined') {
+        msg += handleUrlEncode(ctx.output[i].imgUrl!)
+        if (i !== length - 1) {
+          msg += '\n'
+        }
       }
       delete ctx.output[i].base64Image
       delete ctx.output[i].buffer

@@ -173,6 +173,7 @@ interface IImgInfo {
   width?: number
   height?: number
   extname?: string
+  imgUrl?: string
   [propName: string]: any
 }
 
