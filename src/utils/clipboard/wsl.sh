@@ -14,5 +14,5 @@ noImage=$(echo "no image\r")
 if [ "$res" = "$noImage" ] ;then
     echo "no image"
 else
-    echo $1
+    echo $(wslpath -u $res)
 fi
