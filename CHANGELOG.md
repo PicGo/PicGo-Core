@@ -1,3 +1,13 @@
+## :tada: 1.4.22 (2021-07-27)
+
+
+### :sparkles: Features
+
+* **smms:** smms now supports image without token ([#89](https://github.com/PicGo/PicGo-Core/issues/89)) ([456b81c](https://github.com/PicGo/PicGo-Core/commit/456b81c))
+* add support for clipboard in wsl ([#87](https://github.com/PicGo/PicGo-Core/issues/87)) ([3e230de](https://github.com/PicGo/PicGo-Core/commit/3e230de))
+
+
+
 ## :tada: 1.4.21 (2021-05-09)
 
 
