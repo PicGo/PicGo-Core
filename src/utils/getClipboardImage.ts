@@ -3,11 +3,15 @@ import { spawn } from 'child_process'
 import dayjs from 'dayjs'
 import os from 'os'
 import fs from 'fs-extra'
+import isWsl from 'is-wsl'
 import { IPicGo, IClipboardImage } from '../types'
 import { IBuildInEvent } from './enum'
 
 const getCurrentPlatform = (): string => {
   const platform = process.platform
+  if (isWsl) {
+    return 'wsl'
+  }
   if (platform !== 'win32') {
     return platform
   } else {
@@ -34,7 +38,8 @@ const getClipboardImage = async (ctx: IPicGo): Promise<IClipboardImage> => {
       darwin: env ? path.join(ctx.baseDir, 'mac.applescript') : './clipboard/mac.applescript',
       win32: env ? path.join(ctx.baseDir, 'windows.ps1') : './clipboard/windows.ps1',
       win10: env ? path.join(ctx.baseDir, 'windows10.ps1') : './clipboard/windows10.ps1',
-      linux: env ? path.join(ctx.baseDir, 'linux.sh') : './clipboard/linux.sh'
+      linux: env ? path.join(ctx.baseDir, 'linux.sh') : './clipboard/linux.sh',
+      wsl: env ? path.join(ctx.baseDir, 'wsl.sh') : './clipboard/wsl.sh'
     }
     const scriptPath = env ? platformPaths[platform] : path.join(__dirname, platformPaths[platform])
     if (platform === 'darwin') {
