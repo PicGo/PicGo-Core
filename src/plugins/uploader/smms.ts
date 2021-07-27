@@ -25,9 +25,6 @@ const postOptions = (fileName: string, image: Buffer, apiToken: string): Options
 
 const handle = async (ctx: IPicGo): Promise<IPicGo> => {
   const smmsConfig = ctx.getConfig<ISmmsConfig>('picBed.smms')
-  if (!smmsConfig) {
-    throw new Error('Can\'t find smms config, please provide api token, see https://sm.ms/home/apitoken')
-  }
   const imgList = ctx.output
   for (const img of imgList) {
     if (img.fileName && img.buffer) {
@@ -35,7 +32,7 @@ const handle = async (ctx: IPicGo): Promise<IPicGo> => {
       if (!image && img.base64Image) {
         image = Buffer.from(img.base64Image, 'base64')
       }
-      const postConfig = postOptions(img.fileName, image, smmsConfig.token)
+      const postConfig = postOptions(img.fileName, image, smmsConfig?.token)
       let body = await ctx.Request.request(postConfig)
       body = JSON.parse(body)
       if (body.code === 'success') {
