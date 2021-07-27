@@ -1,3 +1,17 @@
+## :tada: 1.4.23 (2021-07-27)
+
+
+### :bug: Bug Fixes
+
+* cases when clipboard of wsl contain image file ([#91](https://github.com/PicGo/PicGo-Core/issues/91)) ([adfc55e](https://github.com/PicGo/PicGo-Core/commit/adfc55e))
+
+
+### :package: Chore
+
+* add github actions for publishing ([caae80e](https://github.com/PicGo/PicGo-Core/commit/caae80e))
+
+
+
 ## :tada: 1.4.22 (2021-07-27)
 
 
