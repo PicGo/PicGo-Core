@@ -315,7 +315,7 @@ export const removePluginVersion = (nameOrPath: string, scope: boolean = false):
  * the config black item list which won't be setted
  * only can be got
  */
-export const configBlackList = ['uploaded']
+export const configBlackList = []
 
 /**
  * check some config key is in blackList
