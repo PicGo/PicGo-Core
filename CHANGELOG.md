@@ -1,3 +1,12 @@
+## :tada: 1.4.24 (2021-08-01)
+
+
+### :sparkles: Features
+
+* uploaded now can be modified since picgo will not use this value ([b6a8b58](https://github.com/PicGo/PicGo-Core/commit/b6a8b58))
+
+
+
 ## :tada: 1.4.23 (2021-07-27)
 
 
