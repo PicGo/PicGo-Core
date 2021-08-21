@@ -73,7 +73,7 @@ const getClipboardImage = async (ctx: IPicGo): Promise<IClipboardImage> => {
       }
       const imgPath = data.toString().trim()
       let isExistFile = false
-      // in macOS if your copy the file in system, it's basename will not equal to our default basename
+      // in macOS if your copy the file in system, its basename will not equal to our default basename
       if (path.basename(imgPath) !== path.basename(imagePath)) {
         if (fs.existsSync(imgPath)) {
           isExistFile = true
