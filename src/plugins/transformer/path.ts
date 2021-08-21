@@ -16,20 +16,16 @@ const handle = async (ctx: IPicGo): Promise<IPicGo> => {
       info = await getFSFile(item)
     }
     if (info.success && info.buffer) {
-      try {
-        const imgSize = getImgSize(ctx, info.buffer, item)
-        results[index] = {
-          buffer: info.buffer,
-          fileName: info.fileName,
-          width: imgSize.width,
-          height: imgSize.height,
-          extname: info.extname
-        }
-      } catch (e) {
-        ctx.log.error(e)
+      const imgSize = getImgSize(ctx, info.buffer, item)
+      results[index] = {
+        buffer: info.buffer,
+        fileName: info.fileName,
+        width: imgSize.width,
+        height: imgSize.height,
+        extname: info.extname
       }
     } else {
-      ctx.log.error(info.reason)
+      throw new Error(info.reason)
     }
   }))
   // remove empty item

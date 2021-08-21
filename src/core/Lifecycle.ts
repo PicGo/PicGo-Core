@@ -31,7 +31,7 @@ class Lifecycle extends EventEmitter {
       await this.afterUpload(ctx)
       return ctx
     } catch (e) {
-      ctx.log.warn('failed')
+      ctx.log.warn(IBuildInEvent.FAILED)
       ctx.emit(IBuildInEvent.UPLOAD_PROGRESS, -1)
       ctx.emit(IBuildInEvent.FAILED, e)
       ctx.log.error(e)
