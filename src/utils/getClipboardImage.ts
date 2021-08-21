@@ -79,6 +79,13 @@ const getClipboardImage = async (ctx: IPicGo): Promise<IClipboardImage> => {
           isExistFile = true
         }
       }
+      // emit if path does not exist
+      if (fs.existsSync(imgPath)) {
+        return ctx.emit(IBuildInEvent.NOTIFICATION, {
+          title: 'clipboard image path found does not exist',
+          body: 'Please check system settings'
+        })
+      }
       resolve({
         imgPath,
         isExistFile
