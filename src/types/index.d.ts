@@ -1,5 +1,5 @@
 import { RequestPromiseAPI } from 'request-promise-native'
-import { CommanderStatic } from 'commander'
+import { Command } from 'commander'
 import { Inquirer } from 'inquirer'
 
 interface IPicGo extends NodeJS.EventEmitter {
@@ -124,7 +124,7 @@ interface IHelper {
 }
 
 interface ICommander {
-  program: CommanderStatic
+  program: Command
   inquirer: Inquirer
   get: (name: string) => IPlugin
   getList: () => IPlugin[]

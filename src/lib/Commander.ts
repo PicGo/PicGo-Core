@@ -1,4 +1,4 @@
-import program, { CommanderStatic } from 'commander'
+import { Command } from 'commander'
 import inquirer, { Inquirer } from 'inquirer'
 import { IPlugin, ICommander, IPicGo } from '../types'
 import commanders from '../plugins/commander'
@@ -9,13 +9,13 @@ class Commander implements ICommander {
     [propName: string]: IPlugin
   }
 
-  program: CommanderStatic
+  program: Command
   inquirer: Inquirer
   private readonly ctx: IPicGo
 
   constructor (ctx: IPicGo) {
     this.list = {}
-    this.program = program
+    this.program = new Command()
     this.inquirer = inquirer
     this.ctx = ctx
   }

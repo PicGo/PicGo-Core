@@ -88,7 +88,7 @@
   },
   "dependencies": {
     "chalk": "^2.4.1",
-    "commander": "^2.17.0",
+    "commander": "^8.1.0",
     "comment-json": "^2.3.1",
     "cross-spawn": "^6.0.5",
     "dayjs": "^1.7.4",
@@ -120,5 +120,8 @@
   "resolutions": {
     "**/**/lodash": "^4.17.12",
     "**/**/minimist": ">0.2.1"
+  },
+  "engines": {
+    "node": "12"
   }
 }

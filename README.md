@@ -2,9 +2,10 @@
 
 ![standard](https://img.shields.io/badge/code%20style-standard-green.svg?style=flat-square)
 ![GitHub](https://img.shields.io/github/license/mashape/apistatus.svg?style=flat-square)
-![Travis (.org)](https://img.shields.io/travis/PicGo/PicGo-Core.svg?style=flat-square)
+[![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Fpicgo%2Fpicgo-core%2Fbadge%3Fref%3Dmaster&style=flat-square)](https://actions-badge.atrox.dev/picgo/picgo-core/goto?ref=master)
 ![npm](https://img.shields.io/npm/v/picgo.svg?style=flat-square)
 [![PicGo Convention](https://img.shields.io/badge/picgo-convention-blue.svg?style=flat-square)](https://github.com/PicGo/bump-version)
+![node](https://img.shields.io/badge/node-%3E%3D12.0.0-blue?style=flat-square)
 
 ![picgo-core](https://cdn.jsdelivr.net/gh/Molunerfinn/test/picgo/picgo-core-fix.jpg)
 
@@ -13,6 +14,8 @@ A tool for picture uploading. Both CLI & api supports. It also supports plugin s
 **Typora supports PicGo-Core natively**. If you like PicGo-Core and have time, welcome to help me translate the documentation of PicGo-Core into English.
 
 ## Installation
+
+PicGo should be installed with node.js >= 12.
 
 ### Global install
 

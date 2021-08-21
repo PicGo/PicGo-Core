@@ -87,7 +87,7 @@ const getClipboardImage = async (ctx: IPicGo): Promise<IClipboardImage> => {
         }
       }
       // if the imgPath is invalid
-      if (!fs.existsSync(imgPath)) {
+      if (imgPath !== 'no image' && !fs.existsSync(imgPath)) {
         return reject(new Error(`Can't find ${imgPath}`))
       }
 
