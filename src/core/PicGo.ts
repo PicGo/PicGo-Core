@@ -182,18 +182,18 @@ class PicGo extends EventEmitter implements IPicGo {
     // upload from clipboard
     if (input === undefined || input.length === 0) {
       try {
-        const { imgPath, isExistFile } = await getClipboardImage(this)
+        const { imgPath, shouldKeepAfterUploading } = await getClipboardImage(this)
         if (imgPath === 'no image') {
           throw new Error('image not found in clipboard')
         } else {
           this.once(IBuildInEvent.FAILED, () => {
-            if (!isExistFile) {
+            if (!shouldKeepAfterUploading) {
               // 删除 picgo 生成的图片文件，例如 `~/.picgo/20200621205720.png`
               fs.remove(imgPath).catch((e) => { this.log.error(e) })
             }
           })
           this.once('finished', () => {
-            if (!isExistFile) {
+            if (!shouldKeepAfterUploading) {
               fs.remove(imgPath).catch((e) => { this.log.error(e) })
             }
           })

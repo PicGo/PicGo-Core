@@ -437,7 +437,11 @@ interface IOptions {
  */
 interface IClipboardImage {
   imgPath: string
-  isExistFile: boolean
+  /**
+   * if the path is generate by picgo -> false
+   * if the path is a real file path in system -> true
+   */
+  shouldKeepAfterUploading: boolean
 }
 
 /**

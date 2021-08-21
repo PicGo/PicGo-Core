@@ -27,7 +27,7 @@ const getCurrentPlatform = (): string => {
 // Thanks to vs-picgo: https://github.com/Spades-S/vs-picgo/blob/master/src/extension.ts
 const getClipboardImage = async (ctx: IPicGo): Promise<IClipboardImage> => {
   const imagePath = path.join(ctx.baseDir, `${dayjs().format('YYYYMMDDHHmmss')}.png`)
-  return await new Promise<IClipboardImage>((resolve: Function): void => {
+  return await new Promise<IClipboardImage>((resolve: Function, reject: Function): void => {
     const platform: string = getCurrentPlatform()
     let execution
     // for PicGo GUI
@@ -65,23 +65,35 @@ const getClipboardImage = async (ctx: IPicGo): Promise<IClipboardImage> => {
     execution.stdout.on('data', (data: Buffer) => {
       if (platform === 'linux') {
         if (data.toString().trim() === 'no xclip') {
-          return ctx.emit(IBuildInEvent.NOTIFICATION, {
+          ctx.emit(IBuildInEvent.NOTIFICATION, {
             title: 'xclip not found',
             body: 'Please install xclip before run picgo'
           })
+          return reject(new Error('Please install xclip before run picgo'))
         }
       }
       const imgPath = data.toString().trim()
-      let isExistFile = false
+
+      // if the filePath is the real file in system
+      // we should keep it instead of removing
+      let shouldKeepAfterUploading = false
+
       // in macOS if your copy the file in system, it's basename will not equal to our default basename
       if (path.basename(imgPath) !== path.basename(imagePath)) {
+        // if the path is not generate by picgo
+        // but the path exists, we should keep it
         if (fs.existsSync(imgPath)) {
-          isExistFile = true
+          shouldKeepAfterUploading = true
         }
       }
+      // if the imgPath is invalid
+      if (!fs.existsSync(imgPath)) {
+        return reject(new Error(`Can't find ${imgPath}`))
+      }
+
       resolve({
         imgPath,
-        isExistFile
+        shouldKeepAfterUploading
       })
     })
   })
