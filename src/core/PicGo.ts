@@ -186,7 +186,7 @@ class PicGo extends EventEmitter implements IPicGo {
         if (imgPath === 'no image') {
           throw new Error('image not found in clipboard')
         } else {
-          this.once('failed', () => {
+          this.once(IBuildInEvent.FAILED, () => {
             if (!isExistFile) {
               // 删除 picgo 生成的图片文件，例如 `~/.picgo/20200621205720.png`
               fs.remove(imgPath).catch((e) => { this.log.error(e) })
