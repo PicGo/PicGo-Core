@@ -1,3 +1,14 @@
+## :tada: 1.4.25 (2021-08-21)
+
+
+### :bug: Bug Fixes
+
+* handle clipboard file path error ([ff4ec86](https://github.com/PicGo/PicGo-Core/commit/ff4ec86)), closes [#97](https://github.com/PicGo/PicGo-Core/issues/97)
+* **error:** throw error when transform failed ([#96](https://github.com/PicGo/PicGo-Core/issues/96)) ([57fce75](https://github.com/PicGo/PicGo-Core/commit/57fce75))
+* clipboard path contains space ([#95](https://github.com/PicGo/PicGo-Core/issues/95)) ([d2b73c1](https://github.com/PicGo/PicGo-Core/commit/d2b73c1))
+
+
+
 ## :tada: 1.4.24 (2021-08-01)
 
 
