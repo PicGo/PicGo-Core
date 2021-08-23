@@ -1,3 +1,12 @@
+## :tada: 1.4.26 (2021-08-23)
+
+
+### :bug: Bug Fixes
+
+* engine bug in package.json ([1c65144](https://github.com/PicGo/PicGo-Core/commit/1c65144))
+
+
+
 ## :tada: 1.4.25 (2021-08-21)
 
 
