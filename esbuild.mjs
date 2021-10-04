@@ -1,6 +1,4 @@
 /* eslint-disable no-console */
-// We use .mjs because globby package now is pure-esm, and can only be imported in esm mode, because this is a simple build script and we do not want to bother run esm-to-cjs build process, we just change our build script to esm
-// We cannot use "type": "module" in package.json because VSCode supports cjs modules only at the present
 import esbuild from 'esbuild'
 import fse from 'fs-extra'
 import minimist from 'minimist'
