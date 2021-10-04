@@ -9,19 +9,21 @@ import LifecyclePlugins, { setCurrentPluginName } from '../lib/LifecyclePlugins'
 import uploaders from '../plugins/uploader'
 import transformers from '../plugins/transformer'
 import PluginLoader from '../lib/PluginLoader'
-import { get, set, unset } from 'lodash'
+import { get, set, unset } from 'lodash-es'
 import { IHelper, IImgInfo, IConfig, IPicGo, IStringKeyMap, IPluginLoader } from '../types'
 import getClipboardImage from '../utils/getClipboardImage'
 import Request from '../lib/Request'
 import DB from '../utils/db'
 import PluginHandler from '../lib/PluginHandler'
 import { IBuildInEvent, IBusEvent } from '../utils/enum'
-import { version } from '../../package.json'
 import { eventBus } from '../utils/eventBus'
 import { RequestPromiseAPI } from 'request-promise-native'
 import { isConfigKeyInBlackList, isInputConfigValid } from '../utils/common'
+// If use import, typescript will report error because package.json in not contained in src, but our rootDir is src (in order to generate .d.ts only in src)
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { version } = require('../../package.json')
 
-class PicGo extends EventEmitter implements IPicGo {
+export class PicGo extends EventEmitter implements IPicGo {
   private _config!: IConfig
   private lifecycle!: Lifecycle
   private db!: DB
@@ -99,7 +101,7 @@ class PicGo extends EventEmitter implements IPicGo {
       // load third-party plugins
       this._pluginLoader.load()
       this.lifecycle = new Lifecycle(this)
-    } catch (e) {
+    } catch (e: any) {
       this.emit(IBuildInEvent.UPLOAD_PROGRESS, -1)
       this.log.error(e)
       throw e
@@ -211,5 +213,3 @@ class PicGo extends EventEmitter implements IPicGo {
     }
   }
 }
-
-export default PicGo

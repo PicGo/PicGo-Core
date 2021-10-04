@@ -88,7 +88,7 @@ Thanks to [vs-picgo](https://github.com/Spades-S/vs-picgo) && [Spades-S](https:/
 ### Use in node project
 
 ```js
-const PicGo = require('picgo')
+const { PicGo } = require('picgo')
 const picgo = new PicGo()
 
 // upload a picture from path

@@ -3,7 +3,6 @@ import path from 'path'
 import fs from 'fs-extra'
 import { generate } from '../../utils/initUtils'
 import { homedir } from 'os'
-// @ts-expect-error
 import download from 'download-git-repo'
 import { IOptions, IPlugin, IPicGo } from '../../types'
 import rm from 'rimraf'
@@ -96,7 +95,7 @@ const init: IPlugin = {
             } else { // project is given
               run(ctx, options)
             }
-          } catch (e) {
+          } catch (e: any) {
             ctx.log.error(e)
             if (process.argv.includes('--debug')) {
               throw e

@@ -2,7 +2,8 @@ import { Command } from 'commander'
 import inquirer, { Inquirer } from 'inquirer'
 import { IPlugin, ICommander, IPicGo } from '../types'
 import commanders from '../plugins/commander'
-import { version } from '../../package.json'
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { version } = require('../../package.json')
 
 class Commander implements ICommander {
   private list: {

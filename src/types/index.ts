@@ -2,7 +2,7 @@ import { RequestPromiseAPI } from 'request-promise-native'
 import { Command } from 'commander'
 import { Inquirer } from 'inquirer'
 
-interface IPicGo extends NodeJS.EventEmitter {
+export interface IPicGo extends NodeJS.EventEmitter {
   /**
    * picgo configPath
    *
@@ -95,7 +95,7 @@ interface IPicGo extends NodeJS.EventEmitter {
 /**
  * for plugin config
  */
-interface IPluginConfig {
+export interface IPluginConfig {
   name: string
   type: string
   required: boolean
@@ -106,7 +106,7 @@ interface IPluginConfig {
 /**
  * for lifecycle plugins
  */
-interface ILifecyclePlugins {
+export interface ILifecyclePlugins {
   register: (id: string, plugin: IPlugin) => void
   unregister: (id: string) => void
   getName: () => string
@@ -115,7 +115,7 @@ interface ILifecyclePlugins {
   getIdList: () => string[]
 }
 
-interface IHelper {
+export interface IHelper {
   transformer: ILifecyclePlugins
   uploader: ILifecyclePlugins
   beforeTransformPlugins: ILifecyclePlugins
@@ -123,7 +123,7 @@ interface IHelper {
   afterUploadPlugins: ILifecyclePlugins
 }
 
-interface ICommander {
+export interface ICommander {
   program: Command
   inquirer: Inquirer
   get: (name: string) => IPlugin
@@ -131,7 +131,7 @@ interface ICommander {
   register: (name: string, plugin: IPlugin) => void
 }
 
-interface IPluginLoader {
+export interface IPluginLoader {
   /**
    * register [local plugin] or [provided plugin]
    *
@@ -157,16 +157,16 @@ interface IPluginLoader {
   hasPlugin: (name: string) => boolean
 }
 
-interface IRequest {
+export interface IRequest {
   request: RequestPromiseAPI
 }
 
-type ILogColor = 'blue' | 'green' | 'yellow' | 'red'
+export type ILogColor = 'blue' | 'green' | 'yellow' | 'red'
 
 /**
  * for uploading image info
  */
-interface IImgInfo {
+export interface IImgInfo {
   buffer?: Buffer
   base64Image?: string
   fileName?: string
@@ -177,24 +177,24 @@ interface IImgInfo {
   [propName: string]: any
 }
 
-interface IPathTransformedImgInfo extends IImgInfo {
+export interface IPathTransformedImgInfo extends IImgInfo {
   success: boolean
 }
 
-interface IStringKeyMap<T> {
+export interface IStringKeyMap<T> {
   [key: string]: T extends T ? T : any
 }
 
-interface ICLIConfigs {
+export interface ICLIConfigs {
   [module: string]: IStringKeyMap<any>
 }
 
 /** SM.MS 图床配置项 */
-interface ISmmsConfig {
+export interface ISmmsConfig {
   token: string
 }
 /** 七牛云图床配置项 */
-interface IQiniuConfig {
+export interface IQiniuConfig {
   accessKey: string
   secretKey: string
   /** 存储空间名 */
@@ -209,7 +209,7 @@ interface IQiniuConfig {
   path: string
 }
 /** 又拍云图床配置项 */
-interface IUpyunConfig {
+export interface IUpyunConfig {
   /** 存储空间名，及你的服务名 */
   bucket: string
   /** 操作员 */
@@ -224,7 +224,7 @@ interface IUpyunConfig {
   url: string
 }
 /** 腾讯云图床配置项 */
-interface ITcyunConfig {
+export interface ITcyunConfig {
   secretId: string
   secretKey: string
   /** 存储桶名，v4 和 v5 版本不一样 */
@@ -240,7 +240,7 @@ interface ITcyunConfig {
   version: 'v5' | 'v4'
 }
 /** GitHub 图床配置项 */
-interface IGithubConfig {
+export interface IGithubConfig {
   /** 仓库名，格式是 `username/reponame` */
   repo: string
   /** github token */
@@ -253,7 +253,7 @@ interface IGithubConfig {
   branch: string
 }
 /** 阿里云图床配置项 */
-interface IAliyunConfig {
+export interface IAliyunConfig {
   accessKeyId: string
   accessKeySecret: string
   /** 存储空间名 */
@@ -268,14 +268,14 @@ interface IAliyunConfig {
   options: string
 }
 /** Imgur 图床配置项 */
-interface IImgurConfig {
+export interface IImgurConfig {
   /** imgur 的 `clientId` */
   clientId: string
   /** 代理地址，仅支持 http 代理 */
   proxy: string
 }
 /** PicGo 配置文件类型定义 */
-interface IConfig {
+export interface IConfig {
   picBed: {
     uploader: string
     current?: string
@@ -311,14 +311,14 @@ interface IConfig {
 /**
  * for plugin
  */
-interface IPlugin {
+export interface IPlugin {
   handle: ((ctx: IPicGo) => Promise<any>) | ((ctx: IPicGo) => void)
   [propName: string]: any
 }
 
-type IPluginNameType = 'simple' | 'scope' | 'normal' | 'unknown'
+export type IPluginNameType = 'simple' | 'scope' | 'normal' | 'unknown'
 
-interface IPluginProcessResult {
+export interface IPluginProcessResult {
   success: boolean
   /**
    * the package.json's name filed
@@ -330,18 +330,18 @@ interface IPluginProcessResult {
   fullName: string
 }
 
-interface IPluginHandler {
+export interface IPluginHandler {
   install: (plugins: string[], options: IPluginHandlerOptions, env?: IProcessEnv) => Promise<IPluginHandlerResult<boolean>>
   update: (plugins: string[], options: IPluginHandlerOptions, env?: IProcessEnv) => Promise<IPluginHandlerResult<boolean>>
   uninstall: (plugins: string[]) => Promise<IPluginHandlerResult<boolean>>
 }
 
-interface IPluginHandlerResult<T> {
+export interface IPluginHandlerResult<T> {
   success: T
   body: T extends true ? string[] : string
 }
 
-interface IPluginHandlerOptions {
+export interface IPluginHandlerOptions {
   proxy?: string
   registry?: string
 }
@@ -349,12 +349,12 @@ interface IPluginHandlerOptions {
 /**
  * for picgo npm plugins
  */
-type IPicGoPlugin = (ctx: IPicGo) => IPicGoPluginInterface
+export type IPicGoPlugin = (ctx: IPicGo) => IPicGoPluginInterface
 
 /**
  * interfaces for PicGo plugin
  */
-interface IPicGoPluginInterface {
+export interface IPicGoPluginInterface {
   /**
    * since PicGo-Core v1.5, register will inject ctx
    */
@@ -385,12 +385,12 @@ interface IPicGoPluginInterface {
   [propName: string]: any
 }
 
-interface IGuiMenuItem {
+export interface IGuiMenuItem {
   label: string
   handle: (ctx: IPicGo, guiApi: any) => Promise<void>
 }
 
-interface ICommandItem {
+export interface ICommandItem {
   label: string
   name: string
   key: string
@@ -400,7 +400,7 @@ interface ICommandItem {
 /**
  * for spawn output
  */
-interface IResult {
+export interface IResult {
   code: number
   data: string
 }
@@ -408,7 +408,7 @@ interface IResult {
 /**
  * for transformer - path
  */
-interface IImgSize {
+export interface IImgSize {
   width: number
   height: number
   real?: boolean
@@ -417,11 +417,11 @@ interface IImgSize {
 /**
  * for initUtils
  */
-interface IFileTree {
+export interface IFileTree {
   [filePath: string]: string | Buffer
 }
 
-interface IOptions {
+export interface IOptions {
   template: string // template name
   dest: string // destination for template to generate
   hasSlash: boolean // check if is officail template
@@ -435,7 +435,7 @@ interface IOptions {
 /**
  * for clipboard image
  */
-interface IClipboardImage {
+export interface IClipboardImage {
   imgPath: string
   /**
    * if the path is generate by picgo -> false
@@ -447,25 +447,25 @@ interface IClipboardImage {
 /**
  * for install command environment variable
  */
-interface IProcessEnv {
+export interface IProcessEnv {
   [propName: string]: Undefinable<string>
 }
 
-type ILogArgvType = string | number
+export type ILogArgvType = string | number
 
-type ILogArgvTypeWithError = ILogArgvType | Error
+export type ILogArgvTypeWithError = ILogArgvType | Error
 
-type Nullable<T> = T | null
-type Undefinable<T> = T | undefined
+export type Nullable<T> = T | null
+export type Undefinable<T> = T | undefined
 
-interface ILogger {
+export interface ILogger {
   success: (...msg: ILogArgvType[]) => void
   info: (...msg: ILogArgvType[]) => void
   error: (...msg: ILogArgvTypeWithError[]) => void
   warn: (...msg: ILogArgvType[]) => void
 }
 
-interface IConfigChangePayload<T> {
+export interface IConfigChangePayload<T> {
   configName: string
   value: T
 }

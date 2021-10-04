@@ -144,7 +144,7 @@ const handle = async (ctx: IPicGo): Promise<IPicGo | boolean> => {
       }
     }
     return ctx
-  } catch (err) {
+  } catch (err: any) {
     if (!tcYunOptions.version || tcYunOptions.version === 'v4') {
       try {
         const body = JSON.parse(err.error)

@@ -85,7 +85,7 @@ const setting = {
                 return ctx.log.warn('Available modules are uploader|transformer|plugin')
             }
             ctx.log.success('Configure config successfully!')
-          } catch (e) {
+          } catch (e: any) {
             ctx.log.error(e)
             if (process.argv.includes('--debug')) {
               throw e

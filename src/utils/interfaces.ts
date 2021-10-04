@@ -1,6 +1,6 @@
 /** This file is deprecated */
 
-import PicGo from '../core/PicGo'
+import { PicGo } from '../core/PicGo'
 import LifecyclePlugins from '../lib/LifecyclePlugins'
 
 /**

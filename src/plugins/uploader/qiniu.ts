@@ -62,7 +62,7 @@ const handle = async (ctx: IPicGo): Promise<IPicGo> => {
       }
     }
     return ctx
-  } catch (err) {
+  } catch (err: any) {
     if (err.message !== 'Upload failed') {
       // err.response maybe undefined
       if (err.response) {

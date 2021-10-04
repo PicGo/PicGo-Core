@@ -229,7 +229,7 @@ class PluginHandler implements IPluginHandler {
           this.ctx.log.error('NPM is not installed')
           this.ctx.emit(IBuildInEvent.FAILED, 'NPM is not installed')
         })
-      } catch (e) {
+      } catch (e: any) {
         this.ctx.log.error(e)
         this.ctx.emit(IBuildInEvent.FAILED, e)
       }

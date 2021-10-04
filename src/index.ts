@@ -1,3 +1,2 @@
-import PicGo from './core/PicGo'
-
-export = PicGo
+export { PicGo } from './core/PicGo'
+export * from './types'

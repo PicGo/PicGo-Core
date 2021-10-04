@@ -24,7 +24,7 @@ class PluginLoader implements IPluginLoader {
       const pkg = {
         name: 'picgo-plugins',
         description: 'picgo-plugins',
-        repository: 'https://github.com/Molunerfinn/PicGo-Core',
+        repository: 'https://github.com/PicGo/PicGo-Core',
         license: 'MIT'
       }
       fs.writeFileSync(packagePath, JSON.stringify(pkg), 'utf8')
@@ -92,7 +92,7 @@ class PluginLoader implements IPluginLoader {
         this.pluginMap.set(name, pluginInterface)
         plugin(this.ctx).register(this.ctx)
       }
-    } catch (e) {
+    } catch (e: any) {
       this.pluginMap.delete(name)
       this.list = this.list.filter((item: string) => item !== name)
       this.fullList.delete(name)

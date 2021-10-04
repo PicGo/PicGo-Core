@@ -2,8 +2,7 @@ import match from 'minimatch'
 import { IPicGo, IOptions, IFileTree } from '../types'
 import fs from 'fs-extra'
 import path from 'path'
-// @ts-expect-error
-import globby from 'globby'
+import globby = require('globby')
 import ejs from 'ejs'
 
 /**
@@ -45,7 +44,7 @@ const generate = async (ctx: IPicGo, options: IOptions): Promise<any> => {
       ctx.log.success(opts.completeMessage)
     }
     ctx.log.success('Done!')
-  } catch (e) {
+  } catch (e: any) {
     return ctx.log.error(e)
   }
 }
@@ -84,7 +83,7 @@ const getOptions = (templatePath: string): any => {
 
 /**
  * Render files to a virtual tree object
- * @param {arry} files
+ * @param {array} files
  */
 const render = (files: string[], source: string, options: any): any => {
   const fileTree: IFileTree = {}
