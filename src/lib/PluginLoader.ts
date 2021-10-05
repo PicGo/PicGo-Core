@@ -8,7 +8,7 @@ import { setCurrentPluginName } from './LifecyclePlugins'
 /**
  * Local plugin loader, file system is required
  */
-class PluginLoader implements IPluginLoader {
+export class PluginLoader implements IPluginLoader {
   private readonly ctx: IPicGo
   private list: string[] = []
   private readonly fullList: Set<string> = new Set()

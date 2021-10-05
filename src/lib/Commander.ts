@@ -5,7 +5,7 @@ import commanders from '../plugins/commander'
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version } = require('../../package.json')
 
-class Commander implements ICommander {
+export class Commander implements ICommander {
   private list: {
     [propName: string]: IPlugin
   }

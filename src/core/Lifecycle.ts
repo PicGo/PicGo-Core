@@ -4,7 +4,7 @@ import { handleUrlEncode } from '../utils/common'
 import { IBuildInEvent } from '../utils/enum'
 import { createContext } from '../utils/createContext'
 
-class Lifecycle extends EventEmitter {
+export class Lifecycle extends EventEmitter {
   private readonly ctx: IPicGo
 
   constructor (ctx: IPicGo) {

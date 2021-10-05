@@ -12,7 +12,7 @@ import {
 import { IBuildInEvent } from '../utils/enum'
 import { getProcessPluginName, getNormalPluginName } from '../utils/common'
 
-class PluginHandler implements IPluginHandler {
+export class PluginHandler implements IPluginHandler {
   // Thanks to feflow -> https://github.com/feflow/feflow/blob/master/lib/internal/install/plugin.js
   private readonly ctx: IPicGo
   constructor (ctx: IPicGo) {
