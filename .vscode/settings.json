@@ -14,11 +14,12 @@
     "eslint.alwaysShowStatus": true,
     "editor.tabSize": 2,
     "cSpell.words": [
-        "Molunerfinn",
         "aliyun",
+        "applescript",
         "commitlint",
         "copyfiles",
         "imgur",
+        "Molunerfinn",
         "picgo",
         "qiniu",
         "smms",

@@ -350,7 +350,6 @@ export const isInputConfigValid = (config: any): boolean => {
 //   /silent/,
 //   /configPath/,
 //   /^settings/,
-//   /PICGO_ENV/
 // ]
 
 // export const isConfigKeyInWhiteList = (key: string): boolean => {

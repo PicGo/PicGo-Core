@@ -5,6 +5,7 @@ import minimist from 'minimist'
 import path from 'path'
 import execa from 'execa'
 import pkg from './package.json'
+import inlineImportPlugin from 'esbuild-plugin-inline-import'
 
 const args = minimist(process.argv.slice(2))
 const isWatch = args.watch || args.w
@@ -66,17 +67,7 @@ const commonOptions = {
   entryPoints: ['src/index.ts'],
   platform: 'node',
   external: [
-    ...Object.keys(pkg.dependencies),
-    'path',
-    'events',
-    'os',
-    'util',
-    'child_process',
-    'lowdb/adapters/FileSync',
-    'url',
-    'crypto',
-    'mime-types',
-    'electron'
+    ...Object.keys(pkg.dependencies)
   ],
   mainFields: ['module', 'main']
   // metafile: true,
@@ -88,7 +79,7 @@ esbuild
     outfile: path.join(outdir, 'index.cjs.js'),
     entryPoints: ['src/index.ts'],
     format: 'cjs',
-    plugins: [watchPlugin('picgo cjs')]
+    plugins: [watchPlugin('picgo cjs'), inlineImportPlugin()]
   })
   .then(resultHandler)
   .catch(() => {
@@ -100,17 +91,12 @@ esbuild
     ...commonOptions,
     outfile: path.join(outdir, 'index.esm.js'),
     format: 'esm',
-    plugins: [watchPlugin('picgo esm')]
+    plugins: [watchPlugin('picgo esm'), inlineImportPlugin()]
   })
   .then(resultHandler)
   .catch(() => {
     process.exit(1)
   })
-
-// copy clipboard scripts
-fse.copy('src/utils/clipboard', `${outdir}/clipboard`, {
-  overwrite: true
-})
 
 // Generating types
 execa('yarn', ['tsc', '--emitDeclarationOnly'], { stdio: 'inherit' })
