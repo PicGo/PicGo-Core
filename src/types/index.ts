@@ -100,6 +100,7 @@ export interface IPluginConfig {
   type: string
   required: boolean
   default?: any
+  alias?: string
   [propName: string]: any
 }
 
@@ -309,10 +310,14 @@ export interface IConfig {
 }
 
 /**
- * for plugin
+ * for an uploader/transformer/beforeTransformHandler/beforeUploadHandler/afterUploadHandler
  */
 export interface IPlugin {
   handle: ((ctx: IPicGo) => Promise<any>) | ((ctx: IPicGo) => void)
+  /** The name of this handler */
+  name?: string
+  /** The config of this handler */
+  config?: (ctx: IPicGo) => IPluginConfig[]
   [propName: string]: any
 }
 

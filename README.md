@@ -87,8 +87,21 @@ Thanks to [vs-picgo](https://github.com/Spades-S/vs-picgo) && [Spades-S](https:/
 
 ### Use in node project
 
+#### Common JS
+
 ```js
 const { PicGo } = require('picgo')
+```
+
+#### ES Module
+
+```js
+import { PicGo } from 'picgo'
+```
+
+#### API usage example
+
+```js
 const picgo = new PicGo()
 
 // upload a picture from path
