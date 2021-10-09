@@ -19,9 +19,6 @@ import { IBuildInEvent, IBusEvent } from '../utils/enum'
 import { eventBus } from '../utils/eventBus'
 import { RequestPromiseAPI } from 'request-promise-native'
 import { isConfigKeyInBlackList, isInputConfigValid } from '../utils/common'
-// If use import, typescript will report error because package.json in not contained in src, but our rootDir is src (in order to generate .d.ts only in src)
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const { version } = require('../../package.json')
 
 export class PicGo extends EventEmitter implements IPicGo {
   private _config!: IConfig
@@ -42,7 +39,7 @@ export class PicGo extends EventEmitter implements IPicGo {
    * use request instead
    */
   Request!: Request
-  VERSION: string = version
+  VERSION: string = process.env.PICGO_VERSION
   GUI_VERSION?: string
 
   get pluginLoader (): IPluginLoader {

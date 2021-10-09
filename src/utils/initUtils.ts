@@ -2,7 +2,7 @@ import match from 'minimatch'
 import { IPicGo, IOptions, IFileTree } from '../types'
 import fs from 'fs-extra'
 import path from 'path'
-import globby = require('globby')
+import globby from 'globby'
 import ejs from 'ejs'
 
 /**
