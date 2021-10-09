@@ -12,6 +12,9 @@
         "<node_internals>/**"
       ],
       "program": "${workspaceFolder}/bin/picgo",
+      "args": [
+        "upload"
+      ],
       "outFiles": [
         "${workspaceFolder}/**/*.js"
       ]
