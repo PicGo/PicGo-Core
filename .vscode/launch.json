@@ -11,8 +11,13 @@
       "skipFiles": [
         "<node_internals>/**"
       ],
-      "preLaunchTask": "npm: debug", // the label in tasks.json
-      "program": "${workspaceFolder}\\temp.js"
+      "program": "${workspaceFolder}/bin/picgo",
+      "args": [
+        "upload"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/**/*.js"
+      ]
     }
   ]
 }

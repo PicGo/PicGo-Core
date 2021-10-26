@@ -2,9 +2,8 @@ import { Command } from 'commander'
 import inquirer, { Inquirer } from 'inquirer'
 import { IPlugin, ICommander, IPicGo } from '../types'
 import commanders from '../plugins/commander'
-import { version } from '../../package.json'
 
-class Commander implements ICommander {
+export class Commander implements ICommander {
   private list: {
     [propName: string]: IPlugin
   }
@@ -22,7 +21,7 @@ class Commander implements ICommander {
 
   init (): void {
     this.program
-      .version(version, '-v, --version')
+      .version(process.env.PICGO_VERSION, '-v, --version')
       .option('-d, --debug', 'debug mode', () => {
         this.ctx.setConfig({
           debug: true

@@ -6,42 +6,71 @@ import fs from 'fs-extra'
 import isWsl from 'is-wsl'
 import { IPicGo, IClipboardImage } from '../types'
 import { IBuildInEvent } from './enum'
+import macClipboardScript from './clipboard/mac.applescript'
+import windowsClipboardScript from './clipboard/windows.ps1'
+import windows10ClipboardScript from './clipboard/windows10.ps1'
+import linuxClipboardScript from './clipboard/linux.sh'
+import wslClipboardScript from './clipboard/wsl.sh'
 
-const getCurrentPlatform = (): string => {
+export type Platform = 'darwin' | 'win32' | 'win10' | 'linux' | 'wsl'
+
+const getCurrentPlatform = (): Platform => {
   const platform = process.platform
   if (isWsl) {
     return 'wsl'
   }
-  if (platform !== 'win32') {
-    return platform
-  } else {
+  if (platform === 'win32') {
     const currentOS = os.release().split('.')[0]
     if (currentOS === '10') {
       return 'win10'
     } else {
       return 'win32'
     }
+  } else if (platform === 'darwin') {
+    return 'darwin'
+  } else {
+    return 'linux'
   }
+}
+
+const platform2ScriptContent: {
+  [key in Platform]: string
+} = {
+  darwin: macClipboardScript,
+  win32: windowsClipboardScript,
+  win10: windows10ClipboardScript,
+  linux: linuxClipboardScript,
+  wsl: wslClipboardScript
+}
+/**
+ * powershell will report error if file does not have a '.ps1' extension,
+ * so we should keep the extension name consistent with corresponding shell
+ */
+const platform2ScriptFilename: {
+  [key in Platform]: string
+} = {
+  darwin: 'mac.applescript',
+  win32: 'windows.ps1',
+  win10: 'windows10.ps1',
+  linux: 'linux.sh',
+  wsl: 'wsl.sh'
 }
 
 // Thanks to vs-picgo: https://github.com/Spades-S/vs-picgo/blob/master/src/extension.ts
 const getClipboardImage = async (ctx: IPicGo): Promise<IClipboardImage> => {
   const imagePath = path.join(ctx.baseDir, `${dayjs().format('YYYYMMDDHHmmss')}.png`)
   return await new Promise<IClipboardImage>((resolve: Function, reject: Function): void => {
-    const platform: string = getCurrentPlatform()
-    let execution
-    // for PicGo GUI
-    const env = ctx.getConfig('PICGO_ENV') === 'GUI'
-    const platformPaths: {
-      [index: string]: string
-    } = {
-      darwin: env ? path.join(ctx.baseDir, 'mac.applescript') : './clipboard/mac.applescript',
-      win32: env ? path.join(ctx.baseDir, 'windows.ps1') : './clipboard/windows.ps1',
-      win10: env ? path.join(ctx.baseDir, 'windows10.ps1') : './clipboard/windows10.ps1',
-      linux: env ? path.join(ctx.baseDir, 'linux.sh') : './clipboard/linux.sh',
-      wsl: env ? path.join(ctx.baseDir, 'wsl.sh') : './clipboard/wsl.sh'
+    const platform = getCurrentPlatform()
+    const scriptPath = path.join(__dirname, platform2ScriptFilename[platform])
+    // If the script does not exist yet, we need to write the content to the script file
+    if (!fs.existsSync(scriptPath)) {
+      fs.writeFileSync(
+        scriptPath,
+        platform2ScriptContent[platform],
+        'utf8'
+      )
     }
-    const scriptPath = env ? platformPaths[platform] : path.join(__dirname, platformPaths[platform])
+    let execution
     if (platform === 'darwin') {
       execution = spawn('osascript', [scriptPath, imagePath])
     } else if (platform === 'win32' || platform === 'win10') {

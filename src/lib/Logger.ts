@@ -13,7 +13,7 @@ import {
   IPicGo
 } from '../types'
 
-class Logger implements ILogger {
+export class Logger implements ILogger {
   private readonly level = {
     [ILogType.success]: 'green',
     [ILogType.info]: 'blue',

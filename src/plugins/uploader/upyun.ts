@@ -59,7 +59,7 @@ const handle = async (ctx: IPicGo): Promise<IPicGo> => {
       }
     }
     return ctx
-  } catch (err) {
+  } catch (err: any) {
     if (err.message === 'Upload failed') {
       ctx.emit(IBuildInEvent.NOTIFICATION, {
         title: '上传失败',

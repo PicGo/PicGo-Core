@@ -1,6 +1,6 @@
 import { IPlugin, ILifecyclePlugins } from '../types'
 
-class LifecyclePlugins implements ILifecyclePlugins {
+export class LifecyclePlugins implements ILifecyclePlugins {
   static currentPlugin: string | null
   private readonly list: Map<string, IPlugin>
   private readonly pluginIdMap: Map<string, string[]>

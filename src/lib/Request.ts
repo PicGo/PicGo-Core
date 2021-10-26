@@ -3,7 +3,7 @@ import { IPicGo, Undefinable, IConfigChangePayload, IConfig } from '../types'
 import { IBusEvent } from '../utils/enum'
 import { eventBus } from '../utils/eventBus'
 
-class Request {
+export class Request {
   private readonly ctx: IPicGo
   private proxy: Undefinable<string> = ''
   options: RequestPromiseOptions = {}

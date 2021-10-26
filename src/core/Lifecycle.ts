@@ -4,7 +4,7 @@ import { handleUrlEncode } from '../utils/common'
 import { IBuildInEvent } from '../utils/enum'
 import { createContext } from '../utils/createContext'
 
-class Lifecycle extends EventEmitter {
+export class Lifecycle extends EventEmitter {
   private readonly ctx: IPicGo
 
   constructor (ctx: IPicGo) {
@@ -30,7 +30,7 @@ class Lifecycle extends EventEmitter {
       await this.doUpload(ctx)
       await this.afterUpload(ctx)
       return ctx
-    } catch (e) {
+    } catch (e: any) {
       ctx.log.warn(IBuildInEvent.FAILED)
       ctx.emit(IBuildInEvent.UPLOAD_PROGRESS, -1)
       ctx.emit(IBuildInEvent.FAILED, e)

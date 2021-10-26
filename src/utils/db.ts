@@ -1,5 +1,4 @@
 import lowdb from 'lowdb'
-// @ts-expect-error
 import lodashId from 'lodash-id'
 import FileSync from 'lowdb/adapters/FileSync'
 import json from 'comment-json'
@@ -25,7 +24,7 @@ class DB {
           uploader: 'smms',
           current: 'smms'
         }).write()
-      } catch (e) {
+      } catch (e: any) {
         this.ctx.log.error(e)
         throw e
       }
@@ -33,7 +32,7 @@ class DB {
     if (!this.db.has('picgoPlugins').value()) {
       try {
         this.db.set('picgoPlugins', {}).write()
-      } catch (e) {
+      } catch (e: any) {
         this.ctx.log.error(e)
         throw e
       }

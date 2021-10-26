@@ -10,12 +10,13 @@
     "allowSyntheticDefaultImports": true,
     "strictNullChecks": true,
     "strictFunctionTypes": true,
-    "sourceMap": false,
+    "sourceMap": true,
     "target": "es2017",
     "declaration": true,
     "outDir": "dist",
     // "skipLibCheck": true,
-    // "baseUrl": ".",
+    // "baseUrl": "src",
+    "rootDir": "src",
     // "typeRoots": [
     //   "./node_modules/@types",
     //   "./src/types",
@@ -27,9 +28,7 @@
       "es2017",
       "es2015",
       "es6"
-    ]
+    ],
   },
-  "include": [
-    "./src/**/*"
-  ]
+  "exclude": [ "node_modules", "dist"]
 }
