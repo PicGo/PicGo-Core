@@ -1,3 +1,12 @@
+# :tada: 1.5.0-alpha.0 (2021-10-26)
+
+
+### :package: Chore
+
+* **build:** migrate to esbuild and change export assignment to esm export ([#102](https://github.com/PicGo/PicGo-Core/issues/102)) ([2a6cd18](https://github.com/PicGo/PicGo-Core/commit/2a6cd18))
+
+
+
 ## :tada: 1.4.26 (2021-08-23)
 
 
