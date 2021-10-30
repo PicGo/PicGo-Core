@@ -1,6 +1,7 @@
 import { RequestPromiseAPI } from 'request-promise-native'
 import { Command } from 'commander'
 import { Inquirer } from 'inquirer'
+import { LogLevel } from '..'
 
 export interface IPicGo extends NodeJS.EventEmitter {
   /**
@@ -298,7 +299,7 @@ export interface IConfig {
   debug?: boolean
   silent?: boolean
   settings?: {
-    logLevel?: string
+    logLevel?: LogLevel | LogLevel[]
     logPath?: string
     /** for npm */
     registry?: string
