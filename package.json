@@ -92,6 +92,7 @@
     "typescript": "^4.4.3"
   },
   "dependencies": {
+    "@picgo/i18n": "^1.0.0",
     "chalk": "^2.4.1",
     "commander": "^8.1.0",
     "comment-json": "^2.3.1",
