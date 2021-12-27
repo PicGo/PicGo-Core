@@ -19,6 +19,7 @@ import { IBuildInEvent, IBusEvent } from '../utils/enum'
 import { eventBus } from '../utils/eventBus'
 import { RequestPromiseAPI } from 'request-promise-native'
 import { isConfigKeyInBlackList, isInputConfigValid } from '../utils/common'
+import { pluginHostManager } from '../lib/PluginHostManager'
 
 export class PicGo extends EventEmitter implements IPicGo {
   private _config!: IConfig
@@ -64,6 +65,11 @@ export class PicGo extends EventEmitter implements IPicGo {
     this.pluginHandler = new PluginHandler(this)
     this.initConfig()
     this.init()
+    this.initPluginHost()
+  }
+
+  private initPluginHost (): void {
+    pluginHostManager.init()
   }
 
   private initConfigPath (): void {

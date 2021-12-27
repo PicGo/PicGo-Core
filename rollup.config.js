@@ -73,10 +73,38 @@ const nodeEsm = {
   ...commonOptions
 }
 
+const pluginHost = {
+  ...commonOptions,
+  input: './src/pluginHost/node/index.ts',
+  plugins: [
+    typescript({
+      tsconfigOverride: {
+        compilerOptions: {
+          target: 'ES2017',
+          module: 'ES2015'
+        }
+      }
+    }),
+    // terser(),
+    commonjs(),
+    replace({
+      'process.env.PICGO_VERSION': JSON.stringify(pkg.version),
+      preventAssignment: true
+    })
+  ],
+  output: [{
+    file: 'dist/pluginHost/node.js',
+    format: 'cjs',
+    banner,
+    sourcemap
+  }]
+}
+
 const bundles = []
 const env = process.env.BUNDLES || ''
 if (env.includes('cjs')) bundles.push(nodeCjs)
 if (env.includes('esm')) bundles.push(nodeEsm)
 if (bundles.length === 0) bundles.push(nodeCjs, nodeEsm)
+bundles.push(pluginHost)
 
 export default bundles
