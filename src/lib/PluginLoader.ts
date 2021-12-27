@@ -92,11 +92,11 @@ export class PluginLoader implements IPluginLoader {
         this.pluginMap.set(name, pluginInterface)
         plugin(this.ctx).register(this.ctx)
       }
-    } catch (e: any) {
+    } catch (e) {
       this.pluginMap.delete(name)
       this.list = this.list.filter((item: string) => item !== name)
       this.fullList.delete(name)
-      this.ctx.log.error(e)
+      this.ctx.log.error(e as Error)
       this.ctx.emit(IBuildInEvent.NOTIFICATION, {
         title: `Plugin ${name} Load Error`,
         body: e

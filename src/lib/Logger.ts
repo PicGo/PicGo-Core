@@ -47,12 +47,12 @@ export class Logger implements ILogger {
         let log = `${dayjs().format('YYYY-MM-DD HH:mm:ss')} [PicGo ${type.toUpperCase()}] `
         msg.forEach((item: ILogArgvTypeWithError) => {
           if (typeof item === 'object' && type === 'error') {
-            log += `\n------Error Stack Begin------\n${util.format(item.stack)}\n-------Error Stack End------- `
+            log += `\n------Error Stack Begin------\n${util.format(item?.stack)}\n-------Error Stack End------- `
           } else {
             if (typeof item === 'object') {
               item = JSON.stringify(item)
             }
-            log += `${item} `
+            log += `${item as string} `
           }
         })
         log += '\n'

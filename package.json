@@ -15,7 +15,7 @@
     "start": "node ./bin/picgo",
     "lint": "eslint src/**/*.ts && npm run build",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rm -rf ./dist && rollup -c rollup.config.js && ls -lh dist",
+    "build": "rimraf ./dist && rollup -c rollup.config.js",
     "dev": "rollup -c rollup.config.js -w",
     "patch": "npm version patch && git push origin master && git push origin --tags",
     "minor": "npm version minor && git push origin master && git push origin --tags",
@@ -115,7 +115,7 @@
     "request": "^2.87.0",
     "request-promise-native": "^1.0.5",
     "resolve": "^1.8.1",
-    "rimraf": "^2.6.3"
+    "rimraf": "^3.0.2"
   },
   "repository": {
     "type": "git",
