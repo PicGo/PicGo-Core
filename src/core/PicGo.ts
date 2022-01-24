@@ -10,7 +10,7 @@ import uploaders from '../plugins/uploader'
 import transformers from '../plugins/transformer'
 import PluginLoader from '../lib/PluginLoader'
 import { get, set, unset } from 'lodash'
-import { IHelper, IImgInfo, IConfig, IPicGo, IStringKeyMap, IPluginLoader } from '../types'
+import { IHelper, IImgInfo, IConfig, IPicGo, IStringKeyMap, IPluginLoader, II18nManager } from '../types'
 import getClipboardImage from '../utils/getClipboardImage'
 import Request from '../lib/Request'
 import DB from '../utils/db'
@@ -19,6 +19,7 @@ import { IBuildInEvent, IBusEvent } from '../utils/enum'
 import { eventBus } from '../utils/eventBus'
 import { RequestPromiseAPI } from 'request-promise-native'
 import { isConfigKeyInBlackList, isInputConfigValid } from '../utils/common'
+import { i18nManager } from '../i18n'
 
 export class PicGo extends EventEmitter implements IPicGo {
   private _config!: IConfig
@@ -39,6 +40,7 @@ export class PicGo extends EventEmitter implements IPicGo {
    * use request instead
    */
   Request!: Request
+  i18n: II18nManager = i18nManager
   VERSION: string = process.env.PICGO_VERSION
   GUI_VERSION?: string
 
@@ -98,11 +100,17 @@ export class PicGo extends EventEmitter implements IPicGo {
       // load third-party plugins
       this._pluginLoader.load()
       this.lifecycle = new Lifecycle(this)
+      this.initI18n()
     } catch (e: any) {
       this.emit(IBuildInEvent.UPLOAD_PROGRESS, -1)
       this.log.error(e)
       throw e
     }
+  }
+
+  private initI18n (): void {
+    const language = this.getConfig<string>('settings.language') || 'zh-CN'
+    this.i18n.setLanguage(language)
   }
 
   registerCommands (): void {

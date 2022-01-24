@@ -474,3 +474,9 @@ export interface IConfigChangePayload<T> {
   configName: string
   value: T
 }
+
+export interface II18nManager {
+  translate: <T extends string>(key: T, args?: IStringKeyMap<string>) => string
+  addLocale: (language: string, locales: ILocale) => boolean
+  setLanguage: (language: string) => void
+}
