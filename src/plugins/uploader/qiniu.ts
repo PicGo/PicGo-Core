@@ -2,6 +2,7 @@ import qiniu from 'qiniu'
 import { IPluginConfig, IQiniuConfig, IPicGo } from '../../types'
 import { Options } from 'request-promise-native'
 import { IBuildInEvent } from '../../utils/enum'
+import { ILocalesKey } from '../../i18n/zh-CN'
 
 function postOptions (options: IQiniuConfig, fileName: string, token: string, imgBase64: string): Options {
   const area = selectArea(options.area || 'z0')
@@ -54,7 +55,7 @@ const handle = async (ctx: IPicGo): Promise<IPicGo> => {
           img.imgUrl = `${baseUrl}/${body.key as string}${options}`
         } else {
           ctx.emit(IBuildInEvent.NOTIFICATION, {
-            title: '上传失败',
+            title: ctx.i18n.translate<ILocalesKey>('UPLOAD_FAILED'),
             body: res.body.msg
           })
           throw new Error('Upload failed')
@@ -68,7 +69,7 @@ const handle = async (ctx: IPicGo): Promise<IPicGo> => {
       if (err.response) {
         const error = JSON.parse(err.response.body || '{}')
         ctx.emit(IBuildInEvent.NOTIFICATION, {
-          title: '上传失败',
+          title: ctx.i18n.translate<ILocalesKey>('UPLOAD_FAILED'),
           body: error.error
         })
       }
@@ -79,46 +80,53 @@ const handle = async (ctx: IPicGo): Promise<IPicGo> => {
 
 const config = (ctx: IPicGo): IPluginConfig[] => {
   const userConfig = ctx.getConfig<IQiniuConfig>('picBed.qiniu') || {}
-  const config = [
+  const config: IPluginConfig[] = [
     {
       name: 'accessKey',
       type: 'input',
+      alias: ctx.i18n.translate<ILocalesKey>('PICBED_QINIU_ACCESSKEY'),
       default: userConfig.accessKey || '',
       required: true
     },
     {
       name: 'secretKey',
       type: 'input',
+      alias: ctx.i18n.translate<ILocalesKey>('PICBED_QINIU_SECRETKEY'),
       default: userConfig.secretKey || '',
       required: true
     },
     {
       name: 'bucket',
       type: 'input',
+      alias: ctx.i18n.translate<ILocalesKey>('PICBED_QINIU_BUCKET'),
       default: userConfig.bucket || '',
       required: true
     },
     {
       name: 'url',
       type: 'input',
+      alias: ctx.i18n.translate<ILocalesKey>('PICBED_QINIU_URL'),
       default: userConfig.url || '',
       required: true
     },
     {
       name: 'area',
       type: 'input',
+      alias: ctx.i18n.translate<ILocalesKey>('PICBED_QINIU_AREA'),
       default: userConfig.area || '',
       required: true
     },
     {
       name: 'options',
       type: 'input',
+      alias: ctx.i18n.translate<ILocalesKey>('PICBED_QINIU_OPTIONS'),
       default: userConfig.options || '',
       required: false
     },
     {
       name: 'path',
       type: 'input',
+      alias: ctx.i18n.translate<ILocalesKey>('PICBED_QINIU_PATH'),
       default: userConfig.path || '',
       required: false
     }
@@ -126,8 +134,10 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
   return config
 }
 
-export default {
-  name: '七牛图床',
-  handle,
-  config
+export default function register (ctx: IPicGo): void {
+  ctx.helper.uploader.register('qiniu', {
+    name: ctx.i18n.translate<ILocalesKey>('PICBED_QINIU'),
+    handle,
+    config
+  })
 }

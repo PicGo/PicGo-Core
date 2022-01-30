@@ -66,6 +66,8 @@ export interface IPicGo extends NodeJS.EventEmitter {
    */
   request: RequestPromiseAPI
 
+  i18n: II18nManager
+
   /**
    * get picgo config
    */

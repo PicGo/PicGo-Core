@@ -3,6 +3,7 @@ import crypto from 'crypto'
 import MD5 from 'md5'
 import { Options } from 'request-promise-native'
 import { IBuildInEvent } from '../../utils/enum'
+import { ILocalesKey } from '../../i18n/zh-CN'
 
 // generate COS signature string
 const generateSignature = (options: IUpyunConfig, fileName: string): string => {
@@ -62,14 +63,16 @@ const handle = async (ctx: IPicGo): Promise<IPicGo> => {
   } catch (err: any) {
     if (err.message === 'Upload failed') {
       ctx.emit(IBuildInEvent.NOTIFICATION, {
-        title: '上传失败',
-        body: '请检查你的配置项是否正确'
+        title: ctx.i18n.translate<ILocalesKey>('UPLOAD_FAILED'),
+        body: ctx.i18n.translate<ILocalesKey>('CHECK_SETTINGS')
       })
     } else {
       const body = JSON.parse(err.error)
       ctx.emit(IBuildInEvent.NOTIFICATION, {
-        title: '上传失败',
-        body: `错误码：${body.code as string}，请打开浏览器粘贴地址查看相关原因`,
+        title: ctx.i18n.translate<ILocalesKey>('UPLOAD_FAILED'),
+        body: ctx.i18n.translate<ILocalesKey>('UPLOAD_FAILED_REASON', {
+          code: body.code as string
+        }),
         text: 'http://docs.upyun.com/api/errno/'
       })
     }
@@ -79,40 +82,46 @@ const handle = async (ctx: IPicGo): Promise<IPicGo> => {
 
 const config = (ctx: IPicGo): IPluginConfig[] => {
   const userConfig = ctx.getConfig<IUpyunConfig>('picBed.upyun') || {}
-  const config = [
+  const config: IPluginConfig[] = [
     {
       name: 'bucket',
       type: 'input',
+      alias: ctx.i18n.translate<ILocalesKey>('PICBED_UPYUN'),
       default: userConfig.bucket || '',
       required: true
     },
     {
       name: 'operator',
       type: 'input',
+      alias: ctx.i18n.translate<ILocalesKey>('PICBED_UPYUN_OPERATOR'),
       default: userConfig.operator || '',
       required: true
     },
     {
       name: 'password',
       type: 'password',
+      alias: ctx.i18n.translate<ILocalesKey>('PICBED_UPYUN_PASSWORD'),
       default: userConfig.password || '',
       required: true
     },
     {
       name: 'url',
       type: 'input',
+      alias: ctx.i18n.translate<ILocalesKey>('PICBED_UPYUN_URL'),
       default: userConfig.url || '',
       required: true
     },
     {
       name: 'options',
       type: 'input',
+      alias: ctx.i18n.translate<ILocalesKey>('PICBED_UPYUN_OPTIONS'),
       default: userConfig.options || '',
       required: true
     },
     {
       name: 'path',
       type: 'input',
+      alias: ctx.i18n.translate<ILocalesKey>('PICBED_UPYUN_PATH'),
       default: userConfig.path || '',
       required: false
     }
@@ -120,8 +129,10 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
   return config
 }
 
-export default {
-  name: '又拍云图床',
-  handle,
-  config
+export default function register (ctx: IPicGo): void {
+  ctx.helper.uploader.register('upyun', {
+    name: ctx.i18n.translate<ILocalesKey>('PICBED_UPYUN'),
+    handle,
+    config
+  })
 }

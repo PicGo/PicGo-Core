@@ -19,6 +19,7 @@ export const createContext = (ctx: IPicGo): IPicGo => {
     VERSION: ctx.VERSION,
     GUI_VERSION: ctx.GUI_VERSION,
     request: ctx.request,
+    i18n: ctx.i18n,
     getConfig: ctx.getConfig.bind(ctx),
     saveConfig: ctx.saveConfig.bind(ctx),
     removeConfig: ctx.removeConfig.bind(ctx),

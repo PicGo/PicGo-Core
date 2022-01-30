@@ -3,6 +3,7 @@ import mime from 'mime-types'
 import { IPicGo, IPluginConfig, ITcyunConfig } from '../../types'
 import { Options } from 'request-promise-native'
 import { IBuildInEvent } from '../../utils/enum'
+import { ILocalesKey } from '../../i18n/zh-CN'
 
 // generate COS signature string
 
@@ -109,7 +110,7 @@ const handle = async (ctx: IPicGo): Promise<IPicGo | boolean> => {
             return {
               statusCode: 400,
               body: {
-                msg: '认证失败！'
+                msg: ctx.i18n.translate<ILocalesKey>('AUTH_FAILED')
               }
             }
           })
@@ -149,8 +150,10 @@ const handle = async (ctx: IPicGo): Promise<IPicGo | boolean> => {
       try {
         const body = JSON.parse(err.error)
         ctx.emit(IBuildInEvent.NOTIFICATION, {
-          title: '上传失败',
-          body: `错误码：${body.code as string}，请打开浏览器粘贴地址查看相关原因`,
+          title: ctx.i18n.translate<ILocalesKey>('UPLOAD_FAILED'),
+          body: ctx.i18n.translate<ILocalesKey>('UPLOAD_FAILED_REASON', {
+            code: body.code as string
+          }),
           text: 'https://cloud.tencent.com/document/product/436/8432'
         })
       } catch (e) {}
@@ -161,52 +164,60 @@ const handle = async (ctx: IPicGo): Promise<IPicGo | boolean> => {
 
 const config = (ctx: IPicGo): IPluginConfig[] => {
   const userConfig = ctx.getConfig<ITcyunConfig>('picBed.tcyun') || {}
-  const config = [
+  const config: IPluginConfig[] = [
     {
       name: 'secretId',
       type: 'input',
+      alias: ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_SECRETID'),
       default: userConfig.secretId || '',
       required: true
     },
     {
       name: 'secretKey',
       type: 'input',
+      alias: ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_SECRETKEY'),
       default: userConfig.secretKey || '',
       required: true
     },
     {
       name: 'bucket',
       type: 'input',
+      alias: ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_BUCKET'),
       default: userConfig.bucket || '',
       required: true
     },
     {
       name: 'appId',
       type: 'input',
+      alias: ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_APPID'),
       default: userConfig.appId || '',
       required: true
     },
     {
       name: 'area',
       type: 'input',
+      alias: ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_AREA'),
       default: userConfig.area || '',
       required: true
     },
     {
       name: 'path',
       type: 'input',
+      alias: ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_PATH'),
       default: userConfig.path || '',
       required: false
     },
     {
       name: 'customUrl',
       type: 'input',
+      alias: ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_CUSTOMURL'),
       default: userConfig.customUrl || '',
       required: false
     },
     {
       name: 'version',
       type: 'list',
+      alias: ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_VERSION'),
       choices: ['v4', 'v5'],
       default: 'v5',
       required: false
@@ -215,8 +226,10 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
   return config
 }
 
-export default {
-  name: '腾讯云COS',
-  handle,
-  config
+export default function register (ctx: IPicGo): void {
+  ctx.helper.uploader.register('tcyun', {
+    name: ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD'),
+    handle,
+    config
+  })
 }

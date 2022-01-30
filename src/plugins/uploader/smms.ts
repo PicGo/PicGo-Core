@@ -1,6 +1,7 @@
 import { IPicGo, IPluginConfig, ISmmsConfig } from '../../types'
 import { Options } from 'request-promise-native'
 import { IBuildInEvent } from '../../utils/enum'
+import { ILocalesKey } from '../../i18n/zh-CN'
 
 const postOptions = (fileName: string, image: Buffer, apiToken: string): Options => {
   return {
@@ -45,7 +46,7 @@ const handle = async (ctx: IPicGo): Promise<IPicGo> => {
         img.imgUrl = body.images
       } else {
         ctx.emit(IBuildInEvent.NOTIFICATION, {
-          title: '上传失败',
+          title: ctx.i18n.translate<ILocalesKey>('UPLOAD_FAILED'),
           body: body.message
         })
         throw new Error(body.message)
@@ -57,11 +58,12 @@ const handle = async (ctx: IPicGo): Promise<IPicGo> => {
 
 const config = (ctx: IPicGo): IPluginConfig[] => {
   const userConfig = ctx.getConfig<ISmmsConfig>('picBed.smms') || {}
-  const config = [
+  const config: IPluginConfig[] = [
     {
       name: 'token',
       message: 'api token',
       type: 'input',
+      alias: ctx.i18n.translate<ILocalesKey>('PICBED_SMMS_TOKEN'),
       default: userConfig.token || '',
       required: true
     }
@@ -69,8 +71,10 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
   return config
 }
 
-export default {
-  name: 'SM.MS图床',
-  handle,
-  config
+export default function register (ctx: IPicGo): void {
+  ctx.helper.uploader.register('smms', {
+    name: ctx.i18n.translate<ILocalesKey>('PICBED_SMMS'),
+    handle,
+    config
+  })
 }

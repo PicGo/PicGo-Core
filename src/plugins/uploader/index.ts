@@ -10,13 +10,13 @@ import upYunUploader from './upyun'
 const buildInUploaders: IPicGoPlugin = () => {
   return {
     register (ctx: IPicGo) {
-      ctx.helper.uploader.register('smms', SMMSUploader)
-      ctx.helper.uploader.register('tcyun', tcYunUploader)
-      ctx.helper.uploader.register('github', githubUploader)
-      ctx.helper.uploader.register('qiniu', qiniuUploader)
-      ctx.helper.uploader.register('imgur', imgurUploader)
-      ctx.helper.uploader.register('aliyun', aliYunUploader)
-      ctx.helper.uploader.register('upyun', upYunUploader)
+      aliYunUploader(ctx)
+      tcYunUploader(ctx)
+      SMMSUploader(ctx)
+      githubUploader(ctx)
+      qiniuUploader(ctx)
+      imgurUploader(ctx)
+      upYunUploader(ctx)
     }
   }
 }

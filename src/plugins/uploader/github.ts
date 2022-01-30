@@ -1,6 +1,7 @@
 import { IPicGo, IPluginConfig, IGithubConfig } from '../../types'
 import { Options } from 'request-promise-native'
 import { IBuildInEvent } from '../../utils/enum'
+import { ILocalesKey } from '../../i18n/zh-CN'
 
 const postOptions = (fileName: string, options: IGithubConfig, data: any): Options => {
   const path = options.path || ''
@@ -51,8 +52,8 @@ const handle = async (ctx: IPicGo): Promise<IPicGo> => {
     return ctx
   } catch (err) {
     ctx.emit(IBuildInEvent.NOTIFICATION, {
-      title: '上传失败',
-      body: '服务端出错，请重试'
+      title: ctx.i18n.translate<ILocalesKey>('UPLOAD_FAILED'),
+      body: ctx.i18n.translate<ILocalesKey>('CHECK_SETTINGS_AND_NETWORK')
     })
     throw err
   }
@@ -60,34 +61,39 @@ const handle = async (ctx: IPicGo): Promise<IPicGo> => {
 
 const config = (ctx: IPicGo): IPluginConfig[] => {
   const userConfig = ctx.getConfig<IGithubConfig>('picBed.github') || {}
-  const config = [
+  const config: IPluginConfig[] = [
     {
       name: 'repo',
       type: 'input',
+      alias: ctx.i18n.translate<ILocalesKey>('PICBED_GITHUB_REPO'),
       default: userConfig.repo || '',
       required: true
     },
     {
       name: 'branch',
       type: 'input',
+      alias: ctx.i18n.translate<ILocalesKey>('PICBED_GITHUB_BRANCH'),
       default: userConfig.branch || 'master',
       required: true
     },
     {
       name: 'token',
       type: 'input',
+      alias: ctx.i18n.translate<ILocalesKey>('PICBED_GITHUB_TOKEN'),
       default: userConfig.token || '',
       required: true
     },
     {
       name: 'path',
       type: 'input',
+      alias: ctx.i18n.translate<ILocalesKey>('PICBED_GITHUB_PATH'),
       default: userConfig.path || '',
       required: false
     },
     {
       name: 'customUrl',
       type: 'input',
+      alias: ctx.i18n.translate<ILocalesKey>('PICBED_GITHUB_CUSTOMURL'),
       default: userConfig.customUrl || '',
       required: false
     }
@@ -95,8 +101,10 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
   return config
 }
 
-export default {
-  name: 'GitHub图床',
-  handle,
-  config
+export default function register (ctx: IPicGo): void {
+  ctx.helper.uploader.register('github', {
+    name: ctx.i18n.translate<ILocalesKey>('PICBED_GITHUB'),
+    handle,
+    config
+  })
 }

@@ -1,6 +1,7 @@
 import { IPicGo, IPluginConfig, IImgurConfig } from '../../types'
 import { Options } from 'request-promise-native'
 import { IBuildInEvent } from '../../utils/enum'
+import { ILocalesKey } from '../../i18n/zh-CN'
 
 const postOptions = (options: IImgurConfig, fileName: string, imgBase64: string): Options => {
   const clientId = options.clientId
@@ -49,8 +50,8 @@ const handle = async (ctx: IPicGo): Promise<IPicGo> => {
     return ctx
   } catch (err) {
     ctx.emit(IBuildInEvent.NOTIFICATION, {
-      title: '上传失败',
-      body: '请检查你的配置以及网络',
+      title: ctx.i18n.translate<ILocalesKey>('UPLOAD_FAILED'),
+      body: ctx.i18n.translate<ILocalesKey>('CHECK_SETTINGS_AND_NETWORK'),
       text: 'http://docs.imgur.com/api/errno/'
     })
     throw err
@@ -59,16 +60,18 @@ const handle = async (ctx: IPicGo): Promise<IPicGo> => {
 
 const config = (ctx: IPicGo): IPluginConfig[] => {
   const userConfig = ctx.getConfig<IImgurConfig>('picBed.imgur') || {}
-  const config = [
+  const config: IPluginConfig[] = [
     {
       name: 'clientId',
       type: 'input',
+      alias: ctx.i18n.translate<ILocalesKey>('PICBED_IMGUR_CLIENTID'),
       default: userConfig.clientId || '',
       required: true
     },
     {
       name: 'proxy',
       type: 'input',
+      alias: ctx.i18n.translate<ILocalesKey>('PICBED_IMGUR_PROXY'),
       default: userConfig.proxy || '',
       required: false
     }
@@ -76,8 +79,10 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
   return config
 }
 
-export default {
-  name: 'Imgur图床',
-  handle,
-  config
+export default function register (ctx: IPicGo): void {
+  ctx.helper.uploader.register('imgur', {
+    name: ctx.i18n.translate<ILocalesKey>('PICBED_IMGUR'),
+    handle,
+    config
+  })
 }

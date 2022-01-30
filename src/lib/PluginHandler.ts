@@ -11,6 +11,7 @@ import {
 } from '../types'
 import { IBuildInEvent } from '../utils/enum'
 import { getProcessPluginName, getNormalPluginName } from '../utils/common'
+import { ILocalesKey } from '../i18n/zh-CN'
 
 export class PluginHandler implements IPluginHandler {
   // Thanks to feflow -> https://github.com/feflow/feflow/blob/master/lib/internal/install/plugin.js
@@ -48,9 +49,9 @@ export class PluginHandler implements IPluginHandler {
         pkgNameList.forEach((pluginName: string) => {
           this.ctx.pluginLoader.registerPlugin(pluginName)
         })
-        this.ctx.log.success('插件安装成功')
+        this.ctx.log.success(this.ctx.i18n.translate<ILocalesKey>('PLUGIN_HANDLER_PLUGIN_INSTALL_SUCCESS'))
         this.ctx.emit('installSuccess', {
-          title: '插件安装成功',
+          title: this.ctx.i18n.translate<ILocalesKey>('PLUGIN_HANDLER_PLUGIN_INSTALL_SUCCESS'),
           body: [...pkgNameList, ...installedPlugins]
         })
         const res: IPluginHandlerResult<true> = {
@@ -59,10 +60,13 @@ export class PluginHandler implements IPluginHandler {
         }
         return res
       } else {
-        const err = `插件安装失败，失败码为${result.code}，错误日志为${result.data}`
+        const err = this.ctx.i18n.translate<ILocalesKey>('PLUGIN_HANDLER_PLUGIN_INSTALL_FAILED_REASON', {
+          code: `${result.code}`,
+          data: result.data
+        })
         this.ctx.log.error(err)
         this.ctx.emit('installFailed', {
-          title: '插件安装失败',
+          title: this.ctx.i18n.translate<ILocalesKey>('PLUGIN_HANDLER_PLUGIN_INSTALL_FAILED'),
           body: err
         })
         const res: IPluginHandlerResult<false> = {
@@ -72,10 +76,10 @@ export class PluginHandler implements IPluginHandler {
         return res
       }
     } else if (installedPlugins.length === 0) {
-      const err = '插件安装失败，请输入合法插件名或合法安装路径'
+      const err = this.ctx.i18n.translate<ILocalesKey>('PLUGIN_HANDLER_PLUGIN_UNINSTALL_FAILED_VALID')
       this.ctx.log.error(err)
       this.ctx.emit('installFailed', {
-        title: '插件安装失败',
+        title: this.ctx.i18n.translate<ILocalesKey>('PLUGIN_HANDLER_PLUGIN_INSTALL_FAILED'),
         body: err
       })
       const res: IPluginHandlerResult<false> = {
@@ -84,9 +88,9 @@ export class PluginHandler implements IPluginHandler {
       }
       return res
     } else {
-      this.ctx.log.success('插件安装成功')
+      this.ctx.log.success(this.ctx.i18n.translate<ILocalesKey>('PLUGIN_HANDLER_PLUGIN_INSTALL_SUCCESS'))
       this.ctx.emit('installSuccess', {
-        title: '插件安装成功',
+        title: this.ctx.i18n.translate<ILocalesKey>('PLUGIN_HANDLER_PLUGIN_INSTALL_SUCCESS'),
         body: [...pkgNameList, ...installedPlugins]
       })
       const res: IPluginHandlerResult<true> = {
@@ -108,9 +112,9 @@ export class PluginHandler implements IPluginHandler {
         pkgNameList.forEach((pluginName: string) => {
           this.ctx.pluginLoader.unregisterPlugin(pluginName)
         })
-        this.ctx.log.success('插件卸载成功')
+        this.ctx.log.success(this.ctx.i18n.translate<ILocalesKey>('PLUGIN_HANDLER_PLUGIN_UNINSTALL_SUCCESS'))
         this.ctx.emit('uninstallSuccess', {
-          title: '插件卸载成功',
+          title: this.ctx.i18n.translate<ILocalesKey>('PLUGIN_HANDLER_PLUGIN_UNINSTALL_SUCCESS'),
           body: pkgNameList
         })
         const res: IPluginHandlerResult<true> = {
@@ -119,10 +123,13 @@ export class PluginHandler implements IPluginHandler {
         }
         return res
       } else {
-        const err = `插件卸载失败，失败码为${result.code}，错误日志为${result.data}`
+        const err = this.ctx.i18n.translate<ILocalesKey>('PLUGIN_HANDLER_PLUGIN_UNINSTALL_FAILED_REASON', {
+          code: `${result.code}`,
+          data: result.data
+        })
         this.ctx.log.error(err)
         this.ctx.emit('uninstallFailed', {
-          title: '插件卸载失败',
+          title: this.ctx.i18n.translate<ILocalesKey>('PLUGIN_HANDLER_PLUGIN_UNINSTALL_FAILED'),
           body: err
         })
         const res: IPluginHandlerResult<false> = {
@@ -132,10 +139,10 @@ export class PluginHandler implements IPluginHandler {
         return res
       }
     } else {
-      const err = '插件卸载失败，请输入合法插件名'
+      const err = this.ctx.i18n.translate<ILocalesKey>('PLUGIN_HANDLER_PLUGIN_UNINSTALL_FAILED_VALID')
       this.ctx.log.error(err)
       this.ctx.emit('uninstallFailed', {
-        title: '插件卸载失败',
+        title: this.ctx.i18n.translate<ILocalesKey>('PLUGIN_HANDLER_PLUGIN_UNINSTALL_FAILED'),
         body: err
       })
       const res: IPluginHandlerResult<false> = {
@@ -154,9 +161,9 @@ export class PluginHandler implements IPluginHandler {
       // npm update will use the package.json's name
       const result = await this.execCommand('update', pkgNameList, this.ctx.baseDir, options, env)
       if (!result.code) {
-        this.ctx.log.success('插件更新成功')
+        this.ctx.log.success(this.ctx.i18n.translate<ILocalesKey>('PLUGIN_HANDLER_PLUGIN_UPDATE_SUCCESS'))
         this.ctx.emit('updateSuccess', {
-          title: '插件更新成功',
+          title: this.ctx.i18n.translate<ILocalesKey>('PLUGIN_HANDLER_PLUGIN_UPDATE_SUCCESS'),
           body: pkgNameList
         })
         const res: IPluginHandlerResult<true> = {
@@ -165,10 +172,13 @@ export class PluginHandler implements IPluginHandler {
         }
         return res
       } else {
-        const err = `插件更新失败，失败码为${result.code}，错误日志为 \n ${result.data}`
+        const err = this.ctx.i18n.translate<ILocalesKey>('PLUGIN_HANDLER_PLUGIN_UPDATE_FAILED_REASON', {
+          code: `${result.code}`,
+          data: result.data
+        })
         this.ctx.log.error(err)
         this.ctx.emit('updateFailed', {
-          title: '插件更新失败',
+          title: this.ctx.i18n.translate<ILocalesKey>('PLUGIN_HANDLER_PLUGIN_UPDATE_FAILED'),
           body: err
         })
         const res: IPluginHandlerResult<false> = {
@@ -178,10 +188,10 @@ export class PluginHandler implements IPluginHandler {
         return res
       }
     } else {
-      const err = '插件更新失败，请输入合法插件名'
+      const err = this.ctx.i18n.translate<ILocalesKey>('PLUGIN_HANDLER_PLUGIN_UPDATE_FAILED_VALID')
       this.ctx.log.error(err)
       this.ctx.emit('updateFailed', {
-        title: '插件更新失败',
+        title: this.ctx.i18n.translate<ILocalesKey>('PLUGIN_HANDLER_PLUGIN_UPDATE_FAILED'),
         body: err
       })
       const res: IPluginHandlerResult<false> = {
