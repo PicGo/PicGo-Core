@@ -1,22 +1,28 @@
 import { ZH_CN, ILocalesKey } from './zh-CN'
 import { merge } from 'lodash'
+import { IPicGo } from '../types'
 
 import { ObjectAdapter, I18n } from '@picgo/i18n'
 import { IStringKeyMap, II18nManager } from '../types/index'
 import { ILocale } from '@picgo/i18n/dist/types'
+import { EN } from './en'
 
-const languageList = {
-  'zh-CN': ZH_CN
+const languageList: IStringKeyMap<IStringKeyMap<string>> = {
+  'zh-CN': ZH_CN,
+  en: EN
 }
 
 class I18nManager implements II18nManager {
   private readonly i18n: I18n
   private readonly objectAdapter: ObjectAdapter
-  constructor () {
+  private readonly ctx: IPicGo
+  constructor (ctx: IPicGo) {
+    this.ctx = ctx
     this.objectAdapter = new ObjectAdapter(languageList)
+    const language = this.ctx.getConfig<string>('settings.language') || 'zh-CN'
     this.i18n = new I18n({
       adapter: this.objectAdapter,
-      defaultLanguage: 'zh-CN'
+      defaultLanguage: language
     })
   }
 
@@ -26,14 +32,11 @@ class I18nManager implements II18nManager {
 
   setLanguage (language: string): void {
     this.i18n.setLanguage(language)
+    this.ctx.saveConfig({
+      'settings.language': language
+    })
   }
 
-  /**
-   * add locale to current i18n language
-   * default locale list
-   * - zh-CN
-   * - en
-   */
   addLocale (language: string, locales: ILocale): boolean {
     const originLocales = this.objectAdapter.getLocale(language)
     if (!originLocales) {
@@ -43,10 +46,22 @@ class I18nManager implements II18nManager {
     this.objectAdapter.setLocale(language, newLocales)
     return true
   }
+
+  addLanguage (language: string, locales: ILocale): boolean {
+    const originLocales = this.objectAdapter.getLocale(language)
+    if (originLocales) {
+      return false
+    }
+    this.objectAdapter.setLocale(language, locales)
+    languageList[language] = locales
+    return true
+  }
+
+  getLanguageList (): string[] {
+    return Object.keys(languageList)
+  }
 }
 
-const i18nManager = new I18nManager()
-
 export {
-  i18nManager
+  I18nManager
 }

@@ -19,7 +19,7 @@ import { IBuildInEvent, IBusEvent } from '../utils/enum'
 import { eventBus } from '../utils/eventBus'
 import { RequestPromiseAPI } from 'request-promise-native'
 import { isConfigKeyInBlackList, isInputConfigValid } from '../utils/common'
-import { i18nManager } from '../i18n'
+import { I18nManager } from '../i18n'
 
 export class PicGo extends EventEmitter implements IPicGo {
   private _config!: IConfig
@@ -40,7 +40,7 @@ export class PicGo extends EventEmitter implements IPicGo {
    * use request instead
    */
   Request!: Request
-  i18n: II18nManager = i18nManager
+  i18n!: II18nManager
   VERSION: string = process.env.PICGO_VERSION
   GUI_VERSION?: string
 
@@ -90,6 +90,8 @@ export class PicGo extends EventEmitter implements IPicGo {
 
   private init (): void {
     try {
+      // init 18n at first
+      this.i18n = new I18nManager(this)
       this.Request = new Request(this)
       this._pluginLoader = new PluginLoader(this)
       // load self plugins
@@ -100,17 +102,11 @@ export class PicGo extends EventEmitter implements IPicGo {
       // load third-party plugins
       this._pluginLoader.load()
       this.lifecycle = new Lifecycle(this)
-      this.initI18n()
     } catch (e: any) {
       this.emit(IBuildInEvent.UPLOAD_PROGRESS, -1)
       this.log.error(e)
       throw e
     }
-  }
-
-  private initI18n (): void {
-    const language = this.getConfig<string>('settings.language') || 'zh-CN'
-    this.i18n.setLanguage(language)
   }
 
   registerCommands (): void {

@@ -80,3 +80,4 @@ export const ZH_CN = {
 }
 
 export type ILocalesKey = keyof typeof ZH_CN
+export type ILocales = typeof ZH_CN

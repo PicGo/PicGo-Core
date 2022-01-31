@@ -478,7 +478,27 @@ export interface IConfigChangePayload<T> {
 }
 
 export interface II18nManager {
+  /**
+   * translate text
+   */
   translate: <T extends string>(key: T, args?: IStringKeyMap<string>) => string
+  /**
+   * add locale to current i18n language
+   * default locale list
+   * - zh-CN
+   * - en
+   */
   addLocale: (language: string, locales: ILocale) => boolean
+  /**
+   * set current language
+   */
   setLanguage: (language: string) => void
+  /**
+   * dynamic add new language & locales
+   */
+  addLanguage: (language: string, locales: ILocale) => boolean
+  /**
+   * get language list
+   */
+  getLanguageList: () => string[]
 }
