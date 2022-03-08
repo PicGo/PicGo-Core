@@ -123,21 +123,22 @@ const handle = async (ctx: IPicGo): Promise<IPicGo | boolean> => {
         if (body.statusCode === 400) {
           throw new Error(body.msg || body.message)
         }
+        const optionUrl = tcYunOptions.options || ''
         if (useV4 && body.message === 'SUCCESS') {
           delete img.base64Image
           delete img.buffer
           if (customUrl) {
             img.imgUrl = `${customUrl}/${path}${img.fileName}`
           } else {
-            img.imgUrl = body.data.source_url
+            img.imgUrl = `${body.data.source_url as string}${optionUrl}`
           }
         } else if (!useV4 && body && body.statusCode === 200) {
           delete img.base64Image
           delete img.buffer
           if (customUrl) {
-            img.imgUrl = `${customUrl}/${path}${img.fileName}`
+            img.imgUrl = `${customUrl}/${path}${img.fileName}${optionUrl}`
           } else {
-            img.imgUrl = `https://${tcYunOptions.bucket}.cos.${tcYunOptions.area}.myqcloud.com/${path}${img.fileName}`
+            img.imgUrl = `https://${tcYunOptions.bucket}.cos.${tcYunOptions.area}.myqcloud.com/${path}${img.fileName}${optionUrl}`
           }
         } else {
           throw new Error(res.body.msg)
@@ -220,6 +221,12 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
       alias: ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_VERSION'),
       choices: ['v4', 'v5'],
       default: 'v5',
+      required: false
+    },
+    {
+      name: 'options',
+      type: 'input',
+      default: userConfig.options || '',
       required: false
     }
   ]

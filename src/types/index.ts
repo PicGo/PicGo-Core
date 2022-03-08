@@ -241,6 +241,8 @@ export interface ITcyunConfig {
   customUrl: string
   /** COS 版本，v4 或者 v5 */
   version: 'v5' | 'v4'
+  /** 针对图片的一些后缀处理参数 PicGo 2.4.0+ PicGo-Core 1.5.0+ */
+  options: string
 }
 /** GitHub 图床配置项 */
 export interface IGithubConfig {
