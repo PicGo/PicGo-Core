@@ -1,3 +1,23 @@
+# :tada: 1.5.0-alpha.1 (2022-03-08)
+
+
+### :sparkles: Features
+
+* add options for tencent cos ([1fccdcc](https://github.com/PicGo/PicGo-Core/commit/1fccdcc)), closes [#117](https://github.com/PicGo/PicGo-Core/issues/117)
+* **i18n:** add i18n for picgo ([4b93a76](https://github.com/PicGo/PicGo-Core/commit/4b93a76))
+
+
+### :bug: Bug Fixes
+
+* build error in windows ([5616fb9](https://github.com/PicGo/PicGo-Core/commit/5616fb9))
+
+
+### :package: Chore
+
+* add alpha branch for alpha version ([6882022](https://github.com/PicGo/PicGo-Core/commit/6882022)), closes [#106](https://github.com/PicGo/PicGo-Core/issues/106)
+
+
+
 # :tada: 1.5.0-alpha.0 (2021-10-26)
 
 
