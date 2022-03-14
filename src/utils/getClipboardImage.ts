@@ -93,12 +93,12 @@ const getClipboardImage = async (ctx: IPicGo): Promise<IClipboardImage> => {
 
     execution.stdout.on('data', (data: Buffer) => {
       if (platform === 'linux') {
-        if (data.toString().trim() === 'no xclip') {
+        if (data.toString().trim() === 'no xclip or wl-clipboard') {
           ctx.emit(IBuildInEvent.NOTIFICATION, {
-            title: 'xclip not found',
-            body: 'Please install xclip before run picgo'
+            title: 'xclip or wl-clipboard not found',
+            body: 'Please install xclip(for x11) or wl-clipboard(for wayland) before run picgo'
           })
-          return reject(new Error('Please install xclip before run picgo'))
+          return reject(new Error('Please install xclip(for x11) or wl-clipboard(for wayland) before run picgo'))
         }
       }
       const imgPath = data.toString().trim()
