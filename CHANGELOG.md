@@ -1,3 +1,17 @@
+# :tada: 1.5.0-alpha.2 (2022-04-03)
+
+
+### :sparkles: Features
+
+* add wayland support for linux ([#119](https://github.com/PicGo/PicGo-Core/issues/119)) ([28905f2](https://github.com/PicGo/PicGo-Core/commit/28905f2))
+
+
+### :bug: Bug Fixes
+
+* qiniu && upyun errors ([587dd3f](https://github.com/PicGo/PicGo-Core/commit/587dd3f))
+
+
+
 # :tada: 1.5.0-alpha.1 (2022-03-08)
 
 

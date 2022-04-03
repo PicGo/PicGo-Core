@@ -1,6 +1,6 @@
 {
   "name": "picgo",
-  "version": "1.5.0-alpha.1",
+  "version": "1.5.0-alpha.2",
   "description": "A tool for picture uploading",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
