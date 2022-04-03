@@ -4,6 +4,7 @@ import MD5 from 'md5'
 import { Options } from 'request-promise-native'
 import { IBuildInEvent } from '../../utils/enum'
 import { ILocalesKey } from '../../i18n/zh-CN'
+import { safeParse } from '../../utils/common'
 
 // generate COS signature string
 const generateSignature = (options: IUpyunConfig, fileName: string): string => {
@@ -67,11 +68,11 @@ const handle = async (ctx: IPicGo): Promise<IPicGo> => {
         body: ctx.i18n.translate<ILocalesKey>('CHECK_SETTINGS')
       })
     } else {
-      const body = JSON.parse(err.error)
+      const body = safeParse<{ code: string }>(err.error)
       ctx.emit(IBuildInEvent.NOTIFICATION, {
         title: ctx.i18n.translate<ILocalesKey>('UPLOAD_FAILED'),
         body: ctx.i18n.translate<ILocalesKey>('UPLOAD_FAILED_REASON', {
-          code: body.code as string
+          code: typeof body === 'object' ? body.code : body
         }),
         text: 'http://docs.upyun.com/api/errno/'
       })

@@ -341,6 +341,14 @@ export const isInputConfigValid = (config: any): boolean => {
   return false
 }
 
+export function safeParse<T> (str: string): T | string {
+  try {
+    return JSON.parse(str)
+  } catch (error) {
+    return str
+  }
+}
+
 // hold...
 // export const configWhiteList: RegExp[] = [
 //   /^picBed/,

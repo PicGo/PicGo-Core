@@ -205,7 +205,7 @@ export interface IQiniuConfig {
   /** 自定义域名 */
   url: string
   /** 存储区域编号 */
-  area: 'z0' | 'z1' | 'z2' | 'na0' | 'as0'
+  area: 'z0' | 'z1' | 'z2' | 'na0' | 'as0' | string
   /** 网址后缀，比如使用 `?imageslim` 可进行[图片瘦身](https://developer.qiniu.com/dora/api/1271/image-thin-body-imageslim) */
   options: string
   /** 自定义存储路径，比如 `img/` */
