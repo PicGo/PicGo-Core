@@ -1,3 +1,12 @@
+# :tada: 1.5.0-alpha.3 (2022-04-04)
+
+
+### :bug: Bug Fixes
+
+* picgo-gui clipboard image uploading error ([1302f76](https://github.com/PicGo/PicGo-Core/commit/1302f76))
+
+
+
 # :tada: 1.5.0-alpha.2 (2022-04-03)
 
 
