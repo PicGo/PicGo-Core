@@ -61,7 +61,7 @@ const getClipboardImage = async (ctx: IPicGo): Promise<IClipboardImage> => {
   const imagePath = path.join(ctx.baseDir, `${dayjs().format('YYYYMMDDHHmmss')}.png`)
   return await new Promise<IClipboardImage>((resolve: Function, reject: Function): void => {
     const platform = getCurrentPlatform()
-    const scriptPath = path.join(__dirname, platform2ScriptFilename[platform])
+    const scriptPath = path.join(ctx.baseDir, platform2ScriptFilename[platform])
     // If the script does not exist yet, we need to write the content to the script file
     if (!fs.existsSync(scriptPath)) {
       fs.writeFileSync(
