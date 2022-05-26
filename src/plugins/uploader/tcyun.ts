@@ -50,7 +50,7 @@ const generateSignature = (options: ITcyunConfig, fileName: string): ISignature 
   }
 }
 
-const postOptions = (options: ITcyunConfig, fileName: string, signature: ISignature, image: Buffer): Options => {
+const postOptions = (options: ITcyunConfig, fileName: string, signature: ISignature, image: Buffer, version: string): Options => {
   const area = options.area
   const path = options.path
   if (!options.version || options.version === 'v4') {
@@ -60,7 +60,8 @@ const postOptions = (options: ITcyunConfig, fileName: string, signature: ISignat
       headers: {
         Host: `${area}.file.myqcloud.com`,
         Authorization: signature.signature,
-        contentType: 'multipart/form-data'
+        contentType: 'multipart/form-data',
+        userAgent: `PicGo;${version};null;null`
       },
       formData: {
         op: 'upload',
@@ -74,7 +75,8 @@ const postOptions = (options: ITcyunConfig, fileName: string, signature: ISignat
       headers: {
         Host: `${options.bucket}.cos.${options.area}.myqcloud.com`,
         Authorization: `q-sign-algorithm=sha1&q-ak=${options.secretId}&q-sign-time=${signature.signTime}&q-key-time=${signature.signTime}&q-header-list=host&q-url-param-list=&q-signature=${signature.signature}`,
-        contentType: mime.lookup(fileName)
+        contentType: mime.lookup(fileName),
+        userAgent: `PicGo;${version};null;null`
       },
       body: image,
       resolveWithFullResponse: true
@@ -102,8 +104,8 @@ const handle = async (ctx: IPicGo): Promise<IPicGo | boolean> => {
         if (!image && img.base64Image) {
           image = Buffer.from(img.base64Image, 'base64')
         }
-        const options = postOptions(tcYunOptions, img.fileName, signature, image)
-        const res = await ctx.Request.request(options)
+        const options = postOptions(tcYunOptions, img.fileName, signature, image, ctx.GUI_VERSION || ctx.VERSION)
+        const res = await ctx.request(options)
           .then((res: any) => res)
           .catch((err: Error) => {
             ctx.log.error(err)
