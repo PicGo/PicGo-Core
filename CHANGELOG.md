@@ -1,3 +1,12 @@
+# :tada: 1.5.0-alpha.4 (2022-05-26)
+
+
+### :sparkles: Features
+
+* add userAgent for tencent cloud COS ([acac59a](https://github.com/PicGo/PicGo-Core/commit/acac59a))
+
+
+
 # :tada: 1.5.0-alpha.3 (2022-04-04)
 
 
