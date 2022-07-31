@@ -1,37 +1,28 @@
-import lowdb from 'lowdb'
-import lodashId from 'lodash-id'
-import FileSync from 'lowdb/adapters/FileSync'
-import json from 'comment-json'
 import { IConfig, IPicGo } from '../types'
+import { JSONStore } from '@picgo/store'
+import { IJSON } from '@picgo/store/dist/types'
 
 class DB {
   private readonly ctx: IPicGo
-  private readonly db: lowdb.LowdbSync<any>
+  private readonly db: JSONStore
   constructor (ctx: IPicGo) {
     this.ctx = ctx
-    const adapter = new FileSync(this.ctx.configPath, {
-      serialize (obj: object): string {
-        return json.stringify(obj, null, 2)
-      },
-      deserialize: json.parse
-    })
-    this.db = lowdb(adapter)
-    this.db._.mixin(lodashId)
+    this.db = new JSONStore(this.ctx.configPath)
 
-    if (!this.db.has('picBed').value()) {
+    if (!this.db.has('picBed')) {
       try {
         this.db.set('picBed', {
           uploader: 'smms',
           current: 'smms'
-        }).write()
+        })
       } catch (e: any) {
         this.ctx.log.error(e)
         throw e
       }
     }
-    if (!this.db.has('picgoPlugins').value()) {
+    if (!this.db.has('picgoPlugins')) {
       try {
-        this.db.set('picgoPlugins', {}).write()
+        this.db.set('picgoPlugins', {})
       } catch (e: any) {
         this.ctx.log.error(e)
         throw e
@@ -39,28 +30,28 @@ class DB {
     }
   }
 
-  read (): any {
-    return this.db.read()
+  read (flush?: boolean): IJSON {
+    return this.db.read(flush)
   }
 
   get (key: string = ''): any {
-    return this.read().get(key).value()
+    this.read(true)
+    return this.db.get(key)
   }
 
   set (key: string, value: any): void {
-    return this.read().set(key, value).write()
+    this.read(true)
+    return this.db.set(key, value)
   }
 
   has (key: string): boolean {
-    return this.read().has(key).value()
-  }
-
-  insert (key: string, value: any): void {
-    return this.read().get(key).insert(value).write()
+    this.read(true)
+    return this.db.has(key)
   }
 
   unset (key: string, value: any): boolean {
-    return this.read().get(key).unset(value).write()
+    this.read(true)
+    return this.db.unset(key, value)
   }
 
   saveConfig (config: Partial<IConfig>): void {

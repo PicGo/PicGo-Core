@@ -85,7 +85,7 @@ export class PicGo extends EventEmitter implements IPicGo {
 
   private initConfig (): void {
     this.db = new DB(this)
-    this._config = this.db.read().value()
+    this._config = this.db.read(true) as IConfig
   }
 
   private init (): void {
