@@ -363,3 +363,7 @@ export function safeParse<T> (str: string): T | string {
 // export const isConfigKeyInWhiteList = (key: string): boolean => {
 //   return configWhiteList.some(whiteItem => whiteItem.test(key))
 // }
+
+export const forceNumber = (num: string | number = 0): number => {
+  return isNaN(Number(num)) ? 0 : Number(num)
+}

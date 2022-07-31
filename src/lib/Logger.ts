@@ -12,6 +12,7 @@ import {
   ILogger,
   IPicGo
 } from '../types'
+import { forceNumber } from '../utils/common'
 
 export class Logger implements ILogger {
   private readonly level = {
@@ -36,8 +37,47 @@ export class Logger implements ILogger {
       this.logLevel = this.ctx.getConfig('settings.logLevel')
       this.logPath = this.ctx.getConfig<Undefinable<string>>('settings.logPath') || path.join(this.ctx.baseDir, './picgo.log')
       setTimeout(() => {
+        // fix log file is too large, now the log file's default size is 10 MB
+        try {
+          const result = this.checkLogFileIsLarge(this.logPath)
+          if (result.isLarge) {
+            const warningMsg = `Log file is too large (> ${(result.logFileSizeLimit!) / 1024 / 1024 || '10'} MB), recreate log file`
+            console.log(chalk.yellow('[PicGo WARN]:'), warningMsg)
+            this.recreateLogFile(this.logPath)
+            msg.unshift(warningMsg)
+          }
+        } catch (e) {
+          // why???
+          console.error('[PicGo Error] on checking log file size', e)
+        }
         this.handleWriteLog(this.logPath, type, ...msg)
       }, 0)
+    }
+  }
+
+  private checkLogFileIsLarge (logPath: string): {
+    isLarge: boolean
+    logFileSize?: number
+    logFileSizeLimit?: number
+  } {
+    if (fs.existsSync(logPath)) {
+      const logFileSize = fs.statSync(logPath).size
+      const logFileSizeLimit = forceNumber(this.ctx.getConfig<Undefinable<number>>('settings.logFileSizeLimit') || 10) * 1024 * 1024 // 10 MB default
+      return {
+        isLarge: logFileSize > logFileSizeLimit,
+        logFileSize,
+        logFileSizeLimit
+      }
+    }
+    return {
+      isLarge: false
+    }
+  }
+
+  private recreateLogFile (logPath: string): void {
+    if (fs.existsSync(logPath)) {
+      fs.unlinkSync(logPath)
+      fs.createFileSync(logPath)
     }
   }
 
@@ -60,7 +100,7 @@ export class Logger implements ILogger {
         fs.appendFileSync(logPath, log)
       }
     } catch (e) {
-      console.log(e)
+      console.error('[PicGo Error] on writing log file', e)
     }
   }
 

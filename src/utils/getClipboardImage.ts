@@ -11,6 +11,7 @@ import windowsClipboardScript from './clipboard/windows.ps1'
 import windows10ClipboardScript from './clipboard/windows10.ps1'
 import linuxClipboardScript from './clipboard/linux.sh'
 import wslClipboardScript from './clipboard/wsl.sh'
+import { CLIPBOARD_IMAGE_FOLDER } from './static'
 
 export type Platform = 'darwin' | 'win32' | 'win10' | 'linux' | 'wsl'
 
@@ -56,9 +57,18 @@ const platform2ScriptFilename: {
   wsl: 'wsl.sh'
 }
 
+function createImageFolder (ctx: IPicGo): void {
+  const imagePath = path.join(ctx.baseDir, CLIPBOARD_IMAGE_FOLDER)
+  if (!fs.existsSync(imagePath)) {
+    fs.mkdirSync(imagePath)
+  }
+}
+
 // Thanks to vs-picgo: https://github.com/Spades-S/vs-picgo/blob/master/src/extension.ts
 const getClipboardImage = async (ctx: IPicGo): Promise<IClipboardImage> => {
-  const imagePath = path.join(ctx.baseDir, `${dayjs().format('YYYYMMDDHHmmss')}.png`)
+  createImageFolder(ctx)
+  // add an clipboard image folder to control the image cache file
+  const imagePath = path.join(ctx.baseDir, CLIPBOARD_IMAGE_FOLDER, `${dayjs().format('YYYYMMDDHHmmss')}.png`)
   return await new Promise<IClipboardImage>((resolve: Function, reject: Function): void => {
     const platform = getCurrentPlatform()
     const scriptPath = path.join(ctx.baseDir, platform2ScriptFilename[platform])

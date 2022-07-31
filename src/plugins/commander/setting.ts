@@ -42,8 +42,8 @@ const setting = {
                       type: 'list',
                       name: `${module}`,
                       choices: ctx.helper[module].getIdList(),
-                      message: `Choose a(n) ${module}`,
-                      default: ctx.getConfig('picBed.uploader') || ctx.getConfig('picBed.current')
+                      message: `Choose a(n) ${module}`
+                      // default: ctx.getConfig('picBed.uploader') || ctx.getConfig('picBed.current')
                     }
                   ]
                   const answer = await ctx.cmd.inquirer.prompt<IStringKeyMap<any>>(prompts)
@@ -84,7 +84,9 @@ const setting = {
                 ctx.log.warn(`No module named ${module}`)
                 return ctx.log.warn('Available modules are uploader|transformer|plugin')
             }
+            const useModuleName = module === 'plugin' ? 'plugins' : module
             ctx.log.success('Configure config successfully!')
+            ctx.log.info(`If you want to use this config, please run 'picgo use ${useModuleName}'`)
           } catch (e: any) {
             ctx.log.error(e)
             if (process.argv.includes('--debug')) {
