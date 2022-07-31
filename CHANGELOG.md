@@ -389,6 +389,3 @@
 ### :package: Chore
 
 * add picgo bump version ([c312302](https://github.com/PicGo/PicGo-Core/commit/c312302))
-
-
-
