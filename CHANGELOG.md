@@ -1,3 +1,18 @@
+# :tada: 1.5.0-alpha.5 (2022-07-31)
+
+
+### :sparkles: Features
+
+* add log file size limit ([158be01](https://github.com/PicGo/PicGo-Core/commit/158be01))
+* change inner db to @picgo/store ([0e90af3](https://github.com/PicGo/PicGo-Core/commit/0e90af3))
+
+
+### :bug: Bug Fixes
+
+* build error ([674a6b5](https://github.com/PicGo/PicGo-Core/commit/674a6b5))
+
+
+
 # :tada: 1.5.0-alpha.4 (2022-05-26)
 
 
