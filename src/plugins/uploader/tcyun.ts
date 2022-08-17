@@ -71,7 +71,7 @@ const postOptions = (options: ITcyunConfig, fileName: string, signature: ISignat
   } else {
     return {
       method: 'PUT',
-      url: `http://${options.bucket}.cos.${options.area}.myqcloud.com/${encodeURI(path)}${encodeURI(fileName)}`,
+      url: `http://${options.bucket}.cos.${options.area}.myqcloud.com/${encodeURIComponent(path)}${encodeURIComponent(fileName)}`,
       headers: {
         Host: `${options.bucket}.cos.${options.area}.myqcloud.com`,
         Authorization: `q-sign-algorithm=sha1&q-ak=${options.secretId}&q-sign-time=${signature.signTime}&q-key-time=${signature.signTime}&q-header-list=host&q-url-param-list=&q-signature=${signature.signature}`,

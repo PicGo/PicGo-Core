@@ -6,7 +6,6 @@ import { string } from 'rollup-plugin-string'
 import json from '@rollup/plugin-json'
 import builtins from 'builtins'
 import replace from '@rollup/plugin-replace'
-
 const version = process.env.VERSION || pkg.version
 const sourcemap = 'inline'
 const banner = `/*
@@ -33,7 +32,7 @@ const commonOptions = {
         }
       }
     }),
-    terser(),
+    // terser(),
     commonjs(),
     string({
       // Required to be specified
@@ -50,6 +49,12 @@ const commonOptions = {
     })
   ],
   input
+}
+
+const isDev = process.env.NODE_ENV === 'development'
+
+if (!isDev) {
+  commonOptions.plugins.push(terser())
 }
 
 /** @type import('rollup').RollupOptions */
