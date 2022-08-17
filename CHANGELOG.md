@@ -1,3 +1,12 @@
+# :tada: 1.5.0-alpha.6 (2022-08-17)
+
+
+### :bug: Bug Fixes
+
+* tencent cos upload error ([61df53a](https://github.com/PicGo/PicGo-Core/commit/61df53a))
+
+
+
 # :tada: 1.5.0-alpha.5 (2022-07-31)
 
 
