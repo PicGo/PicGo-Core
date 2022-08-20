@@ -84,49 +84,53 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
     {
       name: 'accessKey',
       type: 'input',
-      alias: ctx.i18n.translate<ILocalesKey>('PICBED_QINIU_ACCESSKEY'),
+      get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_QINIU_ACCESSKEY') },
       default: userConfig.accessKey || '',
       required: true
     },
     {
       name: 'secretKey',
-      type: 'input',
-      alias: ctx.i18n.translate<ILocalesKey>('PICBED_QINIU_SECRETKEY'),
+      type: 'password',
+      get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_QINIU_SECRETKEY') },
       default: userConfig.secretKey || '',
       required: true
     },
     {
       name: 'bucket',
       type: 'input',
-      alias: ctx.i18n.translate<ILocalesKey>('PICBED_QINIU_BUCKET'),
+      get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_QINIU_BUCKET') },
       default: userConfig.bucket || '',
       required: true
     },
     {
       name: 'url',
       type: 'input',
-      alias: ctx.i18n.translate<ILocalesKey>('PICBED_QINIU_URL'),
+      get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_QINIU_URL') },
+      get message () { return ctx.i18n.translate<ILocalesKey>('PICBED_QINIU_MESSAGE_URL') },
       default: userConfig.url || '',
       required: true
     },
     {
       name: 'area',
       type: 'input',
-      alias: ctx.i18n.translate<ILocalesKey>('PICBED_QINIU_AREA'),
+      get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_QINIU_AREA') },
+      get message () { return ctx.i18n.translate<ILocalesKey>('PICBED_QINIU_MESSAGE_AREA') },
       default: userConfig.area || '',
       required: true
     },
     {
       name: 'options',
       type: 'input',
-      alias: ctx.i18n.translate<ILocalesKey>('PICBED_QINIU_OPTIONS'),
+      get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_QINIU_OPTIONS') },
+      get message () { return ctx.i18n.translate<ILocalesKey>('PICBED_QINIU_MESSAGE_OPTIONS') },
       default: userConfig.options || '',
       required: false
     },
     {
       name: 'path',
       type: 'input',
-      alias: ctx.i18n.translate<ILocalesKey>('PICBED_QINIU_PATH'),
+      get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_QINIU_PATH') },
+      get message () { return ctx.i18n.translate<ILocalesKey>('PICBED_QINIU_MESSAGE_PATH') },
       default: userConfig.path || '',
       required: false
     }
@@ -136,7 +140,7 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
 
 export default function register (ctx: IPicGo): void {
   ctx.helper.uploader.register('qiniu', {
-    name: ctx.i18n.translate<ILocalesKey>('PICBED_QINIU'),
+    get name () { return ctx.i18n.translate<ILocalesKey>('PICBED_QINIU') },
     handle,
     config
   })

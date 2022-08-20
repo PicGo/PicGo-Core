@@ -169,55 +169,6 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
   const userConfig = ctx.getConfig<ITcyunConfig>('picBed.tcyun') || {}
   const config: IPluginConfig[] = [
     {
-      name: 'secretId',
-      type: 'input',
-      alias: ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_SECRETID'),
-      default: userConfig.secretId || '',
-      required: true
-    },
-    {
-      name: 'secretKey',
-      type: 'input',
-      alias: ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_SECRETKEY'),
-      default: userConfig.secretKey || '',
-      required: true
-    },
-    {
-      name: 'bucket',
-      type: 'input',
-      alias: ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_BUCKET'),
-      default: userConfig.bucket || '',
-      required: true
-    },
-    {
-      name: 'appId',
-      type: 'input',
-      alias: ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_APPID'),
-      default: userConfig.appId || '',
-      required: true
-    },
-    {
-      name: 'area',
-      type: 'input',
-      alias: ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_AREA'),
-      default: userConfig.area || '',
-      required: true
-    },
-    {
-      name: 'path',
-      type: 'input',
-      alias: ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_PATH'),
-      default: userConfig.path || '',
-      required: false
-    },
-    {
-      name: 'customUrl',
-      type: 'input',
-      alias: ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_CUSTOMURL'),
-      default: userConfig.customUrl || '',
-      required: false
-    },
-    {
       name: 'version',
       type: 'list',
       alias: ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_VERSION'),
@@ -226,9 +177,64 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
       required: false
     },
     {
+      name: 'secretId',
+      type: 'input',
+      get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_SECRETID') },
+      default: userConfig.secretId || '',
+      required: true
+    },
+    {
+      name: 'secretKey',
+      type: 'password',
+      get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_SECRETKEY') },
+      default: userConfig.secretKey || '',
+      required: true
+    },
+    {
+      name: 'bucket',
+      type: 'input',
+      get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_BUCKET') },
+      default: userConfig.bucket || '',
+      required: true
+    },
+    {
+      name: 'appId',
+      type: 'input',
+      get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_APPID') },
+      default: userConfig.appId || '',
+      get message () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_MESSAGE_APPID') },
+      required: true
+    },
+    {
+      name: 'area',
+      type: 'input',
+      get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_AREA') },
+      default: userConfig.area || '',
+      get message () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_MESSAGE_AREA') },
+      required: true
+    },
+    {
+      name: 'path',
+      type: 'input',
+      get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_PATH') },
+      default: userConfig.path || '',
+      get message () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_MESSAGE_PATH') },
+      required: false
+    },
+    {
+      name: 'customUrl',
+      type: 'input',
+      get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_CUSTOMURL') },
+      default: userConfig.customUrl || '',
+      get message () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_MESSAGE_CUSTOMURL') },
+      required: false
+    },
+    {
       name: 'options',
       type: 'input',
       default: userConfig.options || '',
+      get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_OPTIONS') },
+      get message () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_MESSAGE_OPTIONS') },
       required: false
     }
   ]
@@ -237,7 +243,7 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
 
 export default function register (ctx: IPicGo): void {
   ctx.helper.uploader.register('tcyun', {
-    name: ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD'),
+    get name () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD') },
     handle,
     config
   })

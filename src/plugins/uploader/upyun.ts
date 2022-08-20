@@ -87,42 +87,47 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
     {
       name: 'bucket',
       type: 'input',
-      alias: ctx.i18n.translate<ILocalesKey>('PICBED_UPYUN'),
+      get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_UPYUN_BUCKET') },
       default: userConfig.bucket || '',
       required: true
     },
     {
       name: 'operator',
       type: 'input',
-      alias: ctx.i18n.translate<ILocalesKey>('PICBED_UPYUN_OPERATOR'),
+      get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_UPYUN_OPERATOR') },
+      get message () { return ctx.i18n.translate<ILocalesKey>('PICBED_UPYUN_MESSAGE_OPERATOR') },
       default: userConfig.operator || '',
       required: true
     },
     {
       name: 'password',
       type: 'password',
-      alias: ctx.i18n.translate<ILocalesKey>('PICBED_UPYUN_PASSWORD'),
+      get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_UPYUN_PASSWORD') },
+      get message () { return ctx.i18n.translate<ILocalesKey>('PICBED_UPYUN_MESSAGE_PASSWORD') },
       default: userConfig.password || '',
       required: true
     },
     {
       name: 'url',
       type: 'input',
-      alias: ctx.i18n.translate<ILocalesKey>('PICBED_UPYUN_URL'),
+      get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_UPYUN_URL') },
+      get message () { return ctx.i18n.translate<ILocalesKey>('PICBED_UPYUN_MESSAGE_URL') },
       default: userConfig.url || '',
       required: true
     },
     {
       name: 'options',
       type: 'input',
-      alias: ctx.i18n.translate<ILocalesKey>('PICBED_UPYUN_OPTIONS'),
+      get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_UPYUN_OPTIONS') },
+      get message () { return ctx.i18n.translate<ILocalesKey>('PICBED_UPYUN_MESSAGE_OPTIONS') },
       default: userConfig.options || '',
       required: true
     },
     {
       name: 'path',
       type: 'input',
-      alias: ctx.i18n.translate<ILocalesKey>('PICBED_UPYUN_PATH'),
+      get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_UPYUN_PATH') },
+      get message () { return ctx.i18n.translate<ILocalesKey>('PICBED_UPYUN_MESSAGE_PATH') },
       default: userConfig.path || '',
       required: false
     }
@@ -132,7 +137,7 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
 
 export default function register (ctx: IPicGo): void {
   ctx.helper.uploader.register('upyun', {
-    name: ctx.i18n.translate<ILocalesKey>('PICBED_UPYUN'),
+    get name () { return ctx.i18n.translate<ILocalesKey>('PICBED_UPYUN') },
     handle,
     config
   })

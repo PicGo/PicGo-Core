@@ -103,6 +103,7 @@ export interface IPluginConfig {
   required: boolean
   default?: any
   alias?: string
+  message?: string
   [propName: string]: any
 }
 

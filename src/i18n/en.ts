@@ -22,6 +22,10 @@ export const EN: ILocales = {
   PICBED_ALICLOUD_PATH: 'Set Path',
   PICBED_ALICLOUD_CUSTOMURL: 'Set Custom URL',
   PICBED_ALICLOUD_OPTIONS: 'Set URL Suffix',
+  PICBED_ALICLOUD_MESSAGE_AREA: 'Ex. oss-cn-beijing',
+  PICBED_ALICLOUD_MESSAGE_PATH: 'Ex. test/',
+  PICBED_ALICLOUD_MESSAGE_OPTIONS: 'Ex. ?x-oss-process=xxx',
+  PICBED_ALICLOUD_MESSAGE_CUSTOMURL: 'Ex. https://test.com',
 
   // Tencent-cloud
   PICBED_TENCENTCLOUD: 'Tencent Cloud',
@@ -32,7 +36,13 @@ export const EN: ILocales = {
   PICBED_TENCENTCLOUD_BUCKET: 'Set Bucket',
   PICBED_TENCENTCLOUD_AREA: 'Set Area',
   PICBED_TENCENTCLOUD_PATH: 'Set Path',
+  PICBED_TENCENTCLOUD_OPTIONS: 'Set URL Suffix',
   PICBED_TENCENTCLOUD_CUSTOMURL: 'Set Custom URL',
+  PICBED_TENCENTCLOUD_MESSAGE_APPID: 'Ex. 1234567890',
+  PICBED_TENCENTCLOUD_MESSAGE_AREA: 'Ex. ap-beijing',
+  PICBED_TENCENTCLOUD_MESSAGE_PATH: 'Ex. test/',
+  PICBED_TENCENTCLOUD_MESSAGE_CUSTOMURL: 'Ex. http://test.com',
+  PICBED_TENCENTCLOUD_MESSAGE_OPTIONS: 'Ex. ?imageMogr2',
 
   // GitHub
   PICBED_GITHUB: 'GitHub',
@@ -41,6 +51,10 @@ export const EN: ILocales = {
   PICBED_GITHUB_PATH: 'Set Path',
   PICBED_GITHUB_BRANCH: 'Set Branch',
   PICBED_GITHUB_CUSTOMURL: 'Set Custom URL',
+  PICBED_GITHUB_MESSAGE_REPO: 'Ex. username/repo',
+  PICBED_GITHUB_MESSAGE_BRANCH: 'Ex. main',
+  PICBED_GITHUB_MESSAGE_PATH: 'Ex. test/',
+  PICBED_GITHUB_MESSAGE_CUSTOMURL: 'Ex. https://test.com',
 
   // qiniu
   PICBED_QINIU: 'Qiniu',
@@ -51,11 +65,16 @@ export const EN: ILocales = {
   PICBED_QINIU_URL: 'Set URL',
   PICBED_QINIU_OPTIONS: 'Set URL Suffix',
   PICBED_QINIU_AREA: 'Set Area',
+  PICBED_QINIU_MESSAGE_PATH: 'Ex. test/',
+  PICBED_QINIU_MESSAGE_AREA: 'Ex. z0',
+  PICBED_QINIU_MESSAGE_OPTIONS: 'Ex. ?imageslim',
+  PICBED_QINIU_MESSAGE_URL: 'Ex. https://xxx.yyy.glb.clouddn.com',
 
   // imgur
   PICBED_IMGUR: 'Imgur',
   PICBED_IMGUR_CLIENTID: 'Set ClientId',
   PICBED_IMGUR_PROXY: 'Set Proxy',
+  PICBED_IMGUR_MESSAGE_PROXY: 'Ex. http://127.0.0.1:1080',
 
   // upyun
   PICBED_UPYUN: 'Upyun',
@@ -65,6 +84,11 @@ export const EN: ILocales = {
   PICBED_UPYUN_PATH: 'Set Path',
   PICBED_UPYUN_URL: 'Set URL',
   PICBED_UPYUN_OPTIONS: 'Set URL Suffix',
+  PICBED_UPYUN_MESSAGE_OPERATOR: 'Ex. me',
+  PICBED_UPYUN_MESSAGE_PASSWORD: 'Please type the operator password',
+  PICBED_UPYUN_MESSAGE_URL: 'Ex. http://xxx.test.upcdn.net',
+  PICBED_UPYUN_MESSAGE_OPTIONS: 'Ex. !imgslim',
+  PICBED_UPYUN_MESSAGE_PATH: 'Ex. test/',
 
   // Plugin Handler
   PLUGIN_HANDLER_PLUGIN_INSTALL_SUCCESS: 'Plugin installed successfully',

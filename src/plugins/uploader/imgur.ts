@@ -64,14 +64,15 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
     {
       name: 'clientId',
       type: 'input',
-      alias: ctx.i18n.translate<ILocalesKey>('PICBED_IMGUR_CLIENTID'),
+      get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_IMGUR_CLIENTID') },
       default: userConfig.clientId || '',
       required: true
     },
     {
       name: 'proxy',
       type: 'input',
-      alias: ctx.i18n.translate<ILocalesKey>('PICBED_IMGUR_PROXY'),
+      get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_IMGUR_PROXY') },
+      get message () { return ctx.i18n.translate<ILocalesKey>('PICBED_IMGUR_MESSAGE_PROXY') },
       default: userConfig.proxy || '',
       required: false
     }
@@ -81,7 +82,7 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
 
 export default function register (ctx: IPicGo): void {
   ctx.helper.uploader.register('imgur', {
-    name: ctx.i18n.translate<ILocalesKey>('PICBED_IMGUR'),
+    get name () { return ctx.i18n.translate<ILocalesKey>('PICBED_IMGUR') },
     handle,
     config
   })

@@ -62,8 +62,8 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
     {
       name: 'token',
       message: 'api token',
-      type: 'input',
-      alias: ctx.i18n.translate<ILocalesKey>('PICBED_SMMS_TOKEN'),
+      type: 'password',
+      get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_SMMS_TOKEN') },
       default: userConfig.token || '',
       required: true
     }
@@ -73,7 +73,7 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
 
 export default function register (ctx: IPicGo): void {
   ctx.helper.uploader.register('smms', {
-    name: ctx.i18n.translate<ILocalesKey>('PICBED_SMMS'),
+    get name () { return ctx.i18n.translate<ILocalesKey>('PICBED_SMMS') },
     handle,
     config
   })

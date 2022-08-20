@@ -65,35 +65,39 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
     {
       name: 'repo',
       type: 'input',
-      alias: ctx.i18n.translate<ILocalesKey>('PICBED_GITHUB_REPO'),
+      get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_GITHUB_REPO') },
+      get message () { return ctx.i18n.translate<ILocalesKey>('PICBED_GITHUB_MESSAGE_REPO') },
       default: userConfig.repo || '',
       required: true
     },
     {
       name: 'branch',
       type: 'input',
-      alias: ctx.i18n.translate<ILocalesKey>('PICBED_GITHUB_BRANCH'),
+      get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_GITHUB_BRANCH') },
+      get message () { return ctx.i18n.translate<ILocalesKey>('PICBED_GITHUB_MESSAGE_BRANCH') },
       default: userConfig.branch || 'master',
       required: true
     },
     {
       name: 'token',
-      type: 'input',
-      alias: ctx.i18n.translate<ILocalesKey>('PICBED_GITHUB_TOKEN'),
+      type: 'password',
+      get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_GITHUB_TOKEN') },
       default: userConfig.token || '',
       required: true
     },
     {
       name: 'path',
       type: 'input',
-      alias: ctx.i18n.translate<ILocalesKey>('PICBED_GITHUB_PATH'),
+      get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_GITHUB_PATH') },
+      get message () { return ctx.i18n.translate<ILocalesKey>('PICBED_GITHUB_MESSAGE_PATH') },
       default: userConfig.path || '',
       required: false
     },
     {
       name: 'customUrl',
       type: 'input',
-      alias: ctx.i18n.translate<ILocalesKey>('PICBED_GITHUB_CUSTOMURL'),
+      get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_GITHUB_CUSTOMURL') },
+      get message () { return ctx.i18n.translate<ILocalesKey>('PICBED_GITHUB_MESSAGE_CUSTOMURL') },
       default: userConfig.customUrl || '',
       required: false
     }
@@ -103,7 +107,7 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
 
 export default function register (ctx: IPicGo): void {
   ctx.helper.uploader.register('github', {
-    name: ctx.i18n.translate<ILocalesKey>('PICBED_GITHUB'),
+    get name () { return ctx.i18n.translate<ILocalesKey>('PICBED_GITHUB') },
     handle,
     config
   })

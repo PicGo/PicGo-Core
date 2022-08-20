@@ -20,6 +20,10 @@ export const ZH_CN = {
   PICBED_ALICLOUD_PATH: '设定存储路径',
   PICBED_ALICLOUD_CUSTOMURL: '设定自定义域名',
   PICBED_ALICLOUD_OPTIONS: '设定网址后缀',
+  PICBED_ALICLOUD_MESSAGE_AREA: '例如：oss-cn-beijing',
+  PICBED_ALICLOUD_MESSAGE_PATH: '例如：test/',
+  PICBED_ALICLOUD_MESSAGE_OPTIONS: '例如：?x-oss-process=xxx',
+  PICBED_ALICLOUD_MESSAGE_CUSTOMURL: '例如：https://test.com',
 
   // Tencent-cloud
   PICBED_TENCENTCLOUD: '腾讯云COS',
@@ -30,7 +34,13 @@ export const ZH_CN = {
   PICBED_TENCENTCLOUD_BUCKET: '设定Bucket',
   PICBED_TENCENTCLOUD_AREA: '设定存储区域',
   PICBED_TENCENTCLOUD_PATH: '设定存储路径',
+  PICBED_TENCENTCLOUD_OPTIONS: '设定网址后缀',
   PICBED_TENCENTCLOUD_CUSTOMURL: '设定自定义域名',
+  PICBED_TENCENTCLOUD_MESSAGE_APPID: '例如：1234567890',
+  PICBED_TENCENTCLOUD_MESSAGE_AREA: '例如：ap-beijing',
+  PICBED_TENCENTCLOUD_MESSAGE_PATH: '例如：test/',
+  PICBED_TENCENTCLOUD_MESSAGE_CUSTOMURL: '例如：https://test.com',
+  PICBED_TENCENTCLOUD_MESSAGE_OPTIONS: '例如：?imageMogr2',
 
   // GitHub
   PICBED_GITHUB: 'GitHub',
@@ -39,6 +49,10 @@ export const ZH_CN = {
   PICBED_GITHUB_PATH: '设定存储路径',
   PICBED_GITHUB_BRANCH: '设定分支名',
   PICBED_GITHUB_CUSTOMURL: '设定自定义域名',
+  PICBED_GITHUB_MESSAGE_REPO: '格式：username/repo',
+  PICBED_GITHUB_MESSAGE_BRANCH: '例如：main',
+  PICBED_GITHUB_MESSAGE_PATH: '例如：test/',
+  PICBED_GITHUB_MESSAGE_CUSTOMURL: '例如：https://test.com',
 
   // qiniu
   PICBED_QINIU: '七牛云',
@@ -49,11 +63,16 @@ export const ZH_CN = {
   PICBED_QINIU_URL: '设定访问网址',
   PICBED_QINIU_OPTIONS: '设定网址后缀',
   PICBED_QINIU_AREA: '设定存储区域',
+  PICBED_QINIU_MESSAGE_PATH: '例如：test/',
+  PICBED_QINIU_MESSAGE_AREA: '例如：z0',
+  PICBED_QINIU_MESSAGE_OPTIONS: '例如：?imageslim',
+  PICBED_QINIU_MESSAGE_URL: '例如：https://xxx.yyy.glb.clouddn.com',
 
   // imgur
   PICBED_IMGUR: 'Imgur',
   PICBED_IMGUR_CLIENTID: '设定ClientId',
   PICBED_IMGUR_PROXY: '设定代理',
+  PICBED_IMGUR_MESSAGE_PROXY: '例如：http://127.0.0.1:1080',
 
   // upyun
   PICBED_UPYUN: '又拍云',
@@ -63,6 +82,11 @@ export const ZH_CN = {
   PICBED_UPYUN_PATH: '设定存储路径',
   PICBED_UPYUN_URL: '设定加速域名',
   PICBED_UPYUN_OPTIONS: '设定网址后缀',
+  PICBED_UPYUN_MESSAGE_OPERATOR: '例如：me',
+  PICBED_UPYUN_MESSAGE_PASSWORD: '输入操作员密码',
+  PICBED_UPYUN_MESSAGE_URL: '例如：http://xxx.test.upcdn.net',
+  PICBED_UPYUN_MESSAGE_OPTIONS: '例如：!imgslim',
+  PICBED_UPYUN_MESSAGE_PATH: '例如：test/',
 
   // Plugin Handler
   PLUGIN_HANDLER_PLUGIN_INSTALL_SUCCESS: '插件安装成功',
