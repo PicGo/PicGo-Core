@@ -1,3 +1,17 @@
+# :tada: 1.5.0-alpha.7 (2022-08-20)
+
+
+### :sparkles: Features
+
+* finish i18n text ([11b3197](https://github.com/PicGo/PicGo-Core/commit/11b3197))
+
+
+### :bug: Bug Fixes
+
+* aliyun content-type -> Content-Type ([a649fcc](https://github.com/PicGo/PicGo-Core/commit/a649fcc))
+
+
+
 # :tada: 1.5.0-alpha.6 (2022-08-17)
 
 
