@@ -112,7 +112,8 @@ const handle = async (ctx: IPicGo): Promise<IPicGo | boolean> => {
             return {
               statusCode: 400,
               body: {
-                msg: ctx.i18n.translate<ILocalesKey>('AUTH_FAILED')
+                msg: ctx.i18n.translate<ILocalesKey>('AUTH_FAILED'),
+                err
               }
             }
           })
@@ -123,7 +124,7 @@ const handle = async (ctx: IPicGo): Promise<IPicGo | boolean> => {
           body = res
         }
         if (body.statusCode === 400) {
-          throw new Error(body.msg || body.message)
+          throw new Error(body?.body?.err || body?.body?.msg || body?.body?.message)
         }
         const optionUrl = tcYunOptions.options || ''
         if (useV4 && body.message === 'SUCCESS') {
