@@ -367,3 +367,11 @@ export function safeParse<T> (str: string): T | string {
 export const forceNumber = (num: string | number = 0): number => {
   return isNaN(Number(num)) ? 0 : Number(num)
 }
+
+export const isDev = (): boolean => {
+  return process.env.NODE_ENV === 'development'
+}
+
+export const isProd = (): boolean => {
+  return process.env.NODE_ENV === 'production'
+}

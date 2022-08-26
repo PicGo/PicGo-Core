@@ -12,7 +12,7 @@ import {
   ILogger,
   IPicGo
 } from '../types'
-import { forceNumber } from '../utils/common'
+import { forceNumber, isDev } from '../utils/common'
 
 export class Logger implements ILogger {
   private readonly level = {
@@ -129,6 +129,12 @@ export class Logger implements ILogger {
 
   warn (...msg: ILogArgvType[]): void {
     return this.handleLog(ILogType.warn, ...msg)
+  }
+
+  debug (...msg: ILogArgvType[]): void {
+    if (isDev()) {
+      this.handleLog(ILogType.info, ...msg)
+    }
   }
 }
 
