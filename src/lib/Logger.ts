@@ -14,6 +14,9 @@ import {
 } from '../types'
 import { forceNumber, isDev } from '../utils/common'
 
+// Convert enum into union, see: https://stackoverflow.com/a/52396706
+export type LogLevel = `${ILogType}` | 'all'
+
 export class Logger implements ILogger {
   private readonly level = {
     [ILogType.success]: 'green',
@@ -23,10 +26,16 @@ export class Logger implements ILogger {
   }
 
   private readonly ctx: IPicGo
-  private logLevel!: string
-  private logPath!: string
   constructor (ctx: IPicGo) {
     this.ctx = ctx
+  }
+
+  get logPath (): string {
+    return this.ctx.getConfig<Undefinable<string>>('settings.logPath') || path.join(this.ctx.baseDir, './picgo.log')
+  }
+
+  get logLevel (): LogLevel | LogLevel[] {
+    return this.ctx.getConfig<Undefinable<LogLevel>>('settings.logLevel') ?? 'all'
   }
 
   private handleLog (type: ILogType, ...msg: ILogArgvTypeWithError[]): void {
@@ -34,8 +43,6 @@ export class Logger implements ILogger {
     if (!this.ctx.getConfig<Undefinable<string>>('silent')) {
       const logHeader = chalk[this.level[type] as ILogColor](`[PicGo ${type.toUpperCase()}]:`)
       console.log(logHeader, ...msg)
-      this.logLevel = this.ctx.getConfig('settings.logLevel')
-      this.logPath = this.ctx.getConfig<Undefinable<string>>('settings.logPath') || path.join(this.ctx.baseDir, './picgo.log')
       setTimeout(() => {
         // fix log file is too large, now the log file's default size is 10 MB
         try {
@@ -104,12 +111,12 @@ export class Logger implements ILogger {
     }
   }
 
-  private checkLogLevel (type: string, level: undefined | string | string[]): boolean {
+  private checkLogLevel (type: string, level?: LogLevel | LogLevel[]): boolean {
     if (level === undefined || level === 'all') {
       return true
     }
     if (Array.isArray(level)) {
-      return level.some((item: string) => (item === type || item === 'all'))
+      return level.some((item) => (item === type || item === 'all'))
     } else {
       return type === level
     }
