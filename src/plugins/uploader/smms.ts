@@ -71,7 +71,7 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
     {
       name: 'backupDomain',
       get message () {
-        return ctx.i18n.translate<ILocalesKey>('PICBED_SMMS_BACKUP_DOMAIN')
+        return ctx.i18n.translate<ILocalesKey>('PICBED_SMMS_MESSAGE_BACKUP_DOMAIN')
       },
       type: 'input',
       get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_SMMS_BACKUP_DOMAIN') },
