@@ -1,3 +1,19 @@
+# :tada: 1.5.0-alpha.8 (2022-08-27)
+
+
+### :sparkles: Features
+
+* add backupDomain for sm.ms ([c6d54f1](https://github.com/PicGo/PicGo-Core/commit/c6d54f1))
+* add debug logger type ([4342268](https://github.com/PicGo/PicGo-Core/commit/4342268))
+* add picgo.use for easily using plugin ([c0107f1](https://github.com/PicGo/PicGo-Core/commit/c0107f1))
+
+
+### :bug: Bug Fixes
+
+* sometime tencent-cloud error message is empty ([6355e1b](https://github.com/PicGo/PicGo-Core/commit/6355e1b))
+
+
+
 # :tada: 1.5.0-alpha.7 (2022-08-20)
 
 
