@@ -3,10 +3,11 @@ import { Options } from 'request-promise-native'
 import { IBuildInEvent } from '../../utils/enum'
 import { ILocalesKey } from '../../i18n/zh-CN'
 
-const postOptions = (fileName: string, image: Buffer, apiToken: string): Options => {
+const postOptions = (fileName: string, image: Buffer, apiToken: string, backupDomain = ''): Options => {
+  const domain = backupDomain || 'sm.ms'
   return {
     method: 'POST',
-    url: 'https://sm.ms/api/v2/upload',
+    url: `https://${domain}/api/v2/upload`,
     headers: {
       contentType: 'multipart/form-data',
       'User-Agent': 'PicGo',
@@ -33,7 +34,7 @@ const handle = async (ctx: IPicGo): Promise<IPicGo> => {
       if (!image && img.base64Image) {
         image = Buffer.from(img.base64Image, 'base64')
       }
-      const postConfig = postOptions(img.fileName, image, smmsConfig?.token)
+      const postConfig = postOptions(img.fileName, image, smmsConfig?.token, smmsConfig.backupDomain)
       let body = await ctx.Request.request(postConfig)
       body = JSON.parse(body)
       if (body.code === 'success') {
@@ -66,6 +67,16 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
       get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_SMMS_TOKEN') },
       default: userConfig.token || '',
       required: true
+    },
+    {
+      name: 'backupDomain',
+      get message () {
+        return ctx.i18n.translate<ILocalesKey>('PICBED_SMMS_BACKUP_DOMAIN')
+      },
+      type: 'input',
+      get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_SMMS_BACKUP_DOMAIN') },
+      default: userConfig.backupDomain || '',
+      required: false
     }
   ]
   return config

@@ -196,6 +196,7 @@ export interface ICLIConfigs {
 /** SM.MS 图床配置项 */
 export interface ISmmsConfig {
   token: string
+  backupDomain?: string
 }
 /** 七牛云图床配置项 */
 export interface IQiniuConfig {
