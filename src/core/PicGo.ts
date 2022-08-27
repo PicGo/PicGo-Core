@@ -10,7 +10,7 @@ import uploaders from '../plugins/uploader'
 import transformers from '../plugins/transformer'
 import PluginLoader from '../lib/PluginLoader'
 import { get, set, unset } from 'lodash'
-import { IHelper, IImgInfo, IConfig, IPicGo, IStringKeyMap, IPluginLoader, II18nManager } from '../types'
+import { IHelper, IImgInfo, IConfig, IPicGo, IStringKeyMap, IPluginLoader, II18nManager, IPicGoPlugin, IPicGoPluginInterface } from '../types'
 import getClipboardImage from '../utils/getClipboardImage'
 import Request from '../lib/Request'
 import DB from '../utils/db'
@@ -107,6 +107,11 @@ export class PicGo extends EventEmitter implements IPicGo {
       this.log.error(e)
       throw e
     }
+  }
+
+  use (plugin: IPicGoPlugin): IPicGoPluginInterface {
+    const pluginInstance = plugin(this)
+    return pluginInstance
   }
 
   registerCommands (): void {
