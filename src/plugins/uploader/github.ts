@@ -1,9 +1,8 @@
-import { IPicGo, IPluginConfig, IGithubConfig } from '../../types'
-import { Options } from 'request-promise-native'
+import { IPicGo, IPluginConfig, IGithubConfig, IOldReqOptionsWithJSON } from '../../types'
 import { IBuildInEvent } from '../../utils/enum'
 import { ILocalesKey } from '../../i18n/zh-CN'
 
-const postOptions = (fileName: string, options: IGithubConfig, data: any): Options => {
+const postOptions = (fileName: string, options: IGithubConfig, data: any): IOldReqOptionsWithJSON => {
   const path = options.path || ''
   const { token, repo } = options
   return {
@@ -35,7 +34,11 @@ const handle = async (ctx: IPicGo): Promise<IPicGo> => {
           path: githubOptions.path + encodeURI(img.fileName)
         }
         const postConfig = postOptions(img.fileName, githubOptions, data)
-        const body = await ctx.Request.request(postConfig)
+        const body: {
+          content: {
+            download_url: string
+          }
+        } = await ctx.request(postConfig)
         if (body) {
           delete img.base64Image
           delete img.buffer
@@ -65,6 +68,7 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
     {
       name: 'repo',
       type: 'input',
+      get prefix () { return ctx.i18n.translate<ILocalesKey>('PICBED_GITHUB_REPO') },
       get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_GITHUB_REPO') },
       get message () { return ctx.i18n.translate<ILocalesKey>('PICBED_GITHUB_MESSAGE_REPO') },
       default: userConfig.repo || '',
@@ -73,6 +77,7 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
     {
       name: 'branch',
       type: 'input',
+      get prefix () { return ctx.i18n.translate<ILocalesKey>('PICBED_GITHUB_BRANCH') },
       get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_GITHUB_BRANCH') },
       get message () { return ctx.i18n.translate<ILocalesKey>('PICBED_GITHUB_MESSAGE_BRANCH') },
       default: userConfig.branch || 'master',
@@ -88,6 +93,7 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
     {
       name: 'path',
       type: 'input',
+      get prefix () { return ctx.i18n.translate<ILocalesKey>('PICBED_GITHUB_PATH') },
       get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_GITHUB_PATH') },
       get message () { return ctx.i18n.translate<ILocalesKey>('PICBED_GITHUB_MESSAGE_PATH') },
       default: userConfig.path || '',
@@ -96,6 +102,7 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
     {
       name: 'customUrl',
       type: 'input',
+      get prefix () { return ctx.i18n.translate<ILocalesKey>('PICBED_GITHUB_CUSTOMURL') },
       get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_GITHUB_CUSTOMURL') },
       get message () { return ctx.i18n.translate<ILocalesKey>('PICBED_GITHUB_MESSAGE_CUSTOMURL') },
       default: userConfig.customUrl || '',

@@ -1,7 +1,6 @@
-import { IPicGo, IPluginConfig, IAliyunConfig } from '../../types'
+import { IPicGo, IPluginConfig, IAliyunConfig, IOldReqOptionsWithFullResponse } from '../../types'
 import crypto from 'crypto'
 import mime from 'mime-types'
-import { Options } from 'request-promise-native'
 import { IBuildInEvent } from '../../utils/enum'
 import { ILocalesKey } from '../../i18n/zh-CN'
 
@@ -17,7 +16,7 @@ const generateSignature = (options: IAliyunConfig, fileName: string): string => 
   return `OSS ${options.accessKeyId}:${signature}`
 }
 
-const postOptions = (options: IAliyunConfig, fileName: string, signature: string, image: Buffer): Options => {
+const postOptions = (options: IAliyunConfig, fileName: string, signature: string, image: Buffer): IOldReqOptionsWithFullResponse => {
   return {
     method: 'PUT',
     url: `https://${options.bucket}.${options.area}.aliyuncs.com/${encodeURI(options.path)}${encodeURI(fileName)}`,
@@ -49,7 +48,7 @@ const handle = async (ctx: IPicGo): Promise<IPicGo> => {
           image = Buffer.from(img.base64Image, 'base64')
         }
         const options = postOptions(aliYunOptions, img.fileName, signature, image)
-        const body = await ctx.Request.request(options)
+        const body = await ctx.request(options)
         if (body.statusCode === 200) {
           delete img.base64Image
           delete img.buffer
@@ -101,6 +100,7 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
     {
       name: 'area',
       type: 'input',
+      get prefix () { return ctx.i18n.translate<ILocalesKey>('PICBED_ALICLOUD_AREA') },
       get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_ALICLOUD_AREA') },
       default: userConfig.area || '',
       get message () { return ctx.i18n.translate<ILocalesKey>('PICBED_ALICLOUD_MESSAGE_AREA') },
@@ -109,6 +109,7 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
     {
       name: 'path',
       type: 'input',
+      get prefix () { return ctx.i18n.translate<ILocalesKey>('PICBED_ALICLOUD_PATH') },
       get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_ALICLOUD_PATH') },
       get message () { return ctx.i18n.translate<ILocalesKey>('PICBED_ALICLOUD_MESSAGE_PATH') },
       default: userConfig.path || '',
@@ -117,6 +118,7 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
     {
       name: 'customUrl',
       type: 'input',
+      get prefix () { return ctx.i18n.translate<ILocalesKey>('PICBED_ALICLOUD_CUSTOMURL') },
       get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_ALICLOUD_CUSTOMURL') },
       get message () { return ctx.i18n.translate<ILocalesKey>('PICBED_ALICLOUD_MESSAGE_CUSTOMURL') },
       default: userConfig.customUrl || '',
@@ -125,6 +127,7 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
     {
       name: 'options',
       type: 'input',
+      get prefix () { return ctx.i18n.translate<ILocalesKey>('PICBED_ALICLOUD_OPTIONS') },
       get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_ALICLOUD_OPTIONS') },
       get message () { return ctx.i18n.translate<ILocalesKey>('PICBED_ALICLOUD_MESSAGE_OPTIONS') },
       default: userConfig.options || '',

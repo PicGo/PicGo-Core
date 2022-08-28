@@ -1,22 +1,28 @@
+/* eslint-disable @typescript-eslint/no-misused-promises */
 import { Command } from 'commander'
 import inquirer, { Inquirer } from 'inquirer'
 import { IPlugin, ICommander, IPicGo } from '../types'
 import commanders from '../plugins/commander'
+import { getCurrentPluginName } from './LifecyclePlugins'
 
 export class Commander implements ICommander {
-  private list: {
-    [propName: string]: IPlugin
-  }
+  private readonly name = 'commander'
+  static currentPlugin: string | null
+  private readonly list: Map<string, IPlugin> = new Map()
+  private readonly pluginIdMap: Map<string, string[]> = new Map()
+  private readonly ctx: IPicGo
 
   program: Command
   inquirer: Inquirer
-  private readonly ctx: IPicGo
 
   constructor (ctx: IPicGo) {
-    this.list = {}
     this.program = new Command()
     this.inquirer = inquirer
     this.ctx = ctx
+  }
+
+  getName (): string {
+    return this.name
   }
 
   init (): void {
@@ -41,24 +47,50 @@ export class Commander implements ICommander {
     commanders(this.ctx)
   }
 
-  register (name: string, plugin: IPlugin): void {
-    if (!name) throw new TypeError('name is required!')
+  register (id: string, plugin: IPlugin): void {
+    if (!id) throw new TypeError('name is required!')
     if (typeof plugin.handle !== 'function') throw new TypeError('plugin.handle must be a function!')
-    if (name in this.list) throw new TypeError('duplicate name!')
+    if (this.list.has(id)) throw new TypeError(`${this.name} plugin duplicate id: ${id}!`)
+    this.list.set(id, plugin)
+    const currentPluginName = getCurrentPluginName()
+    if (currentPluginName !== null) {
+      if (this.pluginIdMap.has(currentPluginName)) {
+        this.pluginIdMap.get(currentPluginName)?.push(id)
+      } else {
+        this.pluginIdMap.set(currentPluginName, [id])
+      }
+    }
+  }
 
-    this.list[name] = plugin
+  unregister (pluginName: string): void {
+    if (this.pluginIdMap.has(pluginName)) {
+      const pluginList = this.pluginIdMap.get(pluginName)
+      pluginList?.forEach((plugin: string) => {
+        this.list.delete(plugin)
+      })
+    }
   }
 
   loadCommands (): void {
-    Object.keys(this.list).map((item: string) => this.list[item].handle(this.ctx))
+    this.getList().forEach((item: IPlugin) => {
+      try {
+        item.handle(this.ctx)
+      } catch (e: any) {
+        this.ctx.log.error(e)
+      }
+    })
   }
 
-  get (name: string): IPlugin {
-    return this.list[name]
+  get (id: string): IPlugin | undefined {
+    return this.list.get(id)
   }
 
   getList (): IPlugin[] {
-    return Object.keys(this.list).map((item: string) => this.list[item])
+    return [...this.list.values()]
+  }
+
+  getIdList (): string[] {
+    return [...this.list.keys()]
   }
 }
 

@@ -1,6 +1,6 @@
-import { RequestPromiseAPI } from 'request-promise-native'
 import { Command } from 'commander'
 import { Inquirer } from 'inquirer'
+import { RequestPromiseOptions } from 'request-promise-native'
 
 export interface IPicGo extends NodeJS.EventEmitter {
   /**
@@ -64,7 +64,7 @@ export interface IPicGo extends NodeJS.EventEmitter {
    *
    * http request tool
    */
-  request: RequestPromiseAPI
+  request: IRequest['request']
 
   i18n: II18nManager
 
@@ -104,6 +104,7 @@ export interface IPluginConfig {
   default?: any
   alias?: string
   message?: string
+  prefix?: string // for cli options
   [propName: string]: any
 }
 
@@ -127,12 +128,9 @@ export interface IHelper {
   afterUploadPlugins: ILifecyclePlugins
 }
 
-export interface ICommander {
+export interface ICommander extends ILifecyclePlugins {
   program: Command
   inquirer: Inquirer
-  get: (name: string) => IPlugin
-  getList: () => IPlugin[]
-  register: (name: string, plugin: IPlugin) => void
 }
 
 export interface IPluginLoader {
@@ -161,8 +159,65 @@ export interface IPluginLoader {
   hasPlugin: (name: string) => boolean
 }
 
+export interface IRequestOld {
+  request: import('axios').AxiosInstance
+}
+
+export type IOldReqOptions = Omit<RequestPromiseOptions & {
+  url: string
+  resolveWithFullResponse?: true
+}, 'auth'>
+
+export type IOldReqOptionsWithFullResponse = IOldReqOptions & {
+  resolveWithFullResponse: true
+}
+
+export type IOldReqOptionsWithJSON = IOldReqOptions & {
+  json: boolean
+}
+
+export type IReqOptions<T> = AxiosRequestConfig<T> & {
+  resolveWithFullResponse?: true
+}
+
+export type IFullResponse<T = any, U = any> = AxiosResponse<T, U> & {
+  statusCode: number
+  body: T
+}
+
+export type AxiosResponse<T = any, U = any> = import('axios').AxiosResponse<T, U>
+
+export type AxiosRequestConfig<T = any> = import('axios').AxiosRequestConfig<T>
+
+/**
+ * T is the config type
+ * U is the response data type
+ */
+export type IResponse<T, U> = U extends {
+  resolveWithFullResponse: true
+} ? IFullResponse<T, U> : U extends {
+    json: true
+  } ? T : string
+
+/**
+ * the old request lib will be removed in v1.5.0+
+ * the request options have the following properties
+ */
+export interface IRequestLibOnlyOptions {
+  proxy?: string
+  body?: any
+  formData?: { [key: string]: any } | undefined
+  form?: { [key: string]: any } | string | undefined
+}
+
+export type IRequestConfig<T> = T extends IRequestLibOnlyOptions ? IOldReqOptions : AxiosRequestConfig
+
+// export type INewRequest<T = any, U = any> = (config: IRequestConfig<T>) => Promise<IResponse<T, U>>
+
 export interface IRequest {
-  request: RequestPromiseAPI
+  request: <T, U extends (
+    IRequestConfig<U> extends IOldReqOptions ? IOldReqOptions : IRequestConfig<U> extends AxiosRequestConfig ? AxiosRequestConfig : never
+  )>(config: U) => Promise<IResponse<T, U>>
 }
 
 export type ILogColor = 'blue' | 'green' | 'yellow' | 'red'
@@ -474,6 +529,7 @@ export interface ILogger {
   info: (...msg: ILogArgvType[]) => void
   error: (...msg: ILogArgvTypeWithError[]) => void
   warn: (...msg: ILogArgvType[]) => void
+  debug: (...msg: ILogArgvType[]) => void
 }
 
 export interface IConfigChangePayload<T> {

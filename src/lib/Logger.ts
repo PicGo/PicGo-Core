@@ -86,11 +86,11 @@ export class Logger implements ILogger {
       if (this.checkLogLevel(type, this.logLevel)) {
         let log = `${dayjs().format('YYYY-MM-DD HH:mm:ss')} [PicGo ${type.toUpperCase()}] `
         msg.forEach((item: ILogArgvTypeWithError) => {
-          if (typeof item === 'object' && type === 'error') {
+          if (item instanceof Error && type === 'error') {
             log += `\n------Error Stack Begin------\n${util.format(item?.stack)}\n-------Error Stack End------- `
           } else {
             if (typeof item === 'object') {
-              item = JSON.stringify(item)
+              item = JSON.stringify(item, null, 2)
             }
             log += `${item as string} `
           }

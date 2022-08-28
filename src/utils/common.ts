@@ -1,5 +1,5 @@
-import request from 'request'
-import requestPromise from 'request-promise-native'
+// import requestPromise from 'request-promise-native'
+import axios from 'axios'
 import fs from 'fs-extra'
 import path from 'path'
 import { imageSize } from 'image-size'
@@ -63,28 +63,25 @@ export const getFSFile = async (filePath: string): Promise<IPathTransformedImgIn
 }
 
 export const getURLFile = async (url: string): Promise<IPathTransformedImgInfo> => {
-  const requestOptions = {
-    method: 'GET',
-    url: handleUrlEncode(url),
-    encoding: null
-  }
+  url = handleUrlEncode(url)
   let isImage = false
   let extname = ''
   let timeoutId: NodeJS.Timeout
   const requestFn = new Promise<IPathTransformedImgInfo>((resolve, reject) => {
     (async () => {
       try {
-        const res = await requestPromise(requestOptions)
-          .on('response', (response: request.Response): void => {
-            const contentType = response.headers['content-type']
+        const res = await axios.get(url)
+          .then((resp) => {
+            const contentType = resp.headers['content-type']
             if (contentType?.includes('image')) {
               isImage = true
               extname = `.${contentType.split('image/')[1]}`
             }
+            return resp.data
           })
         clearTimeout(timeoutId)
         if (isImage) {
-          const urlPath = new URL(requestOptions.url).pathname
+          const urlPath = new URL(url).pathname
           resolve({
             buffer: res,
             fileName: path.basename(urlPath),

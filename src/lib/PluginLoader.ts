@@ -114,6 +114,7 @@ export class PluginLoader implements IPluginLoader {
     this.ctx.helper.beforeTransformPlugins.unregister(name)
     this.ctx.helper.beforeUploadPlugins.unregister(name)
     this.ctx.helper.afterUploadPlugins.unregister(name)
+    this.ctx.cmd.unregister(name)
     this.ctx.removeConfig('picgoPlugins', name)
   }
 

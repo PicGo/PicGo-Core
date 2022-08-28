@@ -10,14 +10,13 @@ import uploaders from '../plugins/uploader'
 import transformers from '../plugins/transformer'
 import PluginLoader from '../lib/PluginLoader'
 import { get, set, unset } from 'lodash'
-import { IHelper, IImgInfo, IConfig, IPicGo, IStringKeyMap, IPluginLoader, II18nManager, IPicGoPlugin, IPicGoPluginInterface } from '../types'
+import { IHelper, IImgInfo, IConfig, IPicGo, IStringKeyMap, IPluginLoader, II18nManager, IPicGoPlugin, IPicGoPluginInterface, IRequest } from '../types'
 import getClipboardImage from '../utils/getClipboardImage'
 import Request from '../lib/Request'
 import DB from '../utils/db'
 import PluginHandler from '../lib/PluginHandler'
 import { IBuildInEvent, IBusEvent } from '../utils/enum'
 import { eventBus } from '../utils/eventBus'
-import { RequestPromiseAPI } from 'request-promise-native'
 import { isConfigKeyInBlackList, isInputConfigValid } from '../utils/common'
 import { I18nManager } from '../i18n'
 
@@ -176,9 +175,8 @@ export class PicGo extends EventEmitter implements IPicGo {
     unset(this.getConfig(key), propName)
   }
 
-  get request (): RequestPromiseAPI {
-    // TODO: replace request with got: https://github.com/sindresorhus/got
-    return this.Request.request
+  get request (): IRequest['request'] {
+    return this.Request.request.bind(this.Request)
   }
 
   async upload (input?: any[]): Promise<IImgInfo[] | Error> {

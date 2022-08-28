@@ -56,4 +56,8 @@ export const setCurrentPluginName = (name: string | null = null): void => {
   LifecyclePlugins.currentPlugin = name
 }
 
+export const getCurrentPluginName = (): string | null => {
+  return LifecyclePlugins.currentPlugin
+}
+
 export default LifecyclePlugins

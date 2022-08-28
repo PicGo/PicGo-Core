@@ -1,10 +1,9 @@
 import qiniu from 'qiniu'
-import { IPluginConfig, IQiniuConfig, IPicGo } from '../../types'
-import { Options } from 'request-promise-native'
+import { IPluginConfig, IQiniuConfig, IPicGo, IOldReqOptions } from '../../types'
 import { IBuildInEvent } from '../../utils/enum'
 import { ILocalesKey } from '../../i18n/zh-CN'
 
-function postOptions (options: IQiniuConfig, fileName: string, token: string, imgBase64: string): Options {
+function postOptions (options: IQiniuConfig, fileName: string, token: string, imgBase64: string): IOldReqOptions {
   const area = selectArea(options.area || 'z0')
   const path = options.path || ''
   const base64FileName = Buffer.from(path + fileName, 'utf-8').toString('base64').replace(/\+/g, '-').replace(/\//g, '_')
@@ -45,7 +44,7 @@ const handle = async (ctx: IPicGo): Promise<IPicGo> => {
       if (img.fileName && img.buffer) {
         const base64Image = img.base64Image || Buffer.from(img.buffer).toString('base64')
         const options = postOptions(qiniuOptions, img.fileName, getToken(qiniuOptions), base64Image)
-        const res = await ctx.Request.request(options)
+        const res = await ctx.request(options)
         const body = JSON.parse(res)
         if (body?.key) {
           delete img.base64Image
@@ -56,7 +55,7 @@ const handle = async (ctx: IPicGo): Promise<IPicGo> => {
         } else {
           ctx.emit(IBuildInEvent.NOTIFICATION, {
             title: ctx.i18n.translate<ILocalesKey>('UPLOAD_FAILED'),
-            body: res.body.msg
+            body: body.msg
           })
           throw new Error('Upload failed')
         }
@@ -105,6 +104,7 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
     {
       name: 'url',
       type: 'input',
+      get prefix () { return ctx.i18n.translate<ILocalesKey>('PICBED_QINIU_URL') },
       get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_QINIU_URL') },
       get message () { return ctx.i18n.translate<ILocalesKey>('PICBED_QINIU_MESSAGE_URL') },
       default: userConfig.url || '',
@@ -113,6 +113,7 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
     {
       name: 'area',
       type: 'input',
+      get prefix () { return ctx.i18n.translate<ILocalesKey>('PICBED_QINIU_AREA') },
       get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_QINIU_AREA') },
       get message () { return ctx.i18n.translate<ILocalesKey>('PICBED_QINIU_MESSAGE_AREA') },
       default: userConfig.area || '',
@@ -121,6 +122,7 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
     {
       name: 'options',
       type: 'input',
+      get prefix () { return ctx.i18n.translate<ILocalesKey>('PICBED_QINIU_OPTIONS') },
       get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_QINIU_OPTIONS') },
       get message () { return ctx.i18n.translate<ILocalesKey>('PICBED_QINIU_MESSAGE_OPTIONS') },
       default: userConfig.options || '',
@@ -129,6 +131,7 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
     {
       name: 'path',
       type: 'input',
+      get prefix () { return ctx.i18n.translate<ILocalesKey>('PICBED_QINIU_PATH') },
       get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_QINIU_PATH') },
       get message () { return ctx.i18n.translate<ILocalesKey>('PICBED_QINIU_MESSAGE_PATH') },
       default: userConfig.path || '',

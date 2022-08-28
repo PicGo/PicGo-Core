@@ -12,7 +12,7 @@ export const EN: ILocales = {
   // smms
   PICBED_SMMS: 'SM.MS',
   PICBED_SMMS_TOKEN: 'Set Token',
-  PICBED_SMMS_BACKUP_DOMAIN: 'Set Backup Domain',
+  PICBED_SMMS_BACKUP_DOMAIN: 'Set Backup Upload Domain',
   PICBED_SMMS_MESSAGE_BACKUP_DOMAIN: 'Ex. smms.app',
 
   // Ali-cloud

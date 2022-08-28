@@ -218,11 +218,11 @@ export class PluginHandler implements IPluginHandler {
         const npm = spawn('npm', args, { cwd: where, env: Object.assign({}, process.env, env) })
 
         let output = ''
-        npm.stdout.on('data', (data: string) => {
+        npm.stdout?.on('data', (data: string) => {
           output += data
         }).pipe(process.stdout)
 
-        npm.stderr.on('data', (data: string) => {
+        npm.stderr?.on('data', (data: string) => {
           output += data
         }).pipe(process.stderr)
 

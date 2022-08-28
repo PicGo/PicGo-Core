@@ -1,7 +1,6 @@
 import crypto from 'crypto'
 import mime from 'mime-types'
-import { IPicGo, IPluginConfig, ITcyunConfig } from '../../types'
-import { Options } from 'request-promise-native'
+import { IPicGo, IPluginConfig, ITcyunConfig, IOldReqOptionsWithFullResponse } from '../../types'
 import { IBuildInEvent } from '../../utils/enum'
 import { ILocalesKey } from '../../i18n/zh-CN'
 
@@ -50,7 +49,7 @@ const generateSignature = (options: ITcyunConfig, fileName: string): ISignature 
   }
 }
 
-const postOptions = (options: ITcyunConfig, fileName: string, signature: ISignature, image: Buffer, version: string): Options => {
+const postOptions = (options: ITcyunConfig, fileName: string, signature: ISignature, image: Buffer, version: string): IOldReqOptionsWithFullResponse => {
   const area = options.area
   const path = options.path
   if (!options.version || options.version === 'v4') {
@@ -66,7 +65,8 @@ const postOptions = (options: ITcyunConfig, fileName: string, signature: ISignat
       formData: {
         op: 'upload',
         filecontent: image
-      }
+      },
+      resolveWithFullResponse: true
     }
   } else {
     return {
@@ -108,7 +108,6 @@ const handle = async (ctx: IPicGo): Promise<IPicGo | boolean> => {
         const res = await ctx.request(options)
           .then((res: any) => res)
           .catch((err: Error) => {
-            ctx.log.error(err)
             return {
               statusCode: 400,
               body: {
@@ -124,7 +123,11 @@ const handle = async (ctx: IPicGo): Promise<IPicGo | boolean> => {
           body = res
         }
         if (body.statusCode === 400) {
-          throw new Error(body?.body?.err || body?.body?.msg || body?.body?.message)
+          if (body?.body?.err) {
+            throw body.body.err
+          } else {
+            throw new Error(body?.body?.msg || body?.body?.message)
+          }
         }
         const optionUrl = tcYunOptions.options || ''
         if (useV4 && body.message === 'SUCCESS') {
@@ -201,6 +204,7 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
     {
       name: 'appId',
       type: 'input',
+      get prefix () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_APPID') },
       get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_APPID') },
       default: userConfig.appId || '',
       get message () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_MESSAGE_APPID') },
@@ -209,6 +213,7 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
     {
       name: 'area',
       type: 'input',
+      get prefix () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_AREA') },
       get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_AREA') },
       default: userConfig.area || '',
       get message () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_MESSAGE_AREA') },
@@ -217,6 +222,7 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
     {
       name: 'path',
       type: 'input',
+      get prefix () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_PATH') },
       get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_PATH') },
       default: userConfig.path || '',
       get message () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_MESSAGE_PATH') },
@@ -225,6 +231,7 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
     {
       name: 'customUrl',
       type: 'input',
+      get prefix () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_CUSTOMURL') },
       get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_CUSTOMURL') },
       default: userConfig.customUrl || '',
       get message () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_MESSAGE_CUSTOMURL') },
@@ -234,6 +241,7 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
       name: 'options',
       type: 'input',
       default: userConfig.options || '',
+      get prefix () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_OPTIONS') },
       get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_OPTIONS') },
       get message () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_MESSAGE_OPTIONS') },
       required: false
