@@ -45,6 +45,7 @@ const handle = async (ctx: IPicGo): Promise<IPicGo> => {
         const base64Image = img.base64Image || Buffer.from(img.buffer).toString('base64')
         const options = postOptions(qiniuOptions, img.fileName, getToken(qiniuOptions), base64Image)
         const res = await ctx.request(options)
+        console.log(res)
         const body = JSON.parse(res)
         if (body?.key) {
           delete img.base64Image
@@ -66,7 +67,7 @@ const handle = async (ctx: IPicGo): Promise<IPicGo> => {
     if (err.message !== 'Upload failed') {
       // err.response maybe undefined
       if (err.response) {
-        const error = JSON.parse(err.response.body || '{}')
+        const error = err.response.body
         ctx.emit(IBuildInEvent.NOTIFICATION, {
           title: ctx.i18n.translate<ILocalesKey>('UPLOAD_FAILED'),
           body: error.error
