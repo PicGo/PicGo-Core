@@ -197,7 +197,7 @@ export class Request implements IRequest {
       }
       return obj
     })
-    if ('resolveWithFullResponse' in options) {
+    if ('resolveWithFullResponse' in options && options.resolveWithFullResponse) {
       return instance.request(opt)
     } else {
       return instance.request(opt).then(res => {
