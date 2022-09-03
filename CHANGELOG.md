@@ -1,3 +1,19 @@
+# :tada: 1.5.0-alpha.9 (2022-09-03)
+
+
+### :sparkles: Features
+
+* finish request -> axios ([b89cf1e](https://github.com/PicGo/PicGo-Core/commit/b89cf1e))
+
+
+### :bug: Bug Fixes
+
+* qiniu error msg can't show ([0e4661b](https://github.com/PicGo/PicGo-Core/commit/0e4661b))
+* sm.ms backupDomain message text ([45424d1](https://github.com/PicGo/PicGo-Core/commit/45424d1))
+* when request-options resolveWithFullResponse is false bug ([eb8217a](https://github.com/PicGo/PicGo-Core/commit/eb8217a))
+
+
+
 # :tada: 1.5.0-alpha.8 (2022-08-27)
 
 
