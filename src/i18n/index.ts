@@ -9,9 +9,11 @@ import { ObjectAdapter, I18n } from '@picgo/i18n'
 import { IStringKeyMap, II18nManager } from '../types/index'
 import { ILocale } from '@picgo/i18n/dist/types'
 import { EN } from './en'
+import { ZH_TW } from './zh-TW'
 
 const languageList: IStringKeyMap<IStringKeyMap<string>> = {
   'zh-CN': ZH_CN,
+  'zh-TW': ZH_TW,
   en: EN
 }
 
