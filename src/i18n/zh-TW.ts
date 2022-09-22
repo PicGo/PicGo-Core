@@ -6,13 +6,13 @@ export const ZH_TW: ILocales = {
   CHECK_SETTINGS: '請檢查你的設定是否正確',
   CHECK_SETTINGS_AND_NETWORK: '請檢查你的設定及網路',
   UPLOAD_FAILED_REASON: '錯誤碼：${code}，請打開瀏覽器貼上地址查看相關原因',
-  SERVER_ERROR: '伺服器端出錯，請重試',
+  SERVER_ERROR: '伺服器出錯，請重試',
   AUTH_FAILED: '認證失敗',
 
   // smms
   PICBED_SMMS: 'SM.MS',
   PICBED_SMMS_TOKEN: '設定Token',
-  PICBED_SMMS_BACKUP_DOMAIN: '備用上傳網域',
+  PICBED_SMMS_BACKUP_DOMAIN: '備用上傳網址',
   PICBED_SMMS_MESSAGE_BACKUP_DOMAIN: '例如 smms.app',
 
   // Ali-cloud
@@ -75,7 +75,7 @@ export const ZH_TW: ILocales = {
   // imgur
   PICBED_IMGUR: 'Imgur',
   PICBED_IMGUR_CLIENTID: '設定ClientId',
-  PICBED_IMGUR_PROXY: '設定代理',
+  PICBED_IMGUR_PROXY: '設定PROXY',
   PICBED_IMGUR_MESSAGE_PROXY: '例如：http://127.0.0.1:1080',
 
   // upyun
@@ -96,13 +96,13 @@ export const ZH_TW: ILocales = {
   PLUGIN_HANDLER_PLUGIN_INSTALL_SUCCESS: '插件安裝成功',
   PLUGIN_HANDLER_PLUGIN_INSTALL_FAILED: '插件安裝失敗',
   PLUGIN_HANDLER_PLUGIN_INSTALL_FAILED_REASON: '插件安裝失敗，失敗碼為${code}，錯誤紀錄為 \n ${data}',
-  PLUGIN_HANDLER_PLUGIN_INSTALL_FAILED_PATH: '插件安裝失敗，請輸入合法插件名稱或合法安裝路徑',
+  PLUGIN_HANDLER_PLUGIN_INSTALL_FAILED_PATH: '插件安裝失敗，請輸入正確的插件名稱或正確的安裝路徑',
   PLUGIN_HANDLER_PLUGIN_UNINSTALL_SUCCESS: '插件卸載成功',
   PLUGIN_HANDLER_PLUGIN_UNINSTALL_FAILED: '插件卸載失敗',
   PLUGIN_HANDLER_PLUGIN_UNINSTALL_FAILED_REASON: '插件卸載失敗，失敗碼為${code}，錯誤紀錄為 \n ${data}',
-  PLUGIN_HANDLER_PLUGIN_UNINSTALL_FAILED_VALID: '插件卸載失敗，請輸入合法插件名稱',
+  PLUGIN_HANDLER_PLUGIN_UNINSTALL_FAILED_VALID: '插件卸載失敗，請輸入正確的插件名稱',
   PLUGIN_HANDLER_PLUGIN_UPDATE_SUCCESS: '插件更新成功',
   PLUGIN_HANDLER_PLUGIN_UPDATE_FAILED: '插件更新失敗',
   PLUGIN_HANDLER_PLUGIN_UPDATE_FAILED_REASON: '插件更新失敗，失敗碼為${code}，錯誤紀錄為 \n ${data}',
-  PLUGIN_HANDLER_PLUGIN_UPDATE_FAILED_VALID: '插件更新失敗，請輸入合法插件名稱'
+  PLUGIN_HANDLER_PLUGIN_UPDATE_FAILED_VALID: '插件更新失敗，請輸入正確的插件名稱'
 }
