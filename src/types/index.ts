@@ -189,15 +189,28 @@ export type AxiosResponse<T = any, U = any> = import('axios').AxiosResponse<T, U
 
 export type AxiosRequestConfig<T = any> = import('axios').AxiosRequestConfig<T>
 
-/**
- * T is the config type
- * U is the response data type
- */
-export type IResponse<T, U> = U extends {
+export interface IRequestOptionsWithFullResponse {
   resolveWithFullResponse: true
-} ? IFullResponse<T, U> : U extends {
-    json: true
-  } ? T : string
+}
+
+export interface IRequestOptionsWithJson {
+  json: true
+}
+
+export interface IRequestOptionsWithResponseTypeArrayBuffer {
+  responseType: 'arraybuffer'
+}
+
+/**
+ * T is the response data type
+ * U is the config type
+ */
+export type IResponse<T, U> = U extends IRequestOptionsWithFullResponse
+  ? IFullResponse<T, U>
+  : U extends IRequestOptionsWithJson
+    ? T
+    : U extends IRequestOptionsWithResponseTypeArrayBuffer ?
+      Buffer : string
 
 /**
  * the old request lib will be removed in v1.5.0+

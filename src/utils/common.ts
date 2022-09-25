@@ -15,7 +15,7 @@ export const isUrl = (url: string): boolean => (url.startsWith('http://') || url
 export const isUrlEncode = (url: string): boolean => {
   url = url || ''
   try {
-    return url !== decodeURI(url)
+    return url !== decodeURIComponent(url)
   } catch (e) {
     // if some error caught, try to let it go
     return true
@@ -23,7 +23,7 @@ export const isUrlEncode = (url: string): boolean => {
 }
 export const handleUrlEncode = (url: string): string => {
   if (!isUrlEncode(url)) {
-    url = encodeURI(url)
+    url = encodeURIComponent(url)
   }
   return url
 }
@@ -70,7 +70,9 @@ export const getURLFile = async (url: string): Promise<IPathTransformedImgInfo> 
   const requestFn = new Promise<IPathTransformedImgInfo>((resolve, reject) => {
     (async () => {
       try {
-        const res = await axios.get(url)
+        const res = await axios.get(url, {
+          responseType: 'arraybuffer'
+        })
           .then((resp) => {
             const contentType = resp.headers['content-type']
             if (contentType?.includes('image')) {
@@ -94,11 +96,12 @@ export const getURLFile = async (url: string): Promise<IPathTransformedImgInfo> 
             reason: `${url} is not image`
           })
         }
-      } catch {
+      } catch (error: any) {
         clearTimeout(timeoutId)
         resolve({
           success: false,
-          reason: `request ${url} error`
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+          reason: `request ${url} error, ${error?.message ?? ''}`
         })
       }
     })().catch(reject)
