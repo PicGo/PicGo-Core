@@ -1,3 +1,19 @@
+# :tada: 1.5.0-alpha.10 (2022-09-25)
+
+
+### :sparkles: Features
+
+* add zh-TW ([#135](https://github.com/PicGo/PicGo-Core/issues/135)) ([d111d6a](https://github.com/PicGo/PicGo-Core/commit/d111d6a))
+* update linux.sh ([#134](https://github.com/PicGo/PicGo-Core/issues/134)) ([2910c20](https://github.com/PicGo/PicGo-Core/commit/2910c20))
+
+
+### :bug: Bug Fixes
+
+* some texts in zh-TW ([#136](https://github.com/PicGo/PicGo-Core/issues/136)) ([907e6c9](https://github.com/PicGo/PicGo-Core/commit/907e6c9))
+* url image download bug & tencent cos url encode bug ([53d54f8](https://github.com/PicGo/PicGo-Core/commit/53d54f8))
+
+
+
 # :tada: 1.5.0-alpha.9 (2022-09-03)
 
 
