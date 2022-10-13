@@ -176,9 +176,24 @@ export type IOldReqOptionsWithJSON = IOldReqOptions & {
   json: boolean
 }
 
-export type IReqOptions<T> = AxiosRequestConfig<T> & {
-  resolveWithFullResponse?: true
+/**
+ * for PicGo new request api, the response will be json format
+ */
+export type IReqOptions<T = any> = AxiosRequestConfig<T> & {
+  resolveWithFullResponse: true
 }
+
+/**
+ * for PicGo new request api, the response will be Buffer
+ */
+export type IReqOptionsWithArrayBufferRes<T = any> = IReqOptions<T> & {
+  responseType: 'arraybuffer'
+}
+
+/**
+ * for PicGo new request api, the response will be just response data. (not statusCode, headers, etc.)
+ */
+export type IReqOptionsWithBodyResOnly<T = any> = AxiosRequestConfig<T>
 
 export type IFullResponse<T = any, U = any> = AxiosResponse<T, U> & {
   statusCode: number
@@ -189,15 +204,15 @@ export type AxiosResponse<T = any, U = any> = import('axios').AxiosResponse<T, U
 
 export type AxiosRequestConfig<T = any> = import('axios').AxiosRequestConfig<T>
 
-export interface IRequestOptionsWithFullResponse {
+interface IRequestOptionsWithFullResponse {
   resolveWithFullResponse: true
 }
 
-export interface IRequestOptionsWithJson {
+interface IRequestOptionsWithJson {
   json: true
 }
 
-export interface IRequestOptionsWithResponseTypeArrayBuffer {
+interface IRequestOptionsWithResponseTypeArrayBuffer {
   responseType: 'arraybuffer'
 }
 

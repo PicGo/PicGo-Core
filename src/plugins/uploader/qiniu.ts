@@ -45,7 +45,6 @@ const handle = async (ctx: IPicGo): Promise<IPicGo> => {
         const base64Image = img.base64Image || Buffer.from(img.buffer).toString('base64')
         const options = postOptions(qiniuOptions, img.fileName, getToken(qiniuOptions), base64Image)
         const res = await ctx.request(options)
-        console.log(res)
         const body = JSON.parse(res)
         if (body?.key) {
           delete img.base64Image
