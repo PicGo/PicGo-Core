@@ -1,3 +1,12 @@
+# :tada: 1.5.0-alpha.12 (2022-10-14)
+
+
+### :bug: Bug Fixes
+
+* types bug ([d77e6f3](https://github.com/PicGo/PicGo-Core/commit/d77e6f3))
+
+
+
 # :tada: 1.5.0-alpha.11 (2022-10-13)
 
 
