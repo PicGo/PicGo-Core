@@ -165,7 +165,6 @@ export interface IRequestOld {
 
 export type IOldReqOptions = Omit<RequestPromiseOptions & {
   url: string
-  resolveWithFullResponse?: true
 }, 'auth'>
 
 export type IOldReqOptionsWithFullResponse = IOldReqOptions & {
@@ -173,7 +172,7 @@ export type IOldReqOptionsWithFullResponse = IOldReqOptions & {
 }
 
 export type IOldReqOptionsWithJSON = IOldReqOptions & {
-  json: boolean
+  json: true
 }
 
 /**
@@ -200,15 +199,15 @@ export type IFullResponse<T = any, U = any> = AxiosResponse<T, U> & {
   body: T
 }
 
-export type AxiosResponse<T = any, U = any> = import('axios').AxiosResponse<T, U>
+type AxiosResponse<T = any, U = any> = import('axios').AxiosResponse<T, U>
 
-export type AxiosRequestConfig<T = any> = import('axios').AxiosRequestConfig<T>
+type AxiosRequestConfig<T = any> = import('axios').AxiosRequestConfig<T>
 
 interface IRequestOptionsWithFullResponse {
   resolveWithFullResponse: true
 }
 
-interface IRequestOptionsWithJson {
+interface IRequestOptionsWithJSON {
   json: true
 }
 
@@ -220,12 +219,14 @@ interface IRequestOptionsWithResponseTypeArrayBuffer {
  * T is the response data type
  * U is the config type
  */
-export type IResponse<T, U> = U extends IRequestOptionsWithFullResponse
-  ? IFullResponse<T, U>
-  : U extends IRequestOptionsWithJson
-    ? T
-    : U extends IRequestOptionsWithResponseTypeArrayBuffer ?
-      Buffer : string
+export type IResponse<T, U> = U extends IRequestOptionsWithFullResponse ? IFullResponse<T, U>
+  : U extends IRequestOptionsWithJSON ? T
+    : U extends IRequestOptionsWithResponseTypeArrayBuffer ? Buffer
+      : U extends IOldReqOptionsWithFullResponse ? IFullResponse<T, U>
+        : U extends IOldReqOptionsWithJSON ? T
+          : U extends IOldReqOptions ? string
+            : U extends IReqOptionsWithBodyResOnly ? T
+              : string
 
 /**
  * the old request lib will be removed in v1.5.0+

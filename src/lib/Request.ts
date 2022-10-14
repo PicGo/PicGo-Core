@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable @typescript-eslint/promise-function-async */
-import axios, { AxiosRequestConfig } from 'axios'
-import { IPicGo, Undefinable, IConfigChangePayload, IConfig, IRequestConfig, IOldReqOptions, IResponse, AxiosResponse, IFullResponse, IRequest } from '../types'
+import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
+import { IPicGo, Undefinable, IConfigChangePayload, IConfig, IRequestConfig, IOldReqOptions, IResponse, IFullResponse, IRequest } from '../types'
 import { IBusEvent } from '../utils/enum'
 import { eventBus } from '../utils/eventBus'
 import { URL } from 'url'

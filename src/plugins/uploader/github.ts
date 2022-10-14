@@ -14,7 +14,7 @@ const postOptions = (fileName: string, options: IGithubConfig, data: any): IOldR
     },
     body: data,
     json: true
-  }
+  } as const
 }
 
 const handle = async (ctx: IPicGo): Promise<IPicGo> => {
