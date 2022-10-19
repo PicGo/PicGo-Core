@@ -66,7 +66,6 @@
     "@types/mime-types": "^2.1.0",
     "@types/minimatch": "^3.0.3",
     "@types/node": "16.11.7",
-    "@types/request-promise-native": "^1.0.15",
     "@types/resolve": "^0.0.8",
     "@types/rimraf": "^3.0.0",
     "@types/tunnel": "^0.0.3",

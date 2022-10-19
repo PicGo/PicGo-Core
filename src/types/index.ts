@@ -1,6 +1,6 @@
 import { Command } from 'commander'
 import { Inquirer } from 'inquirer'
-import { RequestPromiseOptions } from 'request-promise-native'
+import { IRequestPromiseOptions } from './oldRequest'
 
 export interface IPicGo extends NodeJS.EventEmitter {
   /**
@@ -163,7 +163,7 @@ export interface IRequestOld {
   request: import('axios').AxiosInstance
 }
 
-export type IOldReqOptions = Omit<RequestPromiseOptions & {
+export type IOldReqOptions = Omit<IRequestPromiseOptions & {
   url: string
 }, 'auth'>
 

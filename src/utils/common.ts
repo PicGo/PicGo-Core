@@ -1,4 +1,3 @@
-// import requestPromise from 'request-promise-native'
 import axios from 'axios'
 import fs from 'fs-extra'
 import path from 'path'
