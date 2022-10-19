@@ -1,3 +1,17 @@
+# :tada: 1.5.0-alpha.13 (2022-10-19)
+
+
+### :bug: Bug Fixes
+
+* type error ([b934e8a](https://github.com/PicGo/PicGo-Core/commit/b934e8a))
+
+
+### :package: Chore
+
+* create oldRequest types ([749359a](https://github.com/PicGo/PicGo-Core/commit/749359a))
+
+
+
 # :tada: 1.5.0-alpha.12 (2022-10-14)
 
 
