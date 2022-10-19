@@ -566,6 +566,10 @@ export interface IConfigChangePayload<T> {
   value: T
 }
 
+export interface ILocale {
+  [key: string]: any
+}
+
 export interface II18nManager {
   /**
    * translate text
