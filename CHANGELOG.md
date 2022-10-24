@@ -1,3 +1,12 @@
+# :tada: 1.5.0-alpha.15 (2022-10-24)
+
+
+### :bug: Bug Fixes
+
+* tencent cos url encode bug ([eafb70f](https://github.com/PicGo/PicGo-Core/commit/eafb70f))
+
+
+
 # :tada: 1.5.0-alpha.14 (2022-10-24)
 
 
