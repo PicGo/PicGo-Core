@@ -1,3 +1,12 @@
+# :tada: 1.5.0-alpha.14 (2022-10-24)
+
+
+### :bug: Bug Fixes
+
+* url encode bug ([4c70e9b](https://github.com/PicGo/PicGo-Core/commit/4c70e9b))
+
+
+
 # :tada: 1.5.0-alpha.13 (2022-10-19)
 
 
