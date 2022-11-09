@@ -1,3 +1,12 @@
+# :tada: 1.5.0-alpha.16 (2022-11-09)
+
+
+### :bug: Bug Fixes
+
+* upyun url-options is not required ([9736a11](https://github.com/PicGo/PicGo-Core/commit/9736a11))
+
+
+
 # :tada: 1.5.0-alpha.15 (2022-10-24)
 
 
