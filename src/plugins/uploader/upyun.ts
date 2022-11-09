@@ -125,7 +125,7 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
       get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_UPYUN_OPTIONS') },
       get message () { return ctx.i18n.translate<ILocalesKey>('PICBED_UPYUN_MESSAGE_OPTIONS') },
       default: userConfig.options || '',
-      required: true
+      required: false
     },
     {
       name: 'path',
