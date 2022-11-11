@@ -46,11 +46,11 @@ export class Logger implements ILogger {
             this.recreateLogFile(this.logPath)
             msg.unshift(warningMsg)
           }
+          this.handleWriteLog(this.logPath, type, ...msg)
         } catch (e) {
           // why???
           console.error('[PicGo Error] on checking log file size', e)
         }
-        this.handleWriteLog(this.logPath, type, ...msg)
       }, 0)
     }
   }
