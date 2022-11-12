@@ -90,7 +90,7 @@ export class PluginLoader implements IPluginLoader {
         setCurrentPluginName(name)
         const pluginInterface = plugin(this.ctx)
         this.pluginMap.set(name, pluginInterface)
-        plugin(this.ctx).register(this.ctx)
+        pluginInterface.register(this.ctx)
       }
     } catch (e) {
       this.pluginMap.delete(name)

@@ -108,9 +108,19 @@ export class PicGo extends EventEmitter implements IPicGo {
     }
   }
 
-  use (plugin: IPicGoPlugin): IPicGoPluginInterface {
-    const pluginInstance = plugin(this)
-    return pluginInstance
+  /**
+   * easily mannually load a plugin
+   * if provide plugin name, will register plugin by name
+   * or just instantiate a plugin
+   */
+  use (plugin: IPicGoPlugin, name?: string): IPicGoPluginInterface {
+    if (name) {
+      this.pluginLoader.registerPlugin(name, plugin)
+      return this.pluginLoader.getPlugin(name)!
+    } else {
+      const pluginInstance = plugin(this)
+      return pluginInstance
+    }
   }
 
   registerCommands (): void {
