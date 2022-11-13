@@ -1,3 +1,17 @@
+# :tada: 1.5.0-alpha.17 (2022-11-13)
+
+
+### :sparkles: Features
+
+* update picgo.use ([e19bb6e](https://github.com/PicGo/PicGo-Core/commit/e19bb6e))
+
+
+### :bug: Bug Fixes
+
+* some case will cause proxy not work ([6272303](https://github.com/PicGo/PicGo-Core/commit/6272303))
+
+
+
 # :tada: 1.5.0-alpha.16 (2022-11-09)
 
 
