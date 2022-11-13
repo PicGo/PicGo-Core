@@ -6,6 +6,7 @@ const i18n: IPlugin = {
     cmd.program
       .command('i18n')
       .arguments('[lang]')
+      .description('change picgo language')
       .action(async (lang: string = '') => {
         const list = ctx.i18n.getLanguageList()
         if (!lang) {

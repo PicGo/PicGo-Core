@@ -33,29 +33,35 @@ function requestInterceptor (options: IOldReqOptions | AxiosRequestConfig): Axio
     url: (options.url as string) || '',
     headers: options.headers || {}
   }
-
+  // user request config proxy
   if (options.proxy) {
-    if (typeof options.proxy === 'string') {
+    let proxyOptions = options.proxy
+    if (typeof proxyOptions === 'string') {
       try {
-        const proxyOptions = new URL(options.proxy)
-        if (options.url?.startsWith('https://')) {
-          opt.proxy = false
-          opt.httpsAgent = tunnel.httpsOverHttp({
-            proxy: {
-              host: proxyOptions.hostname,
-              port: parseInt(proxyOptions.port, 10)
-            }
-          })
-        } else {
-          opt.proxy = {
-            host: proxyOptions.hostname,
-            port: parseInt(proxyOptions.port, 10),
-            protocol: 'http'
-          }
-        }
+        proxyOptions = new URL(options.proxy)
       } catch (e) {
+        proxyOptions = false
+        opt.proxy = false
+        console.error(e)
       }
       __isOldOptions = true
+    }
+    if (proxyOptions) {
+      if (options.url?.startsWith('https://')) {
+        opt.proxy = false
+        opt.httpsAgent = tunnel.httpsOverHttp({
+          proxy: {
+            host: proxyOptions?.hostname,
+            port: parseInt(proxyOptions?.port, 10)
+          }
+        })
+      } else {
+        opt.proxy = {
+          host: proxyOptions.hostname,
+          port: parseInt(proxyOptions.port, 10),
+          protocol: 'http'
+        }
+      }
     }
   }
   if ('formData' in options) {
@@ -172,7 +178,19 @@ export class Request implements IRequest {
     this.options.headers = options.headers || {}
     this.options.maxBodyLength = Infinity
     this.options.maxContentLength = Infinity
-    this.options.httpsAgent = httpsAgent
+    if (this.options.proxy && options.url?.startsWith('https://')) {
+      this.options.httpsAgent = tunnel.httpsOverHttp({
+        proxy: {
+          host: this.options.proxy.host,
+          port: this.options.proxy.port
+        }
+      })
+      this.options.proxy = false
+    } else {
+      this.options.httpsAgent = httpsAgent
+    }
+    // !NOTICE this.options !== options
+    // this.options is the default options
     const instance = axios.create(this.options)
     instance.interceptors.response.use(responseInterceptor, responseErrorHandler)
 

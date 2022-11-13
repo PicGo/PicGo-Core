@@ -26,6 +26,9 @@ const postOptions = (fileName: string, image: Buffer, apiToken: string, backupDo
 
 const handle = async (ctx: IPicGo): Promise<IPicGo> => {
   const smmsConfig = ctx.getConfig<ISmmsConfig>('picBed.smms')
+  if (!smmsConfig) {
+    throw new Error('Can not find smms config!')
+  }
   const imgList = ctx.output
   for (const img of imgList) {
     if (img.fileName && img.buffer) {
@@ -33,7 +36,7 @@ const handle = async (ctx: IPicGo): Promise<IPicGo> => {
       if (!image && img.base64Image) {
         image = Buffer.from(img.base64Image, 'base64')
       }
-      const postConfig = postOptions(img.fileName, image, smmsConfig?.token, smmsConfig.backupDomain)
+      const postConfig = postOptions(img.fileName, image, smmsConfig?.token, smmsConfig?.backupDomain)
       try {
         const res: string = await ctx.request(postConfig)
         const body = JSON.parse(res)
@@ -50,7 +53,7 @@ const handle = async (ctx: IPicGo): Promise<IPicGo> => {
             title: ctx.i18n.translate<ILocalesKey>('UPLOAD_FAILED'),
             body: body.message
           })
-          throw new Error(body.message)
+          throw new Error(body)
         }
       } catch (e: any) {
         ctx.log.error(e)

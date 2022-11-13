@@ -1,4 +1,3 @@
-import axios from 'axios'
 import fs from 'fs-extra'
 import path from 'path'
 import { imageSize } from 'image-size'
@@ -6,7 +5,8 @@ import {
   IImgSize,
   IPathTransformedImgInfo,
   IPluginNameType,
-  ILogger
+  ILogger,
+  IPicGo
 } from '../types'
 import { URL } from 'url'
 
@@ -62,7 +62,7 @@ export const getFSFile = async (filePath: string): Promise<IPathTransformedImgIn
   }
 }
 
-export const getURLFile = async (url: string): Promise<IPathTransformedImgInfo> => {
+export const getURLFile = async (url: string, ctx: IPicGo): Promise<IPathTransformedImgInfo> => {
   url = handleUrlEncode(url)
   let isImage = false
   let extname = ''
@@ -70,7 +70,10 @@ export const getURLFile = async (url: string): Promise<IPathTransformedImgInfo> 
   const requestFn = new Promise<IPathTransformedImgInfo>((resolve, reject) => {
     (async () => {
       try {
-        const res = await axios.get(url, {
+        const res = await ctx.request({
+          method: 'get',
+          url,
+          resolveWithFullResponse: true,
           responseType: 'arraybuffer'
         })
           .then((resp) => {
@@ -79,7 +82,7 @@ export const getURLFile = async (url: string): Promise<IPathTransformedImgInfo> 
               isImage = true
               extname = `.${contentType.split('image/')[1]}`
             }
-            return resp.data
+            return resp.data as Buffer
           })
         clearTimeout(timeoutId)
         if (isImage) {

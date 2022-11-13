@@ -11,7 +11,7 @@ const handle = async (ctx: IPicGo): Promise<IPicGo> => {
   await Promise.all(ctx.input.map(async (item: string, index: number) => {
     let info: IPathTransformedImgInfo
     if (isUrl(item)) {
-      info = await getURLFile(item)
+      info = await getURLFile(item, ctx)
     } else {
       info = await getFSFile(item)
     }
