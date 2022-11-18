@@ -1,6 +1,7 @@
 import { IPicGo, IPluginConfig, IGithubConfig, IOldReqOptionsWithJSON } from '../../types'
 import { IBuildInEvent } from '../../utils/enum'
 import { ILocalesKey } from '../../i18n/zh-CN'
+import mime from 'mime-types'
 
 const postOptions = (fileName: string, options: IGithubConfig, data: any): IOldReqOptionsWithJSON => {
   const path = options.path || ''
@@ -10,7 +11,8 @@ const postOptions = (fileName: string, options: IGithubConfig, data: any): IOldR
     url: `https://api.github.com/repos/${repo}/contents/${encodeURI(path)}${encodeURI(fileName)}`,
     headers: {
       Authorization: `token ${token}`,
-      'User-Agent': 'PicGo'
+      'User-Agent': 'PicGo',
+      'Content-Type': mime.lookup(fileName)
     },
     body: data,
     json: true

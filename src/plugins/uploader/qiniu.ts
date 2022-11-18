@@ -2,6 +2,7 @@ import qiniu from 'qiniu'
 import { IPluginConfig, IQiniuConfig, IPicGo, IOldReqOptions } from '../../types'
 import { IBuildInEvent } from '../../utils/enum'
 import { ILocalesKey } from '../../i18n/zh-CN'
+import mime from 'mime-types'
 
 function postOptions (options: IQiniuConfig, fileName: string, token: string, imgBase64: string): IOldReqOptions {
   const area = selectArea(options.area || 'z0')
@@ -12,7 +13,7 @@ function postOptions (options: IQiniuConfig, fileName: string, token: string, im
     url: `http://upload${area}.qiniup.com/putb64/-1/key/${base64FileName}`,
     headers: {
       Authorization: `UpToken ${token}`,
-      contentType: 'application/octet-stream'
+      'Content-Type': mime.lookup(fileName) || 'application/octet-stream'
     },
     body: imgBase64
   }

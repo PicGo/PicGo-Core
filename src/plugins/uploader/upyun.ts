@@ -4,6 +4,7 @@ import MD5 from 'md5'
 import { IBuildInEvent } from '../../utils/enum'
 import { ILocalesKey } from '../../i18n/zh-CN'
 import { safeParse } from '../../utils/common'
+import mime from 'mime-types'
 
 // generate COS signature string
 const generateSignature = (options: IUpyunConfig, fileName: string): string => {
@@ -26,7 +27,8 @@ const postOptions = (options: IUpyunConfig, fileName: string, signature: string,
     url: `https://v0.api.upyun.com/${bucket}/${encodeURI(path)}${encodeURI(fileName)}`,
     headers: {
       Authorization: signature,
-      Date: new Date().toUTCString()
+      Date: new Date().toUTCString(),
+      'Content-Type': mime.lookup(fileName) || 'application/octet-stream'
     },
     body: image,
     resolveWithFullResponse: true
