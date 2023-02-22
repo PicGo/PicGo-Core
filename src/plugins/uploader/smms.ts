@@ -53,11 +53,11 @@ const handle = async (ctx: IPicGo): Promise<IPicGo> => {
             title: ctx.i18n.translate<ILocalesKey>('UPLOAD_FAILED'),
             body: body.message
           })
-          throw new Error(body)
+          throw new Error(body.message)
         }
       } catch (e: any) {
         ctx.log.error(e)
-        throw new Error(e)
+        throw e
       }
     }
   }
