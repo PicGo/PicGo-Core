@@ -60,7 +60,7 @@ const postOptions = (options: ITcyunConfig, fileName: string, signature: ISignat
         Host: `${area}.file.myqcloud.com`,
         Authorization: signature.signature,
         contentType: 'multipart/form-data',
-        userAgent: `PicGo;${version};null;null`
+        'User-Agent': `PicGo;${version};null;null`
       },
       formData: {
         op: 'upload',
@@ -76,7 +76,7 @@ const postOptions = (options: ITcyunConfig, fileName: string, signature: ISignat
         Host: `${options.bucket}.cos.${options.area}.myqcloud.com`,
         Authorization: `q-sign-algorithm=sha1&q-ak=${options.secretId}&q-sign-time=${signature.signTime}&q-key-time=${signature.signTime}&q-header-list=host&q-url-param-list=&q-signature=${signature.signature}`,
         contentType: mime.lookup(fileName),
-        userAgent: `PicGo;${version};null;null`
+        'User-Agent': `PicGo;${version};null;null`
       },
       body: image,
       resolveWithFullResponse: true
