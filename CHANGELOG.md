@@ -1,3 +1,19 @@
+## :tada: 1.5.1 (2023-04-09)
+
+
+### :sparkles: Features
+
+* add mime-types for some uploaders ([fb59681](https://github.com/PicGo/PicGo-Core/commit/fb59681))
+* add settings.encodeOutputURL options for URL encode ([2b9c791](https://github.com/PicGo/PicGo-Core/commit/2b9c791))
+
+
+### :bug: Bug Fixes
+
+* smms error message is an object ([527d19e](https://github.com/PicGo/PicGo-Core/commit/527d19e))
+* tencent cos UA bug ([cb64d84](https://github.com/PicGo/PicGo-Core/commit/cb64d84))
+
+
+
 # :tada: 1.5.0 (2022-11-13)
 
 
