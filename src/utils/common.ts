@@ -18,7 +18,7 @@ export const isUrlEncode = (url: string): boolean => {
     return url !== decodeURI(url)
   } catch (e) {
     // if some error caught, try to let it go
-    return true
+    return false
   }
 }
 export const handleUrlEncode = (url: string): string => {

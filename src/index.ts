@@ -7,5 +7,6 @@ export { LifecyclePlugins } from './lib/LifecyclePlugins'
 export { Commander } from './lib/Commander'
 export { PluginLoader } from './lib/PluginLoader'
 export { Request } from './lib/Request'
+export * as PicGoUtils from './utils/common'
 
 export * from './types'
