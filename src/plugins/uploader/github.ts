@@ -8,7 +8,7 @@ const postOptions = (fileName: string, options: IGithubConfig, data: any): IOldR
   const { token, repo } = options
   return {
     method: 'PUT',
-    url: `https://api.github.com/repos/${repo}/contents/${encodeURI(path)}${encodeURI(fileName)}`,
+    url: `https://api.github.com/repos/${repo}/contents/${encodeURI(path)}${encodeURIComponent(fileName)}`,
     headers: {
       Authorization: `token ${token}`,
       'User-Agent': 'PicGo',
@@ -36,21 +36,36 @@ const handle = async (ctx: IPicGo): Promise<IPicGo> => {
           path: githubOptions.path + encodeURI(img.fileName)
         }
         const postConfig = postOptions(img.fileName, githubOptions, data)
-        const body: {
-          content: {
-            download_url: string
-          }
-        } = await ctx.request(postConfig)
-        if (body) {
-          delete img.base64Image
-          delete img.buffer
-          if (githubOptions.customUrl) {
-            img.imgUrl = `${githubOptions.customUrl}/${githubOptions.path}${img.fileName}`
+        try {
+          const body: {
+            content: {
+              download_url: string
+            }
+          } = await ctx.request(postConfig)
+          if (body) {
+            delete img.base64Image
+            delete img.buffer
+            if (githubOptions.customUrl) {
+              img.imgUrl = `${githubOptions.customUrl}/${encodeURI(githubOptions.path)}${encodeURIComponent(img.fileName)}`
+            } else {
+              img.imgUrl = body.content.download_url
+            }
           } else {
-            img.imgUrl = body.content.download_url
+            throw new Error('Server error, please try again')
           }
-        } else {
-          throw new Error('Server error, please try again')
+        } catch (e: any) {
+          // handle duplicate images
+          if (e.statusCode === 422) {
+            delete img.base64Image
+            delete img.buffer
+            if (githubOptions.customUrl) {
+              img.imgUrl = `${githubOptions.customUrl}/${encodeURI(githubOptions.path)}${encodeURIComponent(img.fileName)}`
+            } else {
+              img.imgUrl = `https://raw.githubusercontent.com/${githubOptions.repo}/${githubOptions.branch}/${encodeURI(githubOptions.path)}${encodeURIComponent(img.fileName)}`
+            }
+          } else {
+            throw e
+          }
         }
       }
     }

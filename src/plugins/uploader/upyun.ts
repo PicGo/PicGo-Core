@@ -13,7 +13,7 @@ const generateSignature = (options: IUpyunConfig, fileName: string): string => {
   const password = options.password
   const md5Password = MD5(password)
   const date = new Date().toUTCString()
-  const uri = `/${options.bucket}/${encodeURI(path)}${encodeURI(fileName)}`
+  const uri = `/${options.bucket}/${encodeURI(path)}${encodeURIComponent(fileName)}`
   const value = `PUT&${uri}&${date}`
   const sign = crypto.createHmac('sha1', md5Password).update(value).digest('base64')
   return `UPYUN ${operator}:${sign}`
@@ -24,7 +24,7 @@ const postOptions = (options: IUpyunConfig, fileName: string, signature: string,
   const path = options.path || ''
   return {
     method: 'PUT',
-    url: `https://v0.api.upyun.com/${bucket}/${encodeURI(path)}${encodeURI(fileName)}`,
+    url: `https://v0.api.upyun.com/${bucket}/${encodeURI(path)}${encodeURIComponent(fileName)}`,
     headers: {
       Authorization: signature,
       Date: new Date().toUTCString(),
@@ -55,7 +55,7 @@ const handle = async (ctx: IPicGo): Promise<IPicGo> => {
         if (body.statusCode === 200) {
           delete img.base64Image
           delete img.buffer
-          img.imgUrl = `${upyunOptions.url}/${path}${img.fileName}${upyunOptions.options}`
+          img.imgUrl = `${upyunOptions.url}/${encodeURI(path)}${encodeURIComponent(img.fileName)}${upyunOptions.options}`
         } else {
           throw new Error('Upload failed')
         }
