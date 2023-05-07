@@ -1,3 +1,12 @@
+## :tada: 1.5.2 (2023-05-07)
+
+
+### :bug: Bug Fixes
+
+* fileName urlencode bug & github duplicate error ([c22492b](https://github.com/PicGo/PicGo-Core/commit/c22492b)), closes [Molunerfinn/PicGo#1105](https://github.com/Molunerfinn/PicGo/issues/1105)
+
+
+
 ## :tada: 1.5.1 (2023-04-09)
 
 
