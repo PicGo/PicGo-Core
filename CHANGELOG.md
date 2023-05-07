@@ -1,3 +1,12 @@
+## :tada: 1.5.3 (2023-05-07)
+
+
+### :sparkles: Features
+
+* update encodeOutputURL behavior ([82347ff](https://github.com/PicGo/PicGo-Core/commit/82347ff))
+
+
+
 ## :tada: 1.5.2 (2023-05-07)
 
 
