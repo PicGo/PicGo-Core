@@ -97,7 +97,8 @@ export class Lifecycle extends EventEmitter {
     await this.handlePlugins(ctx.helper.afterUploadPlugins, ctx)
     let msg = ''
     const length = ctx.output.length
-    const isEncodeOutputURL = ctx.getConfig<Undefinable<boolean>>('settings.encodeOutputURL') !== false
+    // notice, now picgo builtin uploader will encodeOutputURL by default
+    const isEncodeOutputURL = ctx.getConfig<Undefinable<boolean>>('settings.encodeOutputURL') === true
     for (let i = 0; i < length; i++) {
       if (typeof ctx.output[i].imgUrl !== 'undefined') {
         msg += isEncodeOutputURL ? handleUrlEncode(ctx.output[i].imgUrl!) : ctx.output[i].imgUrl!
