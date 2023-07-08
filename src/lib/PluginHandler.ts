@@ -204,8 +204,8 @@ export class PluginHandler implements IPluginHandler {
 
   private async execCommand (cmd: string, modules: string[], where: string, options: IPluginHandlerOptions = {}, env: IProcessEnv = {}): Promise<IResult> {
     // options first
-    const registry = options.registry || this.ctx.getConfig<Undefinable<string>>('settings.registry')
-    const proxy = options.proxy || this.ctx.getConfig<Undefinable<string>>('settings.proxy')
+    const registry = options.npmRegistry || this.ctx.getConfig<Undefinable<string>>('settings.npmRegistry')
+    const proxy = options.npmProxy || this.ctx.getConfig<Undefinable<string>>('settings.npmProxy')
     return await new Promise((resolve: any): void => {
       let args = [cmd].concat(modules).concat('--color=always').concat('--save')
       if (registry) {

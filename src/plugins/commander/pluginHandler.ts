@@ -8,13 +8,13 @@ const pluginHandler: IPlugin = {
       .command('install <plugins...>')
       .description('install picgo plugin')
       .alias('add')
-      .option('-p, --proxy <proxy>', 'Add proxy for installing')
-      .option('-r, --registry <registry>', 'Choose a registry for installing')
+      .option('-p, --proxy <proxy>', 'Add proxy for installing plugins')
+      .option('-r, --registry <registry>', 'Choose a registry for installing plugins')
       .action((plugins: string[], program: any) => {
         const { proxy, registry } = program
         const options = {
-          proxy,
-          registry
+          npmProxy: proxy,
+          npmRegistry: registry
         }
         ctx.pluginHandler.install(plugins, options).catch((e) => { ctx.log.error(e) })
       })
@@ -28,13 +28,13 @@ const pluginHandler: IPlugin = {
     cmd.program
       .command('update <plugins...>')
       .description('update picgo plugin')
-      .option('-p, --proxy <proxy>', 'Add proxy for installing')
-      .option('-r, --registry <registry>', 'Choose a registry for installing')
+      .option('-p, --proxy <proxy>', 'Add proxy for installing plugins')
+      .option('-r, --registry <registry>', 'Choose a registry for installing plugins')
       .action((plugins: string[], program: any) => {
         const { proxy, registry } = program
         const options = {
-          proxy,
-          registry
+          npmProxy: proxy,
+          npmRegistry: registry
         }
         ctx.pluginHandler.update(plugins, options).catch((e: Error) => { ctx.log.error(e) })
       })

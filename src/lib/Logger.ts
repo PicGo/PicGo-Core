@@ -23,7 +23,7 @@ export class Logger implements ILogger {
   }
 
   private readonly ctx: IPicGo
-  private logLevel!: string
+  private logLevel!: string | string[]
   private logPath!: string
   constructor (ctx: IPicGo) {
     this.ctx = ctx

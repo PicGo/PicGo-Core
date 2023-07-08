@@ -388,12 +388,12 @@ export interface IConfig {
   debug?: boolean
   silent?: boolean
   settings?: {
-    logLevel?: string
+    logLevel?: string[]
     logPath?: string
     /** for npm */
-    registry?: string
+    npmRegistry?: string
     /** for npm */
-    proxy?: string
+    npmProxy?: string
     [others: string]: any
   }
   [configOptions: string]: any
@@ -437,8 +437,8 @@ export interface IPluginHandlerResult<T> {
 }
 
 export interface IPluginHandlerOptions {
-  proxy?: string
-  registry?: string
+  npmProxy?: string
+  npmRegistry?: string
 }
 
 /**
