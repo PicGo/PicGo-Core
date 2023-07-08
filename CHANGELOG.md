@@ -1,3 +1,12 @@
+## :tada: 1.5.4 (2023-07-08)
+
+
+### :sparkles: Features
+
+* change proxy\registry -> npmProxy ([9bedce3](https://github.com/PicGo/PicGo-Core/commit/9bedce3))
+
+
+
 ## :tada: 1.5.3 (2023-05-07)
 
 
