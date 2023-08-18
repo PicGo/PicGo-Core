@@ -130,6 +130,7 @@ const handle = async (ctx: IPicGo): Promise<IPicGo | boolean> => {
           }
         }
         const optionUrl = tcYunOptions.options || ''
+        const slim = tcYunOptions.slim || ''
         if (useV4 && body.message === 'SUCCESS') {
           delete img.base64Image
           delete img.buffer
@@ -148,6 +149,13 @@ const handle = async (ctx: IPicGo): Promise<IPicGo | boolean> => {
           }
         } else {
           throw new Error(res.body.msg)
+        }
+        if (slim) {
+          if (optionUrl) {
+            img.imgUrl += '&imageSlim'
+          } else {
+            img.imgUrl += '?imageSlim'
+          }
         }
       }
     }
@@ -244,6 +252,14 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
       get prefix () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_OPTIONS') },
       get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_OPTIONS') },
       get message () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_MESSAGE_OPTIONS') },
+      required: false
+    },
+    {
+      name: 'slim',
+      type: 'switch',
+      default: userConfig.options || '',
+      get prefix () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_SLIM') },
+      get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_SLIM') },
       required: false
     }
   ]

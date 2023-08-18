@@ -329,6 +329,8 @@ export interface ITcyunConfig {
   version: 'v5' | 'v4'
   /** 针对图片的一些后缀处理参数 PicGo 2.4.0+ PicGo-Core 1.5.0+ */
   options: string
+  /** 是否支持极智压缩 */
+  slim: boolean
 }
 /** GitHub 图床配置项 */
 export interface IGithubConfig {
