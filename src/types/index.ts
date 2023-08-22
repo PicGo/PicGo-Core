@@ -321,6 +321,8 @@ export interface ITcyunConfig {
   appId: string
   /** 存储区域，例如 ap-beijing-1 */
   area: string
+  /** 请求的 ENDPOINT，设置后 `area` 字段会失效 */
+  endpoint: string
   /** 自定义存储路径，比如 img/ */
   path: string
   /** 自定义域名，注意要加 `http://` 或者 `https://` */

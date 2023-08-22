@@ -36,7 +36,8 @@ const generateSignature = (options: ITcyunConfig, fileName: string): ISignature 
     const tomorrow = today + 86400
     signTime = `${today};${tomorrow}`
     const signKey = crypto.createHmac('sha1', secretKey).update(signTime).digest('hex')
-    const httpString = `put\n/${options.path}${fileName}\n\nhost=${options.bucket}.cos.${options.area}.myqcloud.com\n`
+    const endpoint = options.endpoint ? options.endpoint : `cos.${options.area}.myqcloud.com`
+    const httpString = `put\n/${options.path}${fileName}\n\nhost=${options.bucket}.${endpoint}\n`
     const sha1edHttpString = crypto.createHash('sha1').update(httpString).digest('hex')
     const stringToSign = `sha1\n${signTime}\n${sha1edHttpString}\n`
     signature = crypto.createHmac('sha1', signKey).update(stringToSign).digest('hex')
@@ -69,11 +70,14 @@ const postOptions = (options: ITcyunConfig, fileName: string, signature: ISignat
       resolveWithFullResponse: true
     }
   } else {
+    // https://cloud.tencent.com/document/product/436/10976
+    const endpoint = options.endpoint ? options.endpoint : `cos.${options.area}.myqcloud.com`
+
     return {
       method: 'PUT',
-      url: `http://${options.bucket}.cos.${options.area}.myqcloud.com/${encodeURIComponent(path)}${encodeURIComponent(fileName)}`,
+      url: `http://${options.bucket}.${endpoint}/${encodeURIComponent(path)}${encodeURIComponent(fileName)}`,
       headers: {
-        Host: `${options.bucket}.cos.${options.area}.myqcloud.com`,
+        Host: `${options.bucket}.${endpoint}`,
         Authorization: `q-sign-algorithm=sha1&q-ak=${options.secretId}&q-sign-time=${signature.signTime}&q-key-time=${signature.signTime}&q-header-list=host&q-url-param-list=&q-signature=${signature.signature}`,
         contentType: mime.lookup(fileName),
         'User-Agent': `PicGo;${version};null;null`
@@ -144,7 +148,8 @@ const handle = async (ctx: IPicGo): Promise<IPicGo | boolean> => {
           if (customUrl) {
             img.imgUrl = `${customUrl}/${encodeURI(path)}${encodeURIComponent(img.fileName)}${optionUrl}`
           } else {
-            img.imgUrl = `https://${tcYunOptions.bucket}.cos.${tcYunOptions.area}.myqcloud.com/${encodeURI(path)}${encodeURIComponent(img.fileName)}${optionUrl}`
+            const endpoint = tcYunOptions.endpoint ? tcYunOptions.endpoint : `cos.${tcYunOptions.area}.myqcloud.com`
+            img.imgUrl = `https://${tcYunOptions.bucket}.${endpoint}/${encodeURI(path)}${encodeURIComponent(img.fileName)}${optionUrl}`
           }
         } else {
           throw new Error(res.body.msg)
@@ -218,6 +223,15 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
       default: userConfig.area || '',
       get message () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_MESSAGE_AREA') },
       required: true
+    },
+    {
+      name: 'endpoint',
+      type: 'input',
+      get prefix () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_ENDPOINT') },
+      get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_ENDPOINT') },
+      default: userConfig.endpoint || '',
+      get message () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_MESSAGE_ENDPOINT') },
+      required: false
     },
     {
       name: 'path',
