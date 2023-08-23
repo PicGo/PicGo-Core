@@ -40,7 +40,7 @@ export const EN: ILocales = {
   PICBED_TENCENTCLOUD_PATH: 'Set Path',
   PICBED_TENCENTCLOUD_OPTIONS: 'Set URL Suffix',
   PICBED_TENCENTCLOUD_SLIM: 'Set ImageSlim',
-  PICBED_TENCENTCLOUD_SLIM_TIP: 'Image extremely intelligent compression, please refer to the [document description] for details(https://cloud.tencent.com/document/product/436/49259)',
+  PICBED_TENCENTCLOUD_SLIM_TIP: 'Image extremely intelligent compression, please refer to the [document description](https://cloud.tencent.com/document/product/436/49259)',
   PICBED_TENCENTCLOUD_SLIM_CONFIRM: 'OPEN',
   PICBED_TENCENTCLOUD_SLIM_CANCEL: 'CLOSE',
   PICBED_TENCENTCLOUD_CUSTOMURL: 'Set Custom URL',
