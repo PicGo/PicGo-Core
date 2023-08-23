@@ -256,11 +256,14 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
     },
     {
       name: 'slim',
-      type: 'switch',
+      type: 'confirm',
       default: userConfig.options || '',
       get prefix () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_SLIM') },
       get alias () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_SLIM') },
-      required: false
+      required: false,
+      get confirmText () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_SLIM_CONFIRM') },
+      get cancelText () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_SLIM_CANCEL') },
+      get tips () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_SLIM_TIP') },
     }
   ]
   return config
