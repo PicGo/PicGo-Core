@@ -511,6 +511,7 @@ export interface IImgSize {
   width: number
   height: number
   real?: boolean
+  extname?: string
 }
 
 /**

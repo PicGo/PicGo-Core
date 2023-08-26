@@ -30,18 +30,21 @@ export const handleUrlEncode = (url: string): string => {
 
 export const getImageSize = (file: Buffer): IImgSize => {
   try {
-    const { width = 0, height = 0 } = imageSize(file)
+    const { width = 0, height = 0, type } = imageSize(file)
+    const extname = type ? `.${type}` : '.png'
     return {
       real: true,
       width,
-      height
+      height,
+      extname
     }
   } catch (e) {
     // fallback to 200 * 200
     return {
       real: false,
       width: 200,
-      height: 200
+      height: 200,
+      extname: '.png'
     }
   }
 }

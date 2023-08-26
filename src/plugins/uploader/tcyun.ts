@@ -277,7 +277,7 @@ const config = (ctx: IPicGo): IPluginConfig[] => {
       required: false,
       get confirmText () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_SLIM_CONFIRM') },
       get cancelText () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_SLIM_CANCEL') },
-      get tips () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_SLIM_TIP') },
+      get tips () { return ctx.i18n.translate<ILocalesKey>('PICBED_TENCENTCLOUD_SLIM_TIP') }
     }
   ]
   return config
