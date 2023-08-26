@@ -1,3 +1,15 @@
+## :tada: 1.5.5 (2023-08-26)
+
+
+### :sparkles: Features
+
+* support buffer image upload ([70f6529](https://github.com/PicGo/PicGo-Core/commit/70f6529))
+* support ENDPOINT for Tencent COS ([#155](https://github.com/PicGo/PicGo-Core/issues/155)) ([42494ac](https://github.com/PicGo/PicGo-Core/commit/42494ac))
+* support upload buffer ([#152](https://github.com/PicGo/PicGo-Core/issues/152)) ([54c05be](https://github.com/PicGo/PicGo-Core/commit/54c05be))
+* **tcyun:** add slim section ([#156](https://github.com/PicGo/PicGo-Core/issues/156)) ([30ee4fc](https://github.com/PicGo/PicGo-Core/commit/30ee4fc))
+
+
+
 ## :tada: 1.5.4 (2023-07-08)
 
 
