@@ -31,10 +31,10 @@ export class Logger implements ILogger {
 
   private handleLog (type: ILogType, ...msg: ILogArgvTypeWithError[]): void {
     // check config.silent
-    if (!this.ctx.getConfig<Undefinable<string>>('silent')) {
+    this.logLevel = this.ctx.getConfig('settings.logLevel')
+    if (!this.ctx.getConfig<Undefinable<string>>('silent') && this.checkLogLevel(type, this.logLevel)) {
       const logHeader = chalk[this.level[type] as ILogColor](`[PicGo ${type.toUpperCase()}]:`)
       console.log(logHeader, ...msg)
-      this.logLevel = this.ctx.getConfig('settings.logLevel')
       this.logPath = this.ctx.getConfig<Undefinable<string>>('settings.logPath') || path.join(this.ctx.baseDir, './picgo.log')
       setTimeout(() => {
         // fix log file is too large, now the log file's default size is 10 MB
@@ -83,22 +83,20 @@ export class Logger implements ILogger {
 
   private handleWriteLog (logPath: string, type: string, ...msg: ILogArgvTypeWithError[]): void {
     try {
-      if (this.checkLogLevel(type, this.logLevel)) {
-        let log = `${dayjs().format('YYYY-MM-DD HH:mm:ss')} [PicGo ${type.toUpperCase()}] `
-        msg.forEach((item: ILogArgvTypeWithError) => {
-          if (item instanceof Error && type === 'error') {
-            log += `\n------Error Stack Begin------\n${util.format(item?.stack)}\n-------Error Stack End------- `
-          } else {
-            if (typeof item === 'object') {
-              item = JSON.stringify(item, null, 2)
-            }
-            log += `${item as string} `
+      let log = `${dayjs().format('YYYY-MM-DD HH:mm:ss')} [PicGo ${type.toUpperCase()}] `
+      msg.forEach((item: ILogArgvTypeWithError) => {
+        if (item instanceof Error && type === 'error') {
+          log += `\n------Error Stack Begin------\n${util.format(item?.stack)}\n-------Error Stack End------- `
+        } else {
+          if (typeof item === 'object') {
+            item = JSON.stringify(item, null, 2)
           }
-        })
-        log += '\n'
-        // A synchronized approach to avoid log msg sequence errors
-        fs.appendFileSync(logPath, log)
-      }
+          log += `${item as string} `
+        }
+      })
+      log += '\n'
+      // A synchronized approach to avoid log msg sequence errors
+      fs.appendFileSync(logPath, log)
     } catch (e) {
       console.error('[PicGo Error] on writing log file', e)
     }
