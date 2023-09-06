@@ -1,3 +1,12 @@
+## :tada: 1.5.6 (2023-09-06)
+
+
+### :bug: Bug Fixes
+
+* logLevel bug ([7c24d50](https://github.com/PicGo/PicGo-Core/commit/7c24d50))
+
+
+
 ## :tada: 1.5.5 (2023-08-26)
 
 
