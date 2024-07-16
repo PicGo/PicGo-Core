@@ -75,7 +75,7 @@ const postOptions = (options: ITcyunConfig, fileName: string, signature: ISignat
 
     return {
       method: 'PUT',
-      url: `http://${options.bucket}.${endpoint}/${encodeURIComponent(path)}${encodeURIComponent(fileName)}`,
+      url: `http://${options.bucket}.${endpoint}/${encodeURI(path)}${encodeURIComponent(fileName)}`,
       headers: {
         Host: `${options.bucket}.${endpoint}`,
         Authorization: `q-sign-algorithm=sha1&q-ak=${options.secretId}&q-sign-time=${signature.signTime}&q-key-time=${signature.signTime}&q-header-list=host&q-url-param-list=&q-signature=${signature.signature}`,
