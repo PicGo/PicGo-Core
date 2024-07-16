@@ -1,3 +1,12 @@
+## :tada: 1.5.7 (2024-07-16)
+
+
+### :bug: Bug Fixes
+
+* tencent cos url encode bug ([8572c1c](https://github.com/PicGo/PicGo-Core/commit/8572c1c))
+
+
+
 ## :tada: 1.5.6 (2023-09-06)
 
 
