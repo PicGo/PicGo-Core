@@ -11,19 +11,8 @@ wayland)
         echo >&2 "no wl-clipboard"
         exit 1
     }
-    filePath=$(wl-copy -o 2>/dev/null | grep ^file:// | cut -c8-)
-    if [ -z "$filePath" ]; then
-        if
-            wl-copy -t image/png image/png -o >"$1" 2>/dev/null
-        then
-            echo "$1"
-        else
-            rm -f "$1"
-            echo "no image"
-        fi
-    else
-        echo "$filePath"
-    fi
+    wl-paste > "$1" 2>/dev/null
+    echo "$1"
     ;;
 x11 | tty)
     # require xclip(see http://stackoverflow.com/questions/592620/check-if-a-program-exists-from-a-bash-script/677212#677212)
