@@ -1,3 +1,12 @@
+## :tada: 1.5.8 (2024-11-25)
+
+
+### :sparkles: Features
+
+* add millisecond for file name ([6e4c488](https://github.com/PicGo/PicGo-Core/commit/6e4c488))
+
+
+
 ## :tada: 1.5.7 (2024-07-16)
 
 
