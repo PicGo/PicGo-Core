@@ -68,7 +68,7 @@ function createImageFolder (ctx: IPicGo): void {
 const getClipboardImage = async (ctx: IPicGo): Promise<IClipboardImage> => {
   createImageFolder(ctx)
   // add an clipboard image folder to control the image cache file
-  const imagePath = path.join(ctx.baseDir, CLIPBOARD_IMAGE_FOLDER, `${dayjs().format('YYYYMMDDHHmmss')}.png`)
+  const imagePath = path.join(ctx.baseDir, CLIPBOARD_IMAGE_FOLDER, `${dayjs().format('YYYYMMDDHHmmssSSS')}.png`)
   return await new Promise<IClipboardImage>((resolve: Function, reject: Function): void => {
     const platform = getCurrentPlatform()
     const scriptPath = path.join(ctx.baseDir, platform2ScriptFilename[platform])

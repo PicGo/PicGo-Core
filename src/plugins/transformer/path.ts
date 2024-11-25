@@ -28,7 +28,7 @@ const handle = async (ctx: IPicGo): Promise<IPicGo> => {
       const extname = info.extname || imgSize.extname || '.png'
       results[index] = {
         buffer: info.buffer,
-        fileName: info.fileName || `${dayjs().format('YYYYMMDDHHmmss')}${extname}}`,
+        fileName: info.fileName || `${dayjs().format('YYYYMMDDHHmmssSSS')}${extname}}`,
         width: imgSize.width,
         height: imgSize.height,
         extname
