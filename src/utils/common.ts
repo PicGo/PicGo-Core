@@ -90,9 +90,11 @@ export const getURLFile = async (url: string, ctx: IPicGo): Promise<IPathTransfo
         clearTimeout(timeoutId)
         if (isImage) {
           const urlPath = new URL(url).pathname
+          // Decode the URL-encoded filename to handle non-ASCII characters like Chinese
+          const decodedFileName = decodeURIComponent(path.basename(urlPath))
           resolve({
             buffer: res,
-            fileName: path.basename(urlPath),
+            fileName: decodedFileName,
             extname,
             success: true
           })
