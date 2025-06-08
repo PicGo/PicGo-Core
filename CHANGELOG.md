@@ -1,3 +1,14 @@
+## :tada: 1.5.9 (2025-06-08)
+
+
+### :bug: Bug Fixes
+
+* encoded url fileName unreadable ([9df7893](https://github.com/PicGo/PicGo-Core/commit/9df7893))
+* unable to use clip in wayland ([7cc047b](https://github.com/PicGo/PicGo-Core/commit/7cc047b))
+* wayland copy image upload bug ([ab3f03e](https://github.com/PicGo/PicGo-Core/commit/ab3f03e))
+
+
+
 ## :tada: 1.5.8 (2024-11-25)
 
 
