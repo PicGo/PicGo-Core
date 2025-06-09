@@ -19,19 +19,21 @@ const generate = async (ctx: IPicGo, options: IOptions): Promise<any> => {
       answers = await ctx.cmd.inquirer.prompt(opts.prompts)
     }
     let _files: string[] = await globby(['**/*'], { cwd: source, dot: true }) // get files' name array
-    _files = _files.filter((item: string) => {
-      let glob = ''
-      Object.keys(opts.filters).forEach((key: string) => {
-        if (match(item, key, { dot: true })) {
-          glob = item
+
+    const filterKeys = Object.keys(opts.filters || {})
+    if (filterKeys.length > 0) {
+      _files = _files.filter((item: string) => {
+        let glob = ''
+        for (const key of filterKeys) {
+          if (match(item, key, { dot: true })) {
+            glob = item
+            break
+          }
         }
+        return glob ? filters(ctx, opts.filters[glob], answers) : true
       })
-      if (glob) { // find a filter expression
-        return filters(ctx, opts.filters[glob], answers)
-      } else {
-        return true
-      }
-    })
+    }
+
     if (_files.length === 0) {
       return ctx.log.warn('Template files not found!')
     }
