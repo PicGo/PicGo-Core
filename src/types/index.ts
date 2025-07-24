@@ -369,6 +369,15 @@ export interface IImgurConfig {
   /** 代理地址，仅支持 http 代理 */
   proxy: string
 }
+/** StarDots图床配置项 */
+export interface IStarDotsConfig {
+  /** 客户端Key */
+  clientKey: string
+  /** 客户端Secret */
+  clientSecret: string
+  /** 空间名 */
+  space: string
+}
 /** PicGo 配置文件类型定义 */
 export interface IConfig {
   picBed: {

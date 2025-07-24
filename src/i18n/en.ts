@@ -98,6 +98,20 @@ export const EN: ILocales = {
   PICBED_UPYUN_MESSAGE_OPTIONS: 'Ex. !imgslim',
   PICBED_UPYUN_MESSAGE_PATH: 'Ex. test/',
 
+  // StarDots
+  PICBED_STARDOTS: 'StarDots',
+  PICBED_STARDOTS_KEY: 'Set Key',
+  PICBED_STARDOTS_SECRET: 'Set Secret',
+  PICBED_STARDOTS_SPACE: 'Set Space',
+  PICBED_STARDOTS_API_CODE_100001: 'Access token (key or secret) invalid',
+  PICBED_STARDOTS_API_CODE_100009: 'Space/storage bucket does not exist',
+  PICBED_STARDOTS_API_CODE_100012: 'Operation too frequent',
+  PICBED_STARDOTS_API_CODE_100014: 'File quota reached the upper limit',
+  PICBED_STARDOTS_API_CODE_100018: 'File size exceeds the limit',
+  PICBED_STARDOTS_API_CODE_100019: 'File format not supported',
+  PICBED_STARDOTS_API_CODE_100027: 'API call frequency reached the upper limit',
+  PICBED_STARDOTS_API_CODE_100030: 'Account suspected of violation, has been banned from login',
+
   // Plugin Handler
   PLUGIN_HANDLER_PLUGIN_INSTALL_SUCCESS: 'Plugin installed successfully',
   PLUGIN_HANDLER_PLUGIN_INSTALL_FAILED: 'Plugin installation failed',
