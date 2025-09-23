@@ -13,7 +13,20 @@ export interface ISignature {
   signTime: string
 }
 
-const generateSignature = (options: ITcyunConfig, fileName: string): ISignature => {
+const cosSafeUrlEncode = (str: string): string => {
+  return encodeURIComponent(str)
+    .replace(/!/g, '%21')
+    .replace(/'/g, '%27')
+    .replace(/\(/g, '%28')
+    .replace(/\)/g, '%29')
+    .replace(/\*/g, '%2A')
+}
+
+const generateContentType = (fileName: string): string => {
+  return mime.lookup(fileName) || 'application/octet-stream'
+}
+
+const generateSignature = (options: ITcyunConfig, fileName: string, contentType: string, contentLength: number): ISignature => {
   const secretId = options.secretId
   const secretKey = options.secretKey
   const appId = options.appId
@@ -37,7 +50,7 @@ const generateSignature = (options: ITcyunConfig, fileName: string): ISignature 
     signTime = `${today};${tomorrow}`
     const signKey = crypto.createHmac('sha1', secretKey).update(signTime).digest('hex')
     const endpoint = options.endpoint ? options.endpoint : `cos.${options.area}.myqcloud.com`
-    const httpString = `put\n/${options.path}${fileName}\n\nhost=${options.bucket}.${endpoint}\n`
+    const httpString = `put\n/${options.path}${fileName}\n\ncontent-length=${contentLength}&content-type=${cosSafeUrlEncode(contentType)}&host=${options.bucket}.${endpoint}\n`
     const sha1edHttpString = crypto.createHash('sha1').update(httpString).digest('hex')
     const stringToSign = `sha1\n${signTime}\n${sha1edHttpString}\n`
     signature = crypto.createHmac('sha1', signKey).update(stringToSign).digest('hex')
@@ -78,8 +91,9 @@ const postOptions = (options: ITcyunConfig, fileName: string, signature: ISignat
       url: `http://${options.bucket}.${endpoint}/${encodeURI(path)}${encodeURIComponent(fileName)}`,
       headers: {
         Host: `${options.bucket}.${endpoint}`,
-        Authorization: `q-sign-algorithm=sha1&q-ak=${options.secretId}&q-sign-time=${signature.signTime}&q-key-time=${signature.signTime}&q-header-list=host&q-url-param-list=&q-signature=${signature.signature}`,
-        contentType: mime.lookup(fileName),
+        Authorization: `q-sign-algorithm=sha1&q-ak=${options.secretId}&q-sign-time=${signature.signTime}&q-key-time=${signature.signTime}&q-header-list=content-length;content-type;host&q-url-param-list=&q-signature=${signature.signature}`,
+        contentType: generateContentType(fileName),
+        contentLength: image.byteLength,
         'User-Agent': `PicGo;${version};null;null`
       },
       body: image,
@@ -100,13 +114,13 @@ const handle = async (ctx: IPicGo): Promise<IPicGo | boolean> => {
     const useV4 = !tcYunOptions.version || tcYunOptions.version === 'v4'
     for (const img of imgList) {
       if (img.fileName && img.buffer) {
-        const signature = generateSignature(tcYunOptions, img.fileName)
-        if (!signature) {
-          return false
-        }
         let image = img.buffer
         if (!image && img.base64Image) {
           image = Buffer.from(img.base64Image, 'base64')
+        }
+        const signature = generateSignature(tcYunOptions, img.fileName, generateContentType(img.fileName), image.byteLength)
+        if (!signature) {
+          return false
         }
         const options = postOptions(tcYunOptions, img.fileName, signature, image, ctx.GUI_VERSION || ctx.VERSION)
         const res = await ctx.request(options)
