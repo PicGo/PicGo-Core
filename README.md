@@ -1,3 +1,17 @@
+<div align="center" markdown="1">
+  <sup>Special thanks to:</sup>
+  <br>
+  <a href="https://www.warp.dev/?utm_source=github&utm_medium=referral&utm_campaign=PicGo">
+    <img alt="Warp sponsorship" width="400" src="https://raw.githubusercontent.com/warpdotdev/brand-assets/refs/heads/main/Github/Sponsor/Warp-Github-LG-03.png">
+  </a>
+
+### [Warp, the intelligent terminal for developers](https://www.warp.dev/?utm_source=github&utm_medium=referral&utm_campaign=PicGo)
+[Available for MacOS, Linux, & Windows](https://www.warp.dev/?utm_source=github&utm_medium=referral&utm_campaign=PicGo)<br>
+
+</div>
+
+---
+
 # PicGo-Core
 
 ![standard](https://img.shields.io/badge/code%20style-standard-green.svg?style=flat-square)
