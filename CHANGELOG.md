@@ -1,3 +1,31 @@
+## :tada: 1.5.10 (2025-11-13)
+
+
+### :sparkles: Features
+
+* add funding yml ([3e17a6f](https://github.com/PicGo/PicGo-Core/commit/3e17a6f))
+
+
+### :bug: Bug Fixes
+
+* **cli:** filters optional ([#178](https://github.com/PicGo/PicGo-Core/issues/178)) ([0f58878](https://github.com/PicGo/PicGo-Core/commit/0f58878))
+* **tcyun:** compatible tencent cos bucket with strict signature mode enabled ([#182](https://github.com/PicGo/PicGo-Core/issues/182)) ([ee1a314](https://github.com/PicGo/PicGo-Core/commit/ee1a314))
+
+
+### :package: Chore
+
+* add CODEOWNERS ([9dd9ba2](https://github.com/PicGo/PicGo-Core/commit/9dd9ba2))
+
+
+### :pencil: Documentation
+
+* add warp sponsor shoutout ([f1b49d1](https://github.com/PicGo/PicGo-Core/commit/f1b49d1))
+* update docs ([4260ef9](https://github.com/PicGo/PicGo-Core/commit/4260ef9))
+* update docs ([3d51d3d](https://github.com/PicGo/PicGo-Core/commit/3d51d3d))
+* update warp sponsor link ([f11cd93](https://github.com/PicGo/PicGo-Core/commit/f11cd93))
+
+
+
 ## :tada: 1.5.9 (2025-06-08)
 
 
