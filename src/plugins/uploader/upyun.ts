@@ -3,7 +3,7 @@ import crypto from 'crypto'
 import MD5 from 'md5'
 import { IBuildInEvent } from '../../utils/enum'
 import { ILocalesKey } from '../../i18n/zh-CN'
-import { safeParse } from '../../utils/common'
+import { safeParse, handleUrlPathSafeEncode } from '../../utils/common'
 import mime from 'mime-types'
 
 // generate COS signature string
@@ -13,7 +13,7 @@ const generateSignature = (options: IUpyunConfig, fileName: string): string => {
   const password = options.password
   const md5Password = MD5(password)
   const date = new Date().toUTCString()
-  const uri = `/${options.bucket}/${encodeURI(path)}${encodeURIComponent(fileName)}`
+  const uri = `/${options.bucket}/${handleUrlPathSafeEncode(path, fileName)}`
   const value = `PUT&${uri}&${date}`
   const sign = crypto.createHmac('sha1', md5Password).update(value).digest('base64')
   return `UPYUN ${operator}:${sign}`
@@ -24,7 +24,7 @@ const postOptions = (options: IUpyunConfig, fileName: string, signature: string,
   const path = options.path || ''
   return {
     method: 'PUT',
-    url: `https://v0.api.upyun.com/${bucket}/${encodeURI(path)}${encodeURIComponent(fileName)}`,
+    url: `https://v0.api.upyun.com/${bucket}/${handleUrlPathSafeEncode(path, fileName)}`,
     headers: {
       Authorization: signature,
       Date: new Date().toUTCString(),
@@ -55,7 +55,7 @@ const handle = async (ctx: IPicGo): Promise<IPicGo> => {
         if (body.statusCode === 200) {
           delete img.base64Image
           delete img.buffer
-          img.imgUrl = `${upyunOptions.url}/${encodeURI(path)}${encodeURIComponent(img.fileName)}${upyunOptions.options}`
+          img.imgUrl = `${upyunOptions.url}/${handleUrlPathSafeEncode(path, img.fileName)}${upyunOptions.options}`
         } else {
           throw new Error('Upload failed')
         }

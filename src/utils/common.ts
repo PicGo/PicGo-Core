@@ -21,11 +21,30 @@ export const isUrlEncode = (url: string): boolean => {
     return false
   }
 }
+
+/**
+ * just encode the url with encodeURI
+ */
 export const handleUrlEncode = (url: string): string => {
   if (!isUrlEncode(url)) {
     url = encodeURI(url)
   }
   return url
+}
+
+/**
+ * @param urlPath the url path need to be encoded safely
+ * @returns the safely encoded url path
+ *
+ * for example:
+ *
+ * /a b/, /c d.jpg -> /a%20b/c%20d.jpg
+ *
+ * /a/b, /c#d.jpg -> /a/b/c%23d.jpg
+ */
+export const handleUrlPathSafeEncode = (...urlPathList: string[]): string => {
+  const urlPath = urlPathList.join('')
+  return urlPath.replace(/\/{2,}/g, '/').split('/').map(segment => encodeURIComponent(segment)).join('/')
 }
 
 export const getImageSize = (file: Buffer): IImgSize => {

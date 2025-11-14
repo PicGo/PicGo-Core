@@ -3,6 +3,7 @@ import mime from 'mime-types'
 import { IPicGo, IPluginConfig, ITcyunConfig, IOldReqOptionsWithFullResponse } from '../../types'
 import { IBuildInEvent } from '../../utils/enum'
 import { ILocalesKey } from '../../i18n/zh-CN'
+import { handleUrlPathSafeEncode } from '../../utils/common'
 
 // generate COS signature string
 
@@ -14,6 +15,9 @@ export interface ISignature {
 }
 
 const cosSafeUrlEncode = (str: string): string => {
+  // this must be encodeURIComponent instead of handleUrlEncode
+  // cause this url encode is for content type
+  // for example, application/json -> application%2Fjson
   return encodeURIComponent(str)
     .replace(/!/g, '%21')
     .replace(/'/g, '%27')
@@ -69,7 +73,7 @@ const postOptions = (options: ITcyunConfig, fileName: string, signature: ISignat
   if (!options.version || options.version === 'v4') {
     return {
       method: 'POST',
-      url: `http://${area}.file.myqcloud.com/files/v2/${signature.appId}/${signature.bucket}/${encodeURI(path)}${fileName}`,
+      url: `http://${area}.file.myqcloud.com/files/v2/${signature.appId}/${signature.bucket}/${handleUrlPathSafeEncode(path, fileName)}`,
       headers: {
         Host: `${area}.file.myqcloud.com`,
         Authorization: signature.signature,
@@ -88,7 +92,7 @@ const postOptions = (options: ITcyunConfig, fileName: string, signature: ISignat
 
     return {
       method: 'PUT',
-      url: `http://${options.bucket}.${endpoint}/${encodeURI(path)}${encodeURIComponent(fileName)}`,
+      url: `http://${options.bucket}.${endpoint}/${handleUrlPathSafeEncode(path, fileName)}`,
       headers: {
         Host: `${options.bucket}.${endpoint}`,
         Authorization: `q-sign-algorithm=sha1&q-ak=${options.secretId}&q-sign-time=${signature.signTime}&q-key-time=${signature.signTime}&q-header-list=content-length;content-type;host&q-url-param-list=&q-signature=${signature.signature}`,
@@ -161,10 +165,10 @@ const handle = async (ctx: IPicGo): Promise<IPicGo | boolean> => {
           delete img.base64Image
           delete img.buffer
           if (customUrl) {
-            img.imgUrl = `${customUrl}/${encodeURI(path)}${encodeURIComponent(img.fileName)}${optionUrl}`
+            img.imgUrl = `${customUrl}/${encodeURI(path)}${handleUrlPathSafeEncode(img.fileName)}${optionUrl}`
           } else {
             const endpoint = tcYunOptions.endpoint ? tcYunOptions.endpoint : `cos.${tcYunOptions.area}.myqcloud.com`
-            img.imgUrl = `https://${tcYunOptions.bucket}.${endpoint}/${encodeURI(path)}${encodeURIComponent(img.fileName)}${optionUrl}`
+            img.imgUrl = `https://${tcYunOptions.bucket}.${endpoint}/${encodeURI(path)}${handleUrlPathSafeEncode(img.fileName)}${optionUrl}`
           }
         } else {
           throw new Error(res.body.msg)

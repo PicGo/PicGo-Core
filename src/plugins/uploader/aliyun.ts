@@ -3,6 +3,7 @@ import crypto from 'crypto'
 import mime from 'mime-types'
 import { IBuildInEvent } from '../../utils/enum'
 import { ILocalesKey } from '../../i18n/zh-CN'
+import { handleUrlPathSafeEncode } from '../../utils/common'
 
 // generate OSS signature
 const generateSignature = (options: IAliyunConfig, fileName: string): string => {
@@ -17,9 +18,10 @@ const generateSignature = (options: IAliyunConfig, fileName: string): string => 
 }
 
 const postOptions = (options: IAliyunConfig, fileName: string, signature: string, image: Buffer): IOldReqOptionsWithFullResponse => {
+  const path = options.path || ''
   return {
     method: 'PUT',
-    url: `https://${options.bucket}.${options.area}.aliyuncs.com/${encodeURI(options.path)}${encodeURIComponent(fileName)}`,
+    url: `https://${options.bucket}.${options.area}.aliyuncs.com/${handleUrlPathSafeEncode(path, fileName)}`,
     headers: {
       Host: `${options.bucket}.${options.area}.aliyuncs.com`,
       Authorization: signature,
@@ -39,7 +41,7 @@ const handle = async (ctx: IPicGo): Promise<IPicGo> => {
   try {
     const imgList = ctx.output
     const customUrl = aliYunOptions.customUrl
-    const path = aliYunOptions.path
+    const path = aliYunOptions.path || ''
     for (const img of imgList) {
       if (img.fileName && img.buffer) {
         const signature = generateSignature(aliYunOptions, img.fileName)
@@ -54,9 +56,9 @@ const handle = async (ctx: IPicGo): Promise<IPicGo> => {
           delete img.buffer
           const optionUrl = aliYunOptions.options || ''
           if (customUrl) {
-            img.imgUrl = `${customUrl}/${encodeURI(path)}${encodeURIComponent(img.fileName)}${optionUrl}`
+            img.imgUrl = `${customUrl}/${handleUrlPathSafeEncode(path, img.fileName)}${optionUrl}`
           } else {
-            img.imgUrl = `https://${aliYunOptions.bucket}.${aliYunOptions.area}.aliyuncs.com/${encodeURI(path)}${encodeURIComponent(img.fileName)}${optionUrl}`
+            img.imgUrl = `https://${aliYunOptions.bucket}.${aliYunOptions.area}.aliyuncs.com/${handleUrlPathSafeEncode(path, img.fileName)}${optionUrl}`
           }
         } else {
           throw new Error('Upload failed')

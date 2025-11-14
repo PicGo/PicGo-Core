@@ -2,13 +2,14 @@ import { IPicGo, IPluginConfig, IGithubConfig, IOldReqOptionsWithJSON } from '..
 import { IBuildInEvent } from '../../utils/enum'
 import { ILocalesKey } from '../../i18n/zh-CN'
 import mime from 'mime-types'
+import { handleUrlPathSafeEncode } from '../../utils/common'
 
 const postOptions = (fileName: string, options: IGithubConfig, data: any): IOldReqOptionsWithJSON => {
   const path = options.path || ''
   const { token, repo } = options
   return {
     method: 'PUT',
-    url: `https://api.github.com/repos/${repo}/contents/${encodeURI(path)}${encodeURIComponent(fileName)}`,
+    url: `https://api.github.com/repos/${repo}/contents/${handleUrlPathSafeEncode(path, fileName)}`,
     headers: {
       Authorization: `token ${token}`,
       'User-Agent': 'PicGo',
@@ -46,7 +47,7 @@ const handle = async (ctx: IPicGo): Promise<IPicGo> => {
             delete img.base64Image
             delete img.buffer
             if (githubOptions.customUrl) {
-              img.imgUrl = `${githubOptions.customUrl}/${encodeURI(githubOptions.path)}${encodeURIComponent(img.fileName)}`
+              img.imgUrl = `${githubOptions.customUrl}/${handleUrlPathSafeEncode(githubOptions.path || '', img.fileName)}`
             } else {
               img.imgUrl = body.content.download_url
             }
@@ -59,9 +60,9 @@ const handle = async (ctx: IPicGo): Promise<IPicGo> => {
             delete img.base64Image
             delete img.buffer
             if (githubOptions.customUrl) {
-              img.imgUrl = `${githubOptions.customUrl}/${encodeURI(githubOptions.path)}${encodeURIComponent(img.fileName)}`
+              img.imgUrl = `${githubOptions.customUrl}/${handleUrlPathSafeEncode(githubOptions.path || '', img.fileName)}`
             } else {
-              img.imgUrl = `https://raw.githubusercontent.com/${githubOptions.repo}/${githubOptions.branch}/${encodeURI(githubOptions.path)}${encodeURIComponent(img.fileName)}`
+              img.imgUrl = `https://raw.githubusercontent.com/${githubOptions.repo}/${githubOptions.branch}/${handleUrlPathSafeEncode(githubOptions.path || '', img.fileName)}`
             }
           } else {
             throw e
