@@ -1,3 +1,13 @@
+## :tada: 1.5.11 (2025-11-14)
+
+
+### :bug: Bug Fixes
+
+* add linux terminal fallback error handler ([47f7274](https://github.com/PicGo/PicGo-Core/commit/47f7274)), closes [#179](https://github.com/PicGo/PicGo-Core/issues/179)
+* url encode bug ([afbddcb](https://github.com/PicGo/PicGo-Core/commit/afbddcb))
+
+
+
 ## :tada: 1.5.10 (2025-11-13)
 
 
