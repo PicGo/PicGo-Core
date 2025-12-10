@@ -6,3 +6,5 @@ tsconfig.json
 .vscode/
 src/
 .travis.yml
+.serena/
+.pnpm-store/

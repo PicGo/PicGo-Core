@@ -3,15 +3,16 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "strictNullChecks": true,
     "strictFunctionTypes": true,
     "sourceMap": true,
-    "target": "es2017",
+    "inlineSourceMap": false,
+    "target": "esnext",
     "declaration": true,
     "outDir": "dist",
     // "skipLibCheck": true,
@@ -25,10 +26,12 @@
     //   "*": ["*", "./src/types/*"]
     // },
     "lib": [
+      "ESNext",
       "es2017",
       "es2015",
       "es6"
     ],
+    "types": ["node", "glob"]
   },
   "exclude": [ "node_modules", "dist"]
 }

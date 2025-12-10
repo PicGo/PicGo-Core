@@ -1,0 +1,59 @@
+name: release
+
+on:
+  push:
+    branches:
+      - master
+      - alpha
+  workflow_dispatch:
+    inputs:
+      publish_tag:
+        description: 'npm tag to publish with (default: latest)'
+        required: false
+        default: 'latest'
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Publish (master)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        run: pnpm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish (alpha)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/alpha'
+        run: pnpm publish --tag alpha --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish (manual)
+        if: github.event_name == 'workflow_dispatch'
+        run: pnpm publish --tag "${{ inputs.publish_tag || 'latest' }}" --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -5,7 +5,7 @@ import { generate } from '../../utils/initUtils'
 import { homedir } from 'os'
 import download from 'download-git-repo'
 import { IOptions, IPlugin, IPicGo } from '../../types'
-import rm from 'rimraf'
+import { rimrafSync } from 'rimraf'
 
 const run = (ctx: IPicGo, options: IOptions): void => {
   // const name = options.inPlace ? path.relative('../', process.cwd()) : options.project
@@ -30,7 +30,7 @@ const run = (ctx: IPicGo, options: IOptions): void => {
  */
 const downloadAndGenerate = (ctx: IPicGo, options: IOptions): void => {
   if (fs.existsSync(options.tmp)) {
-    rm.sync(options.tmp)
+    rimrafSync(options.tmp)
   }
   ctx.log.info('Template files are downloading...')
   download(options.template, options.tmp, { clone: options.clone }, (err: Error) => {
