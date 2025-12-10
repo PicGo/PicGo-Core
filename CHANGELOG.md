@@ -1,3 +1,13 @@
+# :tada: 1.6.0 (2025-12-10)
+
+
+### :package: Chore
+
+* **custom:** move yarn to pnpm ([f174f8c](https://github.com/PicGo/PicGo-Core/commit/f174f8c))
+* **custom:** update eslint && readme ([8e2b4fe](https://github.com/PicGo/PicGo-Core/commit/8e2b4fe))
+
+
+
 ## :tada: 1.5.11 (2025-11-14)
 
 
