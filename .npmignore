@@ -8,3 +8,4 @@ src/
 .travis.yml
 .serena/
 .pnpm-store/
+.husky/

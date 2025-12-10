@@ -29,7 +29,7 @@ A tool for picture uploading. Both CLI & api supports. It also supports plugin s
 
 ## Installation
 
-PicGo should be installed with node.js >= 12 (v1.5.0-alpha.4 and small) & node.js >= 16 (since v1.5.0-alpha.5).
+PicGo should be installed with node.js >= 16 (v1.5.0-alpha.5 and small) & node.js >= 20 (since v1.6.0).
 
 ### Global install
 
