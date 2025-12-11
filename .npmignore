@@ -9,3 +9,8 @@ src/
 .serena/
 .pnpm-store/
 .husky/
+rollup.config.js
+logo.png
+eslint.config.js
+CHANGELOG.md
+.github/

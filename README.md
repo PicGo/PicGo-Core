@@ -19,7 +19,7 @@
 [![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Fpicgo%2Fpicgo-core%2Fbadge%3Fref%3Dmaster&style=flat-square)](https://actions-badge.atrox.dev/picgo/picgo-core/goto?ref=master)
 ![npm](https://img.shields.io/npm/v/picgo.svg?style=flat-square)
 [![PicGo Convention](https://img.shields.io/badge/picgo-convention-blue.svg?style=flat-square)](https://github.com/PicGo/bump-version)
-![node](https://img.shields.io/badge/node-%3E%3D12.0.0-blue?style=flat-square)
+![node](https://img.shields.io/badge/node-%3E%3D20.0.0-blue?style=flat-square)
 
 ![picgo-core](https://cdn.jsdelivr.net/gh/Molunerfinn/test/picgo/picgo-core-fix.jpg)
 
