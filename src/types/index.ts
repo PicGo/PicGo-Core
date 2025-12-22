@@ -263,11 +263,11 @@ export interface IImgInfo {
   extname?: string
   imgUrl?: string
   mimeType?: string
+  filePath?: string
   [propName: string]: any
 }
 
 export interface IPathTransformedImgInfo extends IImgInfo {
-  filePath?: string
   success: boolean
 }
 
