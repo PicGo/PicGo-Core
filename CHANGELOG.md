@@ -1,3 +1,17 @@
+## :tada: 1.6.1 (2025-12-22)
+
+
+### :sparkles: Features
+
+* **custom:** add more fields in ctx.output ([3d69e74](https://github.com/PicGo/PicGo-Core/commit/3d69e74))
+
+
+### :pencil: Documentation
+
+* **custom:** update docs ([6c1e8b1](https://github.com/PicGo/PicGo-Core/commit/6c1e8b1))
+
+
+
 # :tada: 1.6.0 (2025-12-10)
 
 
