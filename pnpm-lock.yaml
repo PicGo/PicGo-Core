@@ -66,8 +66,8 @@ importers:
         specifier: ^2.2.1
         version: 2.3.0
       mime-types:
-        specifier: 2.1.33
-        version: 2.1.33
+        specifier: 3.0.2
+        version: 3.0.2
       minimatch:
         specifier: ^3.0.4
         version: 3.1.2
@@ -2718,6 +2718,10 @@ packages:
   mime-types@2.1.33:
     resolution: {integrity: sha512-plLElXp7pRDd0bNZHw+nMd52vRYjLwQjygaNg7ddJ2uJtTlmnTCjWuPKxVu6//AdaRuME84SvLW91sIkBqGT0g==}
     engines: {node: '>= 0.6'}
+
+  mime-types@3.0.2:
+    resolution: {integrity: sha512-Lbgzdk0h4juoQ9fCKXW4by0UJqj+nOOrI9MJ1sSj4nI8aI2eo1qmvQEie4VD1glsS250n15LsWsYtCugiStS5A==}
+    engines: {node: '>=18'}
 
   mime@2.6.0:
     resolution: {integrity: sha512-USPkMeET31rOMiarsBNIHZKLGgvKc/LrjofAnBlOttf5ajRvqiRA8QsenbcooctK6d6Ts6aqZXBA+XbkKthiQg==}
@@ -6691,6 +6695,10 @@ snapshots:
   mime-types@2.1.33:
     dependencies:
       mime-db: 1.50.0
+
+  mime-types@3.0.2:
+    dependencies:
+      mime-db: 1.54.0
 
   mime@2.6.0: {}
 

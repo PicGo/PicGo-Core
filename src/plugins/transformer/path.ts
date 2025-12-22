@@ -6,6 +6,7 @@ import {
 } from '../../utils/common'
 import { IPicGo, IPathTransformedImgInfo, IImgInfo, IImgSize } from '../../types'
 import dayjs from 'dayjs'
+import mime from 'mime-types'
 
 const handle = async (ctx: IPicGo): Promise<IPicGo> => {
   const results: IImgInfo[] = ctx.output
@@ -31,7 +32,10 @@ const handle = async (ctx: IPicGo): Promise<IPicGo> => {
         fileName: info.fileName || `${dayjs().format('YYYYMMDDHHmmssSSS')}${extname}}`,
         width: imgSize.width,
         height: imgSize.height,
-        extname
+        // maybe undefined
+        filePath: info.filePath,
+        extname,
+        mimeType: mime.lookup(extname) || 'application/octet-stream'
       }
     } else {
       ctx.log.error(info.reason)

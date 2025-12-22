@@ -10,3 +10,4 @@ export { Request } from './lib/Request'
 export * as PicGoUtils from './utils/common'
 
 export * from './types'
+export * from './utils/enum'

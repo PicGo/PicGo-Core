@@ -114,7 +114,7 @@
     "js-yaml": "^4.1.0",
     "lodash": "^4.17.21",
     "md5": "^2.2.1",
-    "mime-types": "2.1.33",
+    "mime-types": "3.0.2",
     "minimatch": "^3.0.4",
     "minimist": "^1.2.5",
     "qiniu": "^7.2.1",

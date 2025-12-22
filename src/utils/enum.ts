@@ -6,7 +6,7 @@ export enum ILogType {
 }
 
 /**
- * these events will be catched by users
+ * these events will be caught by users
  */
 export enum IBuildInEvent {
   UPLOAD_PROGRESS = 'uploadProgress',
@@ -22,7 +22,7 @@ export enum IBuildInEvent {
 }
 
 /**
- * these events will be catched only by picgo
+ * these events will be caught only by picgo
  */
 export enum IBusEvent {
   CONFIG_CHANGE = 'CONFIG_CHANGE'

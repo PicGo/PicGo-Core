@@ -262,10 +262,12 @@ export interface IImgInfo {
   height?: number
   extname?: string
   imgUrl?: string
+  mimeType?: string
   [propName: string]: any
 }
 
 export interface IPathTransformedImgInfo extends IImgInfo {
+  filePath?: string
   success: boolean
 }
 
