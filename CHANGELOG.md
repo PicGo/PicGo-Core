@@ -1,3 +1,12 @@
+## :tada: 1.6.2 (2025-12-22)
+
+
+### :package: Chore
+
+* **custom:** change the IImgInfo type ([d7c3dbd](https://github.com/PicGo/PicGo-Core/commit/d7c3dbd))
+
+
+
 ## :tada: 1.6.1 (2025-12-22)
 
 
