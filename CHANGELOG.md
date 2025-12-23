@@ -1,3 +1,12 @@
+## :tada: 1.6.4 (2025-12-23)
+
+
+### :sparkles: Features
+
+* **transformer:** add size for path transformer ([010d243](https://github.com/PicGo/PicGo-Core/commit/010d243))
+
+
+
 ## :tada: 1.6.3 (2025-12-23)
 
 
