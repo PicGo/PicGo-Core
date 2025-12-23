@@ -175,8 +175,8 @@ importers:
         specifier: ^7.0.3
         version: 7.0.3
       cz-customizable:
-        specifier: ^5.10.0
-        version: 5.10.0
+        specifier: ^7.5.1
+        version: 7.5.1
       eslint:
         specifier: ^9.39.1
         version: 9.39.1(jiti@2.6.1)
@@ -1435,9 +1435,6 @@ packages:
   cz-conventional-changelog@3.3.0:
     resolution: {integrity: sha512-U466fIzU5U22eES5lTNiNbZ+d8dfcHcssH4o7QsdWaCcRs/feIPCxKYSWkYBNs5mny7MvEfwpTLWjvbm94hecw==}
     engines: {node: '>= 10'}
-
-  cz-customizable@5.10.0:
-    resolution: {integrity: sha512-8fzzmoXXAg3ydu5Uhx4g+XwgWNdjmvm/zycKzZejnhQn8Z+kvnqKwXhwm9thmFE67MIXDMS7n+A1wuMAEplddQ==}
 
   cz-customizable@7.5.1:
     resolution: {integrity: sha512-eGUfpyD6/YdnPomAMMbbwmofeHAR9D4OsXS5Kmr9+uEOxdop32tdmHy6sx4Bhpms6V8HohQ17p/fYvlIllrdmQ==}
@@ -5261,15 +5258,6 @@ snapshots:
     transitivePeerDependencies:
       - '@types/node'
       - typescript
-
-  cz-customizable@5.10.0:
-    dependencies:
-      editor: 1.0.0
-      find-config: 1.0.0
-      inquirer: 6.5.2
-      lodash: 4.17.21
-      temp: 0.9.4
-      word-wrap: 1.2.5
 
   cz-customizable@7.5.1:
     dependencies:

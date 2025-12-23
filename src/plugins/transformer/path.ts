@@ -35,6 +35,8 @@ const handle = async (ctx: IPicGo): Promise<IPicGo> => {
         // maybe undefined
         filePath: info.filePath,
         extname,
+        // TODO: need optimized
+        size: info.buffer?.length || 0,
         mimeType: mime.lookup(extname) || 'application/octet-stream'
       }
     } else {

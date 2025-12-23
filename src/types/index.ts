@@ -264,6 +264,7 @@ export interface IImgInfo {
   imgUrl?: string
   mimeType?: string
   filePath?: string
+  size?: number
   [propName: string]: any
 }
 
