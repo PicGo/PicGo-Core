@@ -1,3 +1,12 @@
+## :tada: 1.6.6 (2026-01-01)
+
+
+### :package: Chore
+
+* **deps:** update axios \&\& qiniu ([#185](https://github.com/PicGo/PicGo-Core/issues/185)) ([e925d14](https://github.com/PicGo/PicGo-Core/commit/e925d14))
+
+
+
 ## :tada: 1.6.5 (2026-01-01)
 
 
