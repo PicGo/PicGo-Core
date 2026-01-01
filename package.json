@@ -22,19 +22,14 @@
     "major": "npm version major && git push origin master && git push origin --tags",
     "cz": "git-cz",
     "release": "bump-version",
-    "prepare": "husky"
+    "prepare": "husky",
+    "commitlint": "commitlint --edit"
   },
   "keywords": [
     "picture",
     "upload",
     "util"
   ],
-  "husky": {
-    "hooks": {
-      "pre-commit": "npm run lint",
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
-    }
-  },
   "config": {
     "commitizen": {
       "path": "./node_modules/cz-customizable"
@@ -51,6 +46,7 @@
   "author": "Molunerfinn",
   "license": "MIT",
   "devDependencies": {
+    "@commitlint/cli": "^20.2.0",
     "@eslint/js": "^9.39.1",
     "@picgo/bump-version": "^2.0.0",
     "@rollup/plugin-commonjs": "^29.0.0",
@@ -88,7 +84,6 @@
     "execa": "^5.1.1",
     "globals": "^16.5.0",
     "husky": "^9.1.7",
-    "pre-commit": "^1.2.2",
     "rollup": "^4.53.3",
     "rollup-plugin-copy": "^3.5.0",
     "rollup-plugin-string": "^3.0.0",
@@ -97,16 +92,16 @@
   "dependencies": {
     "@picgo/i18n": "^1.0.0",
     "@picgo/store": "^2.0.2",
-    "axios": "^0.27.2",
+    "axios": "^1.13.2",
     "chalk": "^2.4.1",
     "commander": "^8.1.0",
     "comment-json": "^2.3.1",
     "cross-spawn": "^6.0.5",
     "dayjs": "^1.7.4",
-    "download-git-repo": "^3.0.2",
-    "ejs": "^2.6.1",
+    "ejs": "^3.1.10",
     "form-data": "^4.0.5",
     "fs-extra": "^6.0.1",
+    "giget": "^2.0.0",
     "globby": "^11.0.4",
     "image-size": "^0.8.3",
     "inquirer": "^6.0.0",
@@ -117,7 +112,7 @@
     "mime-types": "3.0.2",
     "minimatch": "^3.0.4",
     "minimist": "^1.2.5",
-    "qiniu": "^7.2.1",
+    "qiniu": "^7.14.0",
     "resolve": "^1.8.1",
     "rimraf": "^6.1.2",
     "tunnel": "^0.0.6"
