@@ -1,8 +1,8 @@
-import qiniu from 'qiniu'
 import { IPluginConfig, IQiniuConfig, IPicGo, IOldReqOptions } from '../../types'
 import { IBuildInEvent } from '../../utils/enum'
 import { ILocalesKey } from '../../i18n/zh-CN'
 import mime from 'mime-types'
+import crypto from 'node:crypto'
 
 function postOptions (options: IQiniuConfig, fileName: string, token: string, imgBase64: string): IOldReqOptions {
   const area = selectArea(options.area || 'z0')
@@ -23,15 +23,33 @@ function selectArea (area: string): string {
   return area === 'z0' ? '' : '-' + area
 }
 
+function base64ToUrlSafe (value: string): string {
+  return value.replace(/\//g, '_').replace(/\+/g, '-')
+}
+
+function urlSafeBase64Encode (value: string): string {
+  return base64ToUrlSafe(Buffer.from(value).toString('base64'))
+}
+
+function hmacSha1Base64 (encodedFlags: string, secretKey: string): string {
+  const hmac = crypto.createHmac('sha1', secretKey)
+  hmac.update(encodedFlags)
+  return hmac.digest('base64')
+}
+
 function getToken (qiniuOptions: any): string {
   const accessKey = qiniuOptions.accessKey
   const secretKey = qiniuOptions.secretKey
-  const mac = new qiniu.auth.digest.Mac(accessKey, secretKey)
-  const options = {
-    scope: qiniuOptions.bucket
+  const scope = qiniuOptions.bucket
+
+  const expires = 3600
+  const flags = {
+    scope,
+    deadline: expires + Math.floor(Date.now() / 1000)
   }
-  const putPolicy = new qiniu.rs.PutPolicy(options)
-  return putPolicy.uploadToken(mac)
+  const encodedFlags = urlSafeBase64Encode(JSON.stringify(flags))
+  const encodedSign = base64ToUrlSafe(hmacSha1Base64(encodedFlags, secretKey))
+  return [accessKey, encodedSign, encodedFlags].join(':')
 }
 
 const handle = async (ctx: IPicGo): Promise<IPicGo> => {

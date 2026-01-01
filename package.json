@@ -112,7 +112,6 @@
     "mime-types": "3.0.2",
     "minimatch": "^3.0.4",
     "minimist": "^1.2.5",
-    "qiniu": "^7.14.0",
     "resolve": "^1.8.1",
     "rimraf": "^6.1.2",
     "tunnel": "^0.0.6"
