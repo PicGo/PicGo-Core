@@ -3,9 +3,18 @@ import path from 'path'
 import fs from 'fs-extra'
 import { generate } from '../../utils/initUtils'
 import { homedir } from 'os'
-import download from 'download-git-repo'
+import { downloadTemplate } from 'giget'
 import { IOptions, IPlugin, IPicGo } from '../../types'
 import { rimrafSync } from 'rimraf'
+
+const toGigetSource = (input: string): string => {
+  // If user already provides a provider/url, keep it unchanged.
+  // Otherwise, treat it as a GitHub repo like download-git-repo did.
+  if (/^(https?:\/\/)/.test(input) || input.includes(':')) {
+    return input
+  }
+  return `github:${input}`
+}
 
 const run = (ctx: IPicGo, options: IOptions): void => {
   // const name = options.inPlace ? path.relative('../', process.cwd()) : options.project
@@ -33,13 +42,27 @@ const downloadAndGenerate = (ctx: IPicGo, options: IOptions): void => {
     rimrafSync(options.tmp)
   }
   ctx.log.info('Template files are downloading...')
-  download(options.template, options.tmp, { clone: options.clone }, (err: Error) => {
-    if (err) {
-      return ctx.log.error(err)
-    }
-    ctx.log.success('Template files are downloaded!')
-    generate(ctx, options).catch((e) => { ctx.log.error(e) })
+  const source = toGigetSource(options.template)
+
+  // `download-git-repo` had a `clone` mode. `giget` doesn't expose a clone option;
+  // keeping the flag for backward compatibility, but download uses tarball.
+  // This preserves the resulting template files and directory structure.
+  downloadTemplate(source, {
+    dir: options.tmp,
+    forceClean: true,
+    force: true,
+    // We intentionally keep registry enabled (default) because we always prefix
+    // github: for plain owner/repo inputs, avoiding registry resolution.
+    // offline/preferOffline are handled by PicGo's own --offline mode.
+    silent: true
   })
+    .then(() => {
+      ctx.log.success('Template files are downloaded!')
+      generate(ctx, options)
+    })
+    .catch((e: any) => {
+      ctx.log.error(e)
+    })
 }
 
 const init: IPlugin = {
