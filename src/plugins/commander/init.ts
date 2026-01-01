@@ -58,7 +58,7 @@ const downloadAndGenerate = (ctx: IPicGo, options: IOptions): void => {
   })
     .then(() => {
       ctx.log.success('Template files are downloaded!')
-      generate(ctx, options)
+      return generate(ctx, options)
     })
     .catch((e: any) => {
       ctx.log.error(e)
