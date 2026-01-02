@@ -5,7 +5,7 @@ import type { Hono } from 'hono'
 
 export interface IServerManager {
   app: Hono<any, any, any>
-  listen: (port?: number, host?: string, ignoreExistingServer?: boolean) => Promise<number>
+  listen: (port?: number, host?: string, ignoreExistingServer?: boolean) => Promise<number | void>
   shutdown: () => void
   isListening: () => boolean
 }

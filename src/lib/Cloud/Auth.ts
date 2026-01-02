@@ -29,6 +29,9 @@ class AuthHandler {
     // For login flow, always ignore existing PicGo server instances (other processes),
     // because we must register /auth/callback in current process.
     const actualPort = await this.ctx.server.listen(undefined, '127.0.0.1', true)
+    if (actualPort === undefined) {
+      throw new Error('Failed to start PicGo server for login')
+    }
     const callback = encodeURIComponent(`http://127.0.0.1:${actualPort}/auth/callback`)
     const authUrl = `https://picgocloud.com/auth/cli?callback=${callback}`
 

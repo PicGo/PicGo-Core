@@ -87,7 +87,7 @@ class ServerManager implements IServerManager {
     }
   }
 
-  async listen (port?: number, host?: string, ignoreExistingServer: boolean = false): Promise<number> {
+  async listen (port?: number, host?: string, ignoreExistingServer: boolean = false): Promise<number | void> {
     if (this.server && this.listeningPort !== undefined) {
       if (host && this.listeningHost && host !== this.listeningHost) {
         this.ctx.log.warn(`Server is already listening at http://${this.listeningHost}:${this.listeningPort}`)
@@ -103,15 +103,12 @@ class ServerManager implements IServerManager {
 
     this.app = rebuildApp(this.app)
 
-    const tryListen = async (portToTry: number): Promise<number> => {
+    const tryListen = async (portToTry: number): Promise<number | void> => {
       try {
         const { server, port: actualPort } = await this.startServer(portToTry, resolvedHost)
         this.server = server
         this.listeningPort = actualPort
         this.listeningHost = resolvedHost
-        if (actualPort !== resolvedPort) {
-          this.ctx.log.warn(`Port ${resolvedPort} is busy, using ${actualPort} instead.`)
-        }
         this.ctx.log.info(`[PicGo Server] Listening at http://${resolvedHost}:${actualPort}`)
         return actualPort
       } catch (e: any) {
@@ -123,10 +120,10 @@ class ServerManager implements IServerManager {
               return portToTry
             }
           }
-          this.ctx.log.warn(`[PicGo Server] ${portToTry} is busy, trying with port ${portToTry + 1}`)
+          this.ctx.log.warn(`[PicGo Server] port ${portToTry} is busy, trying with port ${portToTry + 1}`)
           return await tryListen(portToTry + 1)
         }
-        throw e
+        this.ctx.log.error(e as Error)
       }
     }
 
