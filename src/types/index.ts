@@ -1,6 +1,19 @@
 import { Command } from 'commander'
 import { Inquirer } from 'inquirer'
 import { IRequestPromiseOptions } from './oldRequest'
+import type { Hono } from 'hono'
+
+export interface IServerManager {
+  app: Hono<any, any, any>
+  listen: (port?: number, host?: string, ignoreExistingServer?: boolean) => Promise<number>
+  shutdown: () => void
+  isListening: () => boolean
+}
+
+export interface ICloudManager {
+  login: (token?: string) => Promise<void>
+  logout: () => void
+}
 
 export interface IPicGo extends NodeJS.EventEmitter {
   /**
@@ -21,6 +34,14 @@ export interface IPicGo extends NodeJS.EventEmitter {
    * picgo commander, for cli
    */
   cmd: ICommander
+  /**
+   * picgo server manager
+   */
+  server: IServerManager
+  /**
+   * picgo cloud manager
+   */
+  cloud: ICloudManager
   /**
    * after transformer, the input will be output
    */
@@ -401,6 +422,16 @@ export interface IConfig {
     npmRegistry?: string
     /** for npm */
     npmProxy?: string
+    picgoCloud?: {
+      token?: string
+      [others: string]: any
+    }
+    server?: {
+      port?: number
+      host?: string
+      enable?: boolean
+      [others: string]: any
+    }
     [others: string]: any
   }
   [configOptions: string]: any
@@ -556,7 +587,7 @@ export interface IProcessEnv {
 
 export type ILogArgvType = string | number
 
-export type ILogArgvTypeWithError = ILogArgvType | Error
+export type ILogArgvTypeWithError = ILogArgvType | Error | unknown
 
 export type Nullable<T> = T | null
 export type Undefinable<T> = T | undefined

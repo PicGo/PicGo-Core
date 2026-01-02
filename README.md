@@ -29,7 +29,7 @@ A tool for picture uploading. Both CLI & api supports. It also supports plugin s
 
 ## Installation
 
-PicGo should be installed with node.js >= 16 (v1.5.0-alpha.5 and small) & node.js >= 20 (since v1.6.0).
+PicGo should be installed with node.js >= 16 (v1.5.0-alpha.5 and small) & node.js >= 22.12 (since v1.6.0).
 
 ### Global install
 
@@ -79,6 +79,8 @@ $ picgo -h
     update <plugins...>                  update picgo plugin
     set|config <module> [name]           configure config of picgo modules
     upload|u [input...]                  upload, go go go
+    server [options]                     run PicGo as a standalone server
+    login [token]                        login to picgocloud.com
     use [module]                         use modules of picgo
     init [options] <template> [project]  create picgo plugin\'s development templates
 ```
@@ -98,6 +100,20 @@ picgo upload
 ```
 
 Thanks to [vs-picgo](https://github.com/Spades-S/vs-picgo) && [Spades-S](https://github.com/Spades-S) for providing the method to upload picture from clipboard.
+
+#### Run as a server
+
+```bash
+picgo server -p 36677 -h 127.0.0.1
+```
+
+#### Login to PicGo Cloud
+
+```bash
+picgo login
+# or
+picgo login <token>
+```
 
 ### Use in node project
 

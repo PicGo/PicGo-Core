@@ -19,6 +19,8 @@ import { IBuildInEvent, IBusEvent } from '../utils/enum'
 import { eventBus } from '../utils/eventBus'
 import { isConfigKeyInBlackList, isInputConfigValid } from '../utils/common'
 import { I18nManager } from '../i18n'
+import { ServerManager } from '../lib/Server'
+import { CloudManager } from '../lib/Cloud'
 
 export class PicGo extends EventEmitter implements IPicGo {
   private _config!: IConfig
@@ -33,6 +35,8 @@ export class PicGo extends EventEmitter implements IPicGo {
   output: IImgInfo[]
   input: any[]
   pluginHandler: PluginHandler
+  server!: ServerManager
+  cloud!: CloudManager
   /**
    * @deprecated will be removed in v1.5.0+
    *
@@ -92,6 +96,8 @@ export class PicGo extends EventEmitter implements IPicGo {
       // init 18n at first
       this.i18n = new I18nManager(this)
       this.Request = new Request(this)
+      this.server = new ServerManager(this)
+      this.cloud = new CloudManager(this)
       this._pluginLoader = new PluginLoader(this)
       // load self plugins
       setCurrentPluginName('picgo')
