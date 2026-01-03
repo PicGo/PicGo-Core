@@ -15,7 +15,7 @@
     "target": "esnext",
     "declaration": true,
     "outDir": "dist",
-    // "skipLibCheck": true,
+    "skipLibCheck": true,
     // "baseUrl": "src",
     "rootDir": "src",
     // "typeRoots": [

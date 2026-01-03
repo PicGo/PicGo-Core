@@ -97,8 +97,8 @@ class ServerManager implements IServerManager {
       return this.listeningPort
     }
 
-    const configPort = this.ctx.getConfig<unknown>('settings.server.port')
-    const configHost = this.ctx.getConfig<unknown>('settings.server.host')
+    const configPort = this.ctx.getConfig('settings.server.port')
+    const configHost = this.ctx.getConfig('settings.server.host')
 
     const resolvedPort = normalizePort(port) ?? normalizePort(configPort) ?? 36677
     const resolvedHost = (host ?? (typeof configHost === 'string' ? configHost : undefined) ?? '127.0.0.1')

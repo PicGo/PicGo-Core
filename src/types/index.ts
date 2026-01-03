@@ -107,7 +107,7 @@ export interface IPicGo extends NodeJS.EventEmitter {
   /**
    * get picgo config
    */
-  getConfig: <T>(name?: string) => T
+  getConfig: <T = unknown>(name?: string) => T
   /**
    * save picgo config to configPath
    */
