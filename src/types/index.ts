@@ -5,7 +5,14 @@ import type { Hono } from 'hono'
 
 export interface IServerManager {
   app: Hono<any, any, any>
-  listen: (port?: number, host?: string, ignoreExistingServer?: boolean) => Promise<number | void>
+  /**
+   *
+   * @param port
+   * @param host
+   * @param ignoreExistingExternalServer PicGo GUI may start a server instance already, if you want to start a new one, set this to true
+   * @returns
+   */
+  listen: (port?: number, host?: string, ignoreExistingExternalServer?: boolean) => Promise<number | void>
   shutdown: () => void
   isListening: () => boolean
 }
@@ -86,6 +93,14 @@ export interface IPicGo extends NodeJS.EventEmitter {
    * http request tool
    */
   request: IRequest['request']
+
+  /**
+   * Opens a URL in the default browser.
+   *
+   * Default implementation uses the `open` package in Node.js.
+   * Consumers (Electron/VSCode extensions) can overwrite this method.
+   */
+  openUrl: (url: string) => Promise<void>
 
   i18n: II18nManager
 

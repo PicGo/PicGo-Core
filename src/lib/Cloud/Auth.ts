@@ -36,8 +36,7 @@ class AuthHandler {
     const authUrl = `https://picgocloud.com/auth/cli?callback=${callback}`
 
     try {
-      const open = (await import('open')).default
-      await open(authUrl)
+      await this.ctx.openUrl(authUrl)
     } catch (e: any) {
       this.ctx.log.warn(`Failed to open browser automatically: ${e?.message || String(e)}`)
       this.ctx.log.info(`Please open this url in browser: ${authUrl}`)

@@ -6,6 +6,7 @@ import type { IPicGo, IServerManager } from '../../types'
 import { rebuildApp } from './utils'
 import { registerCoreRoutes } from './routes'
 import { logger } from 'hono/logger'
+import { cors } from 'hono/cors'
 
 type StartServerResult = {
   server: ServerType
@@ -42,6 +43,7 @@ class ServerManager implements IServerManager {
   }
 
   private initMiddleware (): void {
+    this.app.use(cors())
     // TODO: replace with custom logger with ctx.log
     this.app.use(logger())
   }
@@ -87,7 +89,7 @@ class ServerManager implements IServerManager {
     }
   }
 
-  async listen (port?: number, host?: string, ignoreExistingServer: boolean = false): Promise<number | void> {
+  async listen (port?: number, host?: string, ignoreExistingExternalServer: boolean = false): Promise<number | void> {
     if (this.server && this.listeningPort !== undefined) {
       if (host && this.listeningHost && host !== this.listeningHost) {
         this.ctx.log.warn(`Server is already listening at http://${this.listeningHost}:${this.listeningPort}`)
@@ -113,7 +115,7 @@ class ServerManager implements IServerManager {
         return actualPort
       } catch (e: any) {
         if (e?.code === 'EADDRINUSE') {
-          if (!ignoreExistingServer) {
+          if (!ignoreExistingExternalServer) {
             const hasExisting = await this.isExistingPicGoServer(resolvedHost, portToTry)
             if (hasExisting) {
               this.ctx.log.info(`[PicGo Server] Detected existing instance at http://${resolvedHost}:${portToTry}`)

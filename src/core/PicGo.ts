@@ -195,6 +195,12 @@ export class PicGo extends EventEmitter implements IPicGo {
     return this.Request.request.bind(this.Request)
   }
 
+  async openUrl (url: string): Promise<void> {
+    const open = (await import('open')).default
+    this.log.info('Opening browser with URL:', url)
+    await open(url)
+  }
+
   async upload (input?: any[]): Promise<IImgInfo[] | Error> {
     if (this.configPath === '') {
       this.log.error('The configuration file only supports JSON format.')
