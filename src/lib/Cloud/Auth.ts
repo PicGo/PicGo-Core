@@ -1,7 +1,10 @@
 import type { IPicGo } from '../../types'
+import type { Context } from 'hono'
+import * as crypto from 'node:crypto'
 
 class AuthHandler {
   private readonly ctx: IPicGo
+  private authState: string | null = null
   private pending?: {
     resolve: (token: string) => void
     shouldShutdown: boolean
@@ -33,41 +36,63 @@ class AuthHandler {
       throw new Error('Failed to start PicGo server for login')
     }
     const callback = encodeURIComponent(`http://127.0.0.1:${actualPort}/auth/callback`)
-    const authUrl = `https://picgocloud.com/auth/cli?callback=${callback}`
+    this.authState = crypto.randomUUID()
+    const authUrl = `https://picgocloud.com/auth/cli?callback=${callback}&state=${this.authState}`
 
     try {
       await this.ctx.openUrl(authUrl)
-    } catch (e: any) {
-      this.ctx.log.warn(`Failed to open browser automatically: ${e?.message || String(e)}`)
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : String(e)
+      this.ctx.log.warn(`Failed to open browser automatically: ${message}`)
       this.ctx.log.info(`Please open this url in browser: ${authUrl}`)
     }
 
     return await tokenPromise
   }
 
-  private registerRoutes (): void {
-    this.ctx.server.app.get('/auth/callback', (c) => {
-      const token = c.req.query('token')
-      if (!token) {
-        return c.html('<h1>Login Failed</h1><p>Missing token.</p>', 400)
-      }
+  private handleCallback (c: Context) {
+    const token = c.req.query('token')
+    const state = c.req.query('state')
 
-      this.ctx.saveConfig({
-        'settings.picgoCloud.token': token
-      })
+    if (!state || state !== this.authState) {
+      this.ctx.log.warn('[Auth] State mismatch or missing. Request blocked.')
+      return c.json({
+        success: false,
+        message: 'Invalid auth state.'
+      }, 403)
+    }
 
-      const pending = this.pending
-      this.pending = undefined
-      pending?.resolve(token)
+    if (!token) {
+      return c.json({
+        success: false,
+        message: 'Token missing in callback.'
+      }, 400)
+    }
 
-      if (pending?.shouldShutdown) {
-        setTimeout(() => {
-          this.ctx.server.shutdown()
-        }, 100)
-      }
-
-      return c.html('<h1>Login Success</h1>')
+    this.ctx.saveConfig({
+      'settings.picgoCloud.token': token
     })
+
+    this.authState = null
+
+    const pending = this.pending
+    this.pending = undefined
+    pending?.resolve(token)
+
+    if (pending?.shouldShutdown) {
+      setTimeout(() => {
+        this.ctx.server.shutdown()
+      }, 100)
+    }
+
+    return c.json({
+      success: true,
+      message: 'Authentication successful. You can close this window.'
+    }, 200)
+  }
+
+  private registerRoutes (): void {
+    this.ctx.server.app.get('/auth/callback', this.handleCallback.bind(this))
   }
 }
 
