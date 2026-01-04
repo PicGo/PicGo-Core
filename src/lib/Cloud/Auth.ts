@@ -1,6 +1,8 @@
 import type { IPicGo } from '../../types'
 import type { Context } from 'hono'
 import * as crypto from 'node:crypto'
+import { BuiltinRoutePath } from '../Routes/routePath'
+import { IInternalServerManager } from '../../types/internal'
 
 class AuthHandler {
   private readonly ctx: IPicGo
@@ -161,7 +163,7 @@ class AuthHandler {
   }
 
   private registerRoutes (): void {
-    this.ctx.server.app.get('/auth/callback', this.handleCallback.bind(this))
+    (this.ctx.server as IInternalServerManager).registerGet(BuiltinRoutePath.AUTH_CALLBACK, this.handleCallback.bind(this), true)
   }
 }
 

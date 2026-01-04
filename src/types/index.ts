@@ -1,10 +1,15 @@
 import { Command } from 'commander'
 import { Inquirer } from 'inquirer'
 import { IRequestPromiseOptions } from './oldRequest'
-import type { Hono } from 'hono'
+import type { Env, Handler, Hono, MiddlewareHandler } from 'hono'
 
-export interface IServerManager {
-  app: Hono<any, any, any>
+/**
+ * Type definition for the plugin router setup callback.
+ * The plugin receives a Hono instance created by the Host.
+ */
+export type PluginRouterSetup = (router: Hono<any, any, any>) => void
+
+export interface IServerManager<E extends Env = any> {
   /**
    *
    * @param port
@@ -15,6 +20,37 @@ export interface IServerManager {
   listen: (port?: number, host?: string, ignoreExistingExternalServer?: boolean) => Promise<number | void>
   shutdown: () => void
   isListening: () => boolean
+
+  /**
+   * Get current server listening address if running.
+   * e.g. "http://127.0.0.1:36677/"
+   */
+  getServerInfo: () => string
+
+  // --- Route Registration (Type Safe) ---
+  registerGet<P extends string>(path: P, handler: Handler<E, P>): void
+  registerPost<P extends string>(path: P, handler: Handler<E, P>): void
+  registerPut<P extends string>(path: P, handler: Handler<E, P>): void
+  registerDelete<P extends string>(path: P, handler: Handler<E, P>): void
+
+  // --- Middleware & Static ---
+  registerMiddleware<P extends string>(path: P, handler: MiddlewareHandler<E, P>): void
+
+  /**
+   * Register a static file server route.
+   * @param path - The URL prefix (e.g. '/static')
+   * @param root - The local file system path
+   */
+  registerStatic: (path: string, root: string) => void
+
+  // --- Router Mounting (Safe Pattern) ---
+  /**
+   * Mount a sub-router for plugins.
+   *
+   * PicGo creates a new Hono instance (to ensure version consistency)
+   * and passes it to the setup callback for the plugin to configure.
+   */
+  mount: (path: string, setup: PluginRouterSetup) => void
 }
 
 export interface ICloudManager {

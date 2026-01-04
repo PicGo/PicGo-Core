@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto'
 import path from 'path'
 import type { Hono } from 'hono'
 import type { IPicGo } from '../../types'
+import { BuiltinRoutePath } from '../Routes/routePath'
 
 type UploadRequestBody = {
   list: string[]
@@ -44,7 +45,7 @@ const getFormDataFileName = (value: FormDataFileLike): string => {
 }
 
 const registerCoreRoutes = (app: Hono<any, any, any>, ctx: IPicGo): void => {
-  app.post('/upload', async (c) => {
+  app.post(BuiltinRoutePath.UPLOAD, async (c) => {
     try {
       const contentType = c.req.raw.headers.get('content-type') || ''
 
@@ -129,7 +130,7 @@ const registerCoreRoutes = (app: Hono<any, any, any>, ctx: IPicGo): void => {
     }
   })
 
-  app.post('/heartbeat', (c) => {
+  app.post(BuiltinRoutePath.HEARTBEAT, (c) => {
     return c.json({ success: true, result: 'alive' })
   })
 }

@@ -1,12 +1,15 @@
 import { serve, type ServerType } from '@hono/node-server'
+import { serveStatic } from '@hono/node-server/serve-static'
 import axios from 'axios'
 import { Hono } from 'hono'
 import type { AddressInfo } from 'node:net'
-import type { IPicGo, IServerManager } from '../../types'
+import type { Handler, MiddlewareHandler } from 'hono'
+import type { IPicGo, IServerManager, PluginRouterSetup } from '../../types'
 import { rebuildApp } from './utils'
 import { registerCoreRoutes } from './routes'
 import { logger } from 'hono/logger'
 import { cors } from 'hono/cors'
+import { isBuiltinRoutePath } from '../Routes/routePath'
 
 type StartServerResult = {
   server: ServerType
@@ -22,8 +25,10 @@ const normalizePort = (value: unknown): number | undefined => {
   return undefined
 }
 
+
+
 class ServerManager implements IServerManager {
-  public app: Hono<any, any, any>
+  private app: Hono<any, any, any>
 
   private readonly ctx: IPicGo
   private server?: ServerType
@@ -35,6 +40,55 @@ class ServerManager implements IServerManager {
     this.app = new Hono()
     this.initMiddleware()
     this.initCoreRoutes()
+  }
+
+  registerGet<P extends string> (path: P, handler: Handler<any, P>, isInternal = false): void {
+    this.handleRegister('get', path, handler, isInternal)
+  }
+
+  registerPost<P extends string> (path: P, handler: Handler<any, P>, isInternal = false): void {
+    this.handleRegister('post', path, handler, isInternal)
+  }
+
+  registerPut<P extends string> (path: P, handler: Handler<any, P>, isInternal = false): void {
+    this.handleRegister('put', path, handler, isInternal)
+  }
+
+  registerDelete<P extends string> (path: P, handler: Handler<any, P>, isInternal = false): void {
+    this.handleRegister('delete', path, handler, isInternal)
+  }
+
+  registerMiddleware<P extends string> (path: P, handler: MiddlewareHandler<any, P>): void {
+    this.app.use(path, handler)
+  }
+
+  registerStatic (path: string, root: string): void {
+    const routePath = path.endsWith('/*') ? path : `${path}/*`
+    this.app.use(routePath, serveStatic({ root }))
+  }
+
+  private handleRegister (method: 'get' | 'post' | 'put' | 'delete', path: string, handler: Handler, isInternal: boolean) {
+    const isBuiltin = isBuiltinRoutePath(path)
+
+    if (isBuiltin && !isInternal) {
+      this.ctx.log.warn(`[PicGo Server] Plugin attempted to overwrite builtin route: ${path}. Action denied.`)
+      return
+    }
+
+    this.app[method](path, handler)
+  }
+
+  mount (path: string, setup: PluginRouterSetup): void {
+    const subApp = new Hono()
+    setup(subApp)
+    this.app.route(path, subApp)
+  }
+
+  getServerInfo (): string {
+    if (this.server && this.listeningHost && this.listeningPort !== undefined) {
+      return `http://${this.listeningHost}:${this.listeningPort}/`
+    }
+    return ''
   }
 
 
