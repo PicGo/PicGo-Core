@@ -15,6 +15,7 @@
     "start": "node ./bin/picgo",
     "lint": "eslint src --ext .ts && tsc --noEmit",
     "test": "echo \"Error: no test specified\" && exit 1",
+    "test:unit": "vitest run",
     "build": "cross-env NODE_ENV=production rimraf ./dist && rollup -c rollup.config.js",
     "dev": "cross-env NODE_ENV=development rollup -c rollup.config.js -w",
     "patch": "npm version patch && git push origin master && git push origin --tags",
@@ -87,7 +88,8 @@
     "rollup": "^4.53.3",
     "rollup-plugin-copy": "^3.5.0",
     "rollup-plugin-string": "^3.0.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.16"
   },
   "dependencies": {
     "@hono/node-server": "^1.19.7",
@@ -96,7 +98,7 @@
     "axios": "^1.13.2",
     "chalk": "^2.4.1",
     "commander": "^8.1.0",
-    "comment-json": "^2.3.1",
+    "comment-json": "^4.5.1",
     "cross-spawn": "^6.0.5",
     "dayjs": "^1.7.4",
     "dotenv": "^17.2.3",

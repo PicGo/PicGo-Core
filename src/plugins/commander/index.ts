@@ -1,7 +1,8 @@
 import pluginHandler from './pluginHandler'
-import config from './config'
+import { configPath } from './configPath'
 import upload from './upload'
-import setting from './setting'
+import { config } from './config'
+import { setting } from './setting'
 import use from './use'
 import proxy from './proxy'
 import init from './init'
@@ -12,6 +13,7 @@ import { IPicGo } from '../../types'
 
 const commanders = (ctx: IPicGo): void => {
   ctx.cmd.register('pluginHandler', pluginHandler)
+  ctx.cmd.register('configPath', configPath)
   ctx.cmd.register('config', config)
   ctx.cmd.register('setting', setting)
   ctx.cmd.register('upload', upload)

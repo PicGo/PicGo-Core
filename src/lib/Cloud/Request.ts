@@ -2,7 +2,7 @@ import axios, { type AxiosRequestConfig } from 'axios'
 import type { IPicGo } from '../../types'
 import { BASE_URL } from '../utils'
 
-class RequestClient {
+class AuthRequestClient {
   private readonly ctx: IPicGo
   private readonly baseURL: string
 
@@ -28,4 +28,4 @@ class RequestClient {
   }
 }
 
-export { RequestClient }
+export { AuthRequestClient }

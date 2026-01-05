@@ -1,6 +1,6 @@
 import type { ICloudManager, IPicGo } from '../../types'
 import { AuthHandler } from './Auth'
-import { UserService } from './services/User'
+import { UserService } from './services/UserService'
 
 class CloudManager implements ICloudManager {
   private readonly ctx: IPicGo

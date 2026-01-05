@@ -1,4 +1,4 @@
-import { IPicGo, IPluginConfig, IStringKeyMap } from '../../types'
+import type { IPicGo, IPluginConfig, IStringKeyMap } from '../../types'
 
 // handle modules config -> save to picgo config file
 const handleConfig = async (ctx: IPicGo, prompts: IPluginConfig[], module: string, name: string): Promise<void> => {
@@ -27,7 +27,6 @@ const setting = {
     const cmd = ctx.cmd
     cmd.program
       .command('set')
-      .alias('config')
       .arguments('<module> [name]')
       .description('configure config of picgo modules')
       .action((module: string, name: string) => {
@@ -110,4 +109,4 @@ const setting = {
   }
 }
 
-export default setting
+export { setting }
