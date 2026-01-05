@@ -3,6 +3,7 @@ import type { Context } from 'hono'
 import * as crypto from 'node:crypto'
 import { BuiltinRoutePath } from '../Routes/routePath'
 import { IInternalServerManager } from '../../types/internal'
+import { BASE_URL } from '../utils'
 
 class AuthHandler {
   private readonly ctx: IPicGo
@@ -39,7 +40,7 @@ class AuthHandler {
     }
     const callback = encodeURIComponent(`http://127.0.0.1:${actualPort}/auth/callback`)
     this.authState = crypto.randomUUID()
-    const authUrl = `https://picgocloud.com/auth/cli?callback=${callback}&state=${this.authState}`
+    const authUrl = `${BASE_URL}/auth/cli?callback=${callback}&state=${this.authState}`
 
     try {
       await this.ctx.openUrl(authUrl)

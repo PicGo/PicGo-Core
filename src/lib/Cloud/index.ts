@@ -35,7 +35,6 @@ class CloudManager implements ICloudManager {
         return
       }
     }
-
     await this.auth.startLoginFlow()
     this.ctx.log.success('Login success!')
   }

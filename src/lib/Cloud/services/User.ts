@@ -10,10 +10,11 @@ class UserService {
 
   async verifyToken (token: string): Promise<boolean> {
     try {
-      await this.request.request({
+      const res = await this.request.request({
         method: 'GET',
         url: '/api/user'
       }, token)
+      console.log(res)
       return true
     } catch {
       return false

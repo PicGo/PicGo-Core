@@ -1,3 +1,4 @@
+import 'dotenv/config'
 export { PicGo } from './core/PicGo'
 export { Lifecycle } from './core/Lifecycle'
 

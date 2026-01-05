@@ -80,7 +80,7 @@ $ picgo -h
     set|config <module> [name]           configure config of picgo modules
     upload|u [input...]                  upload, go go go
     server [options]                     run PicGo as a standalone server
-    login [token]                        login to picgocloud.com
+    login [token]                        login to picgo.app
     use [module]                         use modules of picgo
     init [options] <template> [project]  create picgo plugin\'s development templates
 ```

@@ -9,3 +9,4 @@ test.jpg
 .pnpm-store/
 test.js
 specs/
+.env

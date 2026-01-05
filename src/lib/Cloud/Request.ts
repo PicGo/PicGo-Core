@@ -1,11 +1,12 @@
 import axios, { type AxiosRequestConfig } from 'axios'
 import type { IPicGo } from '../../types'
+import { BASE_URL } from '../utils'
 
 class RequestClient {
   private readonly ctx: IPicGo
   private readonly baseURL: string
 
-  constructor (ctx: IPicGo, baseURL: string = 'https://picgocloud.com') {
+  constructor (ctx: IPicGo, baseURL: string = BASE_URL) {
     this.ctx = ctx
     this.baseURL = baseURL
   }
