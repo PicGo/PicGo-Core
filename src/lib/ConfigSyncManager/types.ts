@@ -17,6 +17,12 @@ export enum ConflictType {
 // Represents any node in the config tree (Object, Array, or Primitive)
 export type ConfigValue = string | number | boolean | null | undefined | any[] | Record<string, any>
 
+export interface ISnapshot {
+  version: number
+  updatedAt: string
+  data: ConfigValue
+}
+
 export interface IDiffNode {
   key: string
   status: ConflictType

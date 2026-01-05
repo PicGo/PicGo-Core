@@ -3,20 +3,39 @@ import path from 'path'
 import { parse, stringify } from 'comment-json'
 import { isEqual, isPlainObject } from 'lodash'
 import type { IPicGo, IConfig } from '../../types'
+import { ConfigService } from '../Cloud/services/ConfigService'
 import { ConfigMerger } from './Merger'
-import type { ConfigValue, ISyncResult } from './types'
+import type { ConfigValue, ISnapshot, ISyncResult } from './types'
 import { SyncStatus } from './types'
+
+interface ISnapshotLike {
+  version: number
+  updatedAt?: string
+  data: ConfigValue
+}
+
+const isSnapshotLike = (value: ConfigValue): value is ISnapshotLike => {
+  if (!isPlainObject(value)) return false
+  const record = value as Record<string, unknown>
+  return (
+    typeof record.version === 'number' &&
+    Object.prototype.hasOwnProperty.call(record, 'data')
+  )
+}
 
 export class ConfigSyncManager {
   private readonly ctx: IPicGo
   private readonly snapshotPath: string
+  private readonly configService: ConfigService
+  private currentRemoteVersion: number = 0
 
   constructor (ctx: IPicGo) {
     this.ctx = ctx
     this.snapshotPath = path.join(ctx.baseDir, 'config.snapshot.json')
+    this.configService = new ConfigService(ctx)
   }
 
-  async sync (): Promise<ISyncResult> {
+  async sync (retryCount: number = 0): Promise<ISyncResult> {
     try {
       const localConfig = await this.readConfigWithComments(this.ctx.configPath)
       if (!isPlainObject(localConfig)) {
@@ -27,7 +46,7 @@ export class ConfigSyncManager {
       }
 
       const snapshotExists = await fs.pathExists(this.snapshotPath)
-      const snapshotConfig = snapshotExists ? await this.loadSnapshot() : undefined
+      const snapshot = await this.loadSnapshot()
       const remoteConfig = await this.fetchRemoteConfig()
 
       // HANDLE MISSING REMOTE (First Run OR Remote Deleted)
@@ -44,10 +63,25 @@ export class ConfigSyncManager {
         }
 
         // 1. Push Local -> Remote (Re-seed)
-        await this.pushRemoteConfig(localConfig as IConfig)
+        try {
+          await this.pushRemoteConfig(localConfig as IConfig)
+        } catch (e: unknown) {
+          const message = e instanceof Error ? e.message : String(e)
+          if (message === 'Remote config modified by another device') {
+            if (retryCount < 1) {
+              this.ctx.log.warn('Conflict detected during sync. Retrying automatically...')
+              return this.sync(retryCount + 1)
+            }
+            return {
+              status: SyncStatus.FAILED,
+              message: 'Sync failed: Remote config is changing too frequently. Please try again later.'
+            }
+          }
+          throw e
+        }
 
         // 2. Update Snapshot (Establish new baseline)
-        await this.saveSnapshot(localConfig)
+        await this.saveSnapshot(localConfig, this.currentRemoteVersion)
 
         return {
           status: SyncStatus.SUCCESS,
@@ -56,7 +90,7 @@ export class ConfigSyncManager {
         }
       }
 
-      const mergeRes = ConfigMerger.merge3Way(snapshotConfig ?? {}, localConfig, remoteConfig as unknown as ConfigValue)
+      const mergeRes = ConfigMerger.merge3Way(snapshot.data, localConfig, remoteConfig)
 
       if (mergeRes.conflict) {
         return {
@@ -74,11 +108,26 @@ export class ConfigSyncManager {
         await this.writeConfigWithComments(this.ctx.configPath, mergedConfig)
       }
 
-      await this.saveSnapshot(mergedConfig)
-
       if (shouldPushRemote) {
-        await this.pushRemoteConfig(mergedConfig)
+        try {
+          await this.pushRemoteConfig(mergedConfig)
+        } catch (e: unknown) {
+          const message = e instanceof Error ? e.message : String(e)
+          if (message === 'Remote config modified by another device') {
+            if (retryCount < 1) {
+              this.ctx.log.warn('Conflict detected during sync. Retrying automatically...')
+              return this.sync(retryCount + 1)
+            }
+            return {
+              status: SyncStatus.FAILED,
+              message: 'Sync failed: Remote config is changing too frequently. Please try again later.'
+            }
+          }
+          throw e
+        }
       }
+
+      await this.saveSnapshot(mergedConfig, this.currentRemoteVersion)
 
       return {
         status: SyncStatus.SUCCESS,
@@ -104,8 +153,8 @@ export class ConfigSyncManager {
       }
 
       await this.writeConfigWithComments(this.ctx.configPath, resolvedConfig)
-      await this.saveSnapshot(resolvedConfig)
       await this.pushRemoteConfig(resolvedConfig)
+      await this.saveSnapshot(resolvedConfig, this.currentRemoteVersion)
 
       return {
         status: SyncStatus.SUCCESS,
@@ -134,16 +183,58 @@ export class ConfigSyncManager {
     await fs.writeFile(filePath, content, 'utf8')
   }
 
-  private async loadSnapshot (): Promise<ConfigValue> {
-    return this.readConfigWithComments(this.snapshotPath)
+  private async loadSnapshot (): Promise<ISnapshot> {
+    if (!(await fs.pathExists(this.snapshotPath))) {
+      return {
+        version: 0,
+        updatedAt: '',
+        data: {}
+      }
+    }
+
+    const raw = await this.readConfigWithComments(this.snapshotPath)
+    if (isSnapshotLike(raw)) {
+      return {
+        version: raw.version,
+        updatedAt: typeof raw.updatedAt === 'string' ? raw.updatedAt : '',
+        data: raw.data ?? {}
+      }
+    }
+
+    // Legacy snapshot (plain object)
+    return {
+      version: 0,
+      updatedAt: '',
+      data: raw
+    }
   }
 
-  private async saveSnapshot (config: ConfigValue): Promise<void> {
-    await this.writeConfigWithComments(this.snapshotPath, config)
+  private async saveSnapshot (config: ConfigValue, version: number): Promise<void> {
+    await this.writeConfigWithComments(this.snapshotPath, {
+      version,
+      updatedAt: new Date().toISOString(),
+      data: config
+    })
   }
 
-  private async fetchRemoteConfig (): Promise<IConfig | null> { return null }
-  private async pushRemoteConfig (_config: IConfig): Promise<void> {}
+  private async fetchRemoteConfig (): Promise<ConfigValue | null> {
+    const res = await this.configService.fetchConfig()
+    if (!res) {
+      this.currentRemoteVersion = 0
+      return null
+    }
+    this.currentRemoteVersion = res.version
+    return parse(res.config)
+  }
+
+  private async pushRemoteConfig (config: IConfig): Promise<void> {
+    const res = await this.configService.updateConfig(stringify(config, null, 2), this.currentRemoteVersion)
+    if (res.conflict) {
+      this.currentRemoteVersion = res.version
+      throw new Error('Remote config modified by another device')
+    }
+    this.currentRemoteVersion = res.version
+  }
 }
 
 export type { IDiffNode } from './types'

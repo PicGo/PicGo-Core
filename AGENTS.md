@@ -8,6 +8,7 @@
 ## Code Conventions
 - **Exports**: do not use `export default` for new/modified modules. Prefer named exports (e.g. `export { ServerManager }`) and named imports (e.g. `import { ServerManager } from '...'`).
 - Keep TypeScript types explicit; avoid ad-hoc `any` when possible.
+- Don't write `as any` in TypeScript code unless absolutely necessary. Always prefer explicit types.
 
 ## Execution Rules
 - If a command fails due to insufficient permissions, rerun with elevated approval.

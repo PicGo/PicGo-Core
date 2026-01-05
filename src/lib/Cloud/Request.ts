@@ -2,6 +2,9 @@ import axios, { type AxiosRequestConfig } from 'axios'
 import type { IPicGo } from '../../types'
 import { BASE_URL } from '../utils'
 
+/**
+ * Authenticated Request Client for PicGo Cloud API
+ */
 class AuthRequestClient {
   private readonly ctx: IPicGo
   private readonly baseURL: string
@@ -13,12 +16,12 @@ class AuthRequestClient {
 
   async request<T = any> (config: AxiosRequestConfig, token?: string): Promise<T> {
     const finalToken = token ?? this.ctx.getConfig<string | undefined>('settings.picgoCloud.token')
-    const headers: Record<string, string> = {
-      ...(config.headers as any)
-    }
+    const headers = config.headers || {}
+
     if (finalToken) {
       headers.Authorization = `Bearer ${finalToken}`
     }
+
     const res = await axios.request<T>({
       baseURL: this.baseURL,
       ...config,
