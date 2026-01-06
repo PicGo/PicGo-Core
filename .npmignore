@@ -16,3 +16,4 @@ CHANGELOG.md
 .github/
 test.js
 specs/
+dist/__tests__/

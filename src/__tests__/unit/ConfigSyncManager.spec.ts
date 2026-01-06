@@ -205,4 +205,51 @@ describe('ConfigSyncManager Versioned Sync Flow', () => {
     expect(snapshot.version).toBe(6)
     expect(snapshot.data.settings.picgoCloud.token).toBeUndefined()
   })
+
+  it('applyResolvedConfig should keep local ignored fields on disk and keep remote ignored fields on push', async () => {
+    await fs.writeFile(configPath, '{ "settings": { "picgoCloud": { "token": "LOCAL_TOKEN" } }, "theme": "dark" }', 'utf8')
+    await fs.writeFile(snapshotPath, JSON.stringify({
+      version: 5,
+      updatedAt: '2020-01-01T00:00:00.000Z',
+      data: { settings: { picgoCloud: { token: 'snapshot-token' } }, theme: 'system' }
+    }, null, 2), 'utf8')
+
+    mockFetchConfig.mockResolvedValue({
+      version: 5,
+      config: '{ "settings": { "picgoCloud": { "token": "REMOTE_TOKEN" } }, "theme": "light" }'
+    })
+    mockUpdateConfig.mockResolvedValue({ success: true, version: 6 })
+
+    const ctx = createCtx(configPath)
+    const manager = new ConfigSyncManager(ctx)
+
+    const syncRes = await manager.sync()
+    expect(syncRes.status).toBe(SyncStatus.CONFLICT)
+    expect(mockUpdateConfig).not.toHaveBeenCalled()
+
+    const applyRes = await manager.applyResolvedConfig({
+      picBed: { uploader: 'smms' },
+      picgoPlugins: {},
+      settings: { picgoCloud: { token: 'REMOTE_TOKEN' } },
+      theme: 'light'
+    })
+
+    expect(applyRes.status).toBe(SyncStatus.SUCCESS)
+    expect(mockUpdateConfig).toHaveBeenCalledTimes(1)
+
+    const [configStr, baseVersion] = mockUpdateConfig.mock.calls[0]
+    expect(baseVersion).toBe(5)
+    expect(configStr).toContain('"theme": "light"')
+    expect(configStr).toContain('REMOTE_TOKEN')
+    expect(configStr).not.toContain('LOCAL_TOKEN')
+
+    const writtenLocal = parse(await fs.readFile(configPath, 'utf8')) as any
+    expect(writtenLocal.theme).toBe('light')
+    expect(writtenLocal.settings.picgoCloud.token).toBe('LOCAL_TOKEN')
+
+    const snapshot = parse(await fs.readFile(snapshotPath, 'utf8')) as any
+    expect(snapshot.version).toBe(6)
+    expect(snapshot.data.theme).toBe('light')
+    expect(snapshot.data.settings.picgoCloud.token).toBe('LOCAL_TOKEN')
+  })
 })

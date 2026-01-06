@@ -30,6 +30,7 @@ export class ConfigSyncManager {
   private readonly snapshotPath: string
   private readonly configService: ConfigService
   private currentRemoteVersion: number = 0
+  private originalRemote: IConfig | null = null
 
   constructor (ctx: IPicGo) {
     this.ctx = ctx
@@ -64,13 +65,20 @@ export class ConfigSyncManager {
 
       const snapshotExists = await fs.pathExists(this.snapshotPath)
       const snapshot = await this.loadSnapshot()
-      const originalRemote = await this.fetchRemoteConfig()
+      const fetchedRemote = await this.fetchRemoteConfig()
+      if (fetchedRemote && !isPlainObject(fetchedRemote)) {
+        return {
+          status: SyncStatus.FAILED,
+          message: 'Remote config is not a valid JSON object'
+        }
+      }
+      this.originalRemote = fetchedRemote ? fetchedRemote as IConfig : null
 
       // HANDLE MISSING REMOTE (First Run OR Remote Deleted)
       // Strategy: If remote is missing, we treat Local as the absolute truth.
       // We re-seed the remote with Local data and update the snapshot.
       // This protects local changes even if the sync chain was broken.
-      if (!originalRemote) {
+      if (!this.originalRemote) {
         const isFirstRun = !snapshotExists
 
         if (isFirstRun) {
@@ -108,7 +116,7 @@ export class ConfigSyncManager {
       }
 
       // Step A: Pre-Merge Masking (ignored fields)
-      const effectiveRemote = this.maskIgnoredFields(originalRemote as IConfig, localConfig as IConfig)
+      const effectiveRemote = this.maskIgnoredFields(this.originalRemote, localConfig as IConfig)
 
       // Step B: Merge
       const mergeRes = ConfigMerger.merge3Way(snapshot.data, localConfig, effectiveRemote)
@@ -131,8 +139,8 @@ export class ConfigSyncManager {
       }
 
       // Step D: Prepare Push (restore remote ignored fields)
-      const configToPush = this.maskIgnoredFields(mergedConfig, originalRemote as IConfig)
-      const shouldPushRemote = !isEqual(originalRemote, configToPush)
+      const configToPush = this.maskIgnoredFields(mergedConfig, this.originalRemote)
+      const shouldPushRemote = !isEqual(this.originalRemote, configToPush)
 
       if (shouldPushRemote) {
         try {
@@ -178,14 +186,46 @@ export class ConfigSyncManager {
         }
       }
 
-      await this.writeConfigWithComments(this.ctx.configPath, resolvedConfig)
-      await this.pushRemoteConfig(resolvedConfig)
-      await this.saveSnapshot(resolvedConfig, this.currentRemoteVersion)
+      const currentLocalConfig = await this.readConfigWithComments(this.ctx.configPath)
+      if (!isPlainObject(currentLocalConfig)) {
+        return {
+          status: SyncStatus.FAILED,
+          message: 'Local config is not a valid JSON object'
+        }
+      }
+
+      // 1) Mask for disk: keep local ignored fields
+      const configToWrite = this.maskIgnoredFields(resolvedConfig, currentLocalConfig as IConfig)
+
+      // 2) Write to disk
+      await this.writeConfigWithComments(this.ctx.configPath, configToWrite)
+
+      // 3) Mask for cloud: keep original remote ignored fields
+      if (!this.originalRemote) {
+        const fetchedRemote = await this.fetchRemoteConfig()
+        if (fetchedRemote && !isPlainObject(fetchedRemote)) {
+          return {
+            status: SyncStatus.FAILED,
+            message: 'Remote config is not a valid JSON object'
+          }
+        }
+        this.originalRemote = fetchedRemote ? fetchedRemote as IConfig : null
+      }
+
+      const configToPush = this.originalRemote
+        ? this.maskIgnoredFields(configToWrite, this.originalRemote)
+        : configToWrite
+
+      // 4) Push to cloud
+      await this.pushRemoteConfig(configToPush)
+
+      // 5) Snapshot should match disk state
+      await this.saveSnapshot(configToWrite, this.currentRemoteVersion)
 
       return {
         status: SyncStatus.SUCCESS,
         message: 'Config conflict resolved',
-        mergedConfig: resolvedConfig
+        mergedConfig: configToWrite
       }
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : String(e)
