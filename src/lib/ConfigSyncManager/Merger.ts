@@ -87,7 +87,7 @@ export class ConfigMerger {
     const remoteIsObj = isPlainObject(remote)
     const snapshotIsObj = isPlainObject(snapshot)
 
-    // 2. Remote Changed: Base equals Local -> take Remote
+    // 2. Remote Changed: Snapshot equals Local -> take Remote
     if (isEqual(snapshot, local)) {
       if (localIsObj && remoteIsObj) {
         // preserve local comments where possible, but take remote values
@@ -120,7 +120,7 @@ export class ConfigMerger {
       }
     }
 
-    // 3. Local Changed: Base equals Remote -> take Local
+    // 3. Local Changed: Snapshot equals Remote -> take Local
     if (isEqual(snapshot, remote)) {
       const status = deriveStatusFromSnapshotAndFinal(snapshot, local)
       return {

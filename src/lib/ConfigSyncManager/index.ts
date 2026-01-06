@@ -1,12 +1,14 @@
 import fs from 'fs-extra'
 import path from 'path'
 import { parse, stringify } from 'comment-json'
-import { isEqual, isPlainObject } from 'lodash'
+import { cloneDeep, get, isEqual, isPlainObject, set, unset } from 'lodash'
 import type { IPicGo, IConfig } from '../../types'
 import { ConfigService } from '../Cloud/services/ConfigService'
 import { ConfigMerger } from './Merger'
 import type { ConfigValue, ISnapshot, ISyncResult } from './types'
 import { SyncStatus } from './types'
+
+const IGNORED_CONFIG_PATHS = ['settings.picgoCloud.token']
 
 interface ISnapshotLike {
   version: number
@@ -35,6 +37,21 @@ export class ConfigSyncManager {
     this.configService = new ConfigService(ctx)
   }
 
+  private maskIgnoredFields (target: IConfig, source: IConfig): IConfig {
+    const result = cloneDeep(target)
+
+    IGNORED_CONFIG_PATHS.forEach((ignoredPath: string) => {
+      const sourceValue = get(source, ignoredPath)
+      if (sourceValue !== undefined) {
+        set(result, ignoredPath, sourceValue)
+      } else {
+        unset(result, ignoredPath)
+      }
+    })
+
+    return result
+  }
+
   async sync (retryCount: number = 0): Promise<ISyncResult> {
     try {
       const localConfig = await this.readConfigWithComments(this.ctx.configPath)
@@ -47,13 +64,13 @@ export class ConfigSyncManager {
 
       const snapshotExists = await fs.pathExists(this.snapshotPath)
       const snapshot = await this.loadSnapshot()
-      const remoteConfig = await this.fetchRemoteConfig()
+      const originalRemote = await this.fetchRemoteConfig()
 
       // HANDLE MISSING REMOTE (First Run OR Remote Deleted)
       // Strategy: If remote is missing, we treat Local as the absolute truth.
       // We re-seed the remote with Local data and update the snapshot.
       // This protects local changes even if the sync chain was broken.
-      if (!remoteConfig) {
+      if (!originalRemote) {
         const isFirstRun = !snapshotExists
 
         if (isFirstRun) {
@@ -90,7 +107,11 @@ export class ConfigSyncManager {
         }
       }
 
-      const mergeRes = ConfigMerger.merge3Way(snapshot.data, localConfig, remoteConfig)
+      // Step A: Pre-Merge Masking (ignored fields)
+      const effectiveRemote = this.maskIgnoredFields(originalRemote as IConfig, localConfig as IConfig)
+
+      // Step B: Merge
+      const mergeRes = ConfigMerger.merge3Way(snapshot.data, localConfig, effectiveRemote)
 
       if (mergeRes.conflict) {
         return {
@@ -101,16 +122,21 @@ export class ConfigSyncManager {
       }
 
       const mergedConfig = mergeRes.value as IConfig
+
+      // Step C: Write Local
       const shouldWriteLocal = !isEqual(localConfig, mergedConfig)
-      const shouldPushRemote = !isEqual(remoteConfig, mergedConfig)
 
       if (shouldWriteLocal) {
         await this.writeConfigWithComments(this.ctx.configPath, mergedConfig)
       }
 
+      // Step D: Prepare Push (restore remote ignored fields)
+      const configToPush = this.maskIgnoredFields(mergedConfig, originalRemote as IConfig)
+      const shouldPushRemote = !isEqual(originalRemote, configToPush)
+
       if (shouldPushRemote) {
         try {
-          await this.pushRemoteConfig(mergedConfig)
+          await this.pushRemoteConfig(configToPush)
         } catch (e: unknown) {
           const message = e instanceof Error ? e.message : String(e)
           if (message === 'Remote config modified by another device') {

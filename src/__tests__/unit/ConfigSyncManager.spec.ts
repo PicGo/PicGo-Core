@@ -39,7 +39,7 @@ const createCtx = (configPath: string): IPicGo => {
 }
 
 const createTmpDir = async (): Promise<string> => {
-  return fs.mkdtemp(path.join(os.tmpdir(), 'picgo-core-config-sync'))
+  return fs.mkdtemp(path.join(os.tmpdir(), 'picgo-core-config-sync-'))
 }
 
 describe('ConfigSyncManager Versioned Sync Flow', () => {
@@ -113,5 +113,96 @@ describe('ConfigSyncManager Versioned Sync Flow', () => {
     const snapshot = parse(await fs.readFile(snapshotPath, 'utf8')) as any
     expect(snapshot.version).toBe(1)
     expect(snapshot.data.a).toBe(1)
+  })
+
+  it('should ignore conflicts on ignored fields and avoid pushing them', async () => {
+    await fs.writeFile(configPath, '{ "a": 1, "settings": { "picgoCloud": { "token": "local-token" }, "server": { "port": 36677 } } }', 'utf8')
+    await fs.writeFile(snapshotPath, JSON.stringify({
+      version: 5,
+      updatedAt: '2020-01-01T00:00:00.000Z',
+      data: { a: 1, settings: { picgoCloud: { token: 'snapshot-token' }, server: { port: 36677 } } }
+    }, null, 2), 'utf8')
+
+    mockFetchConfig.mockResolvedValue({
+      version: 5,
+      config: '{ "a": 2, "settings": { "picgoCloud": { "token": "remote-token" }, "server": { "port": 36677 } } }'
+    })
+
+    const ctx = createCtx(configPath)
+    const manager = new ConfigSyncManager(ctx)
+    const res = await manager.sync()
+
+    expect(res.status).toBe(SyncStatus.SUCCESS)
+    expect(mockUpdateConfig).not.toHaveBeenCalled()
+
+    const writtenLocal = parse(await fs.readFile(configPath, 'utf8')) as any
+    expect(writtenLocal.settings.picgoCloud.token).toBe('local-token')
+    expect(writtenLocal.a).toBe(2)
+  })
+
+  it('should not push local secret values in ignored fields', async () => {
+    await fs.writeFile(configPath, '{ "a": 3, "settings": { "picgoCloud": { "token": "local-token" } } }', 'utf8')
+    await fs.writeFile(snapshotPath, JSON.stringify({
+      version: 5,
+      updatedAt: '2020-01-01T00:00:00.000Z',
+      data: { a: 1, settings: { picgoCloud: { token: 'snapshot-token' } } }
+    }, null, 2), 'utf8')
+
+    mockFetchConfig.mockResolvedValue({
+      version: 5,
+      config: '{ "a": 1, "settings": { "picgoCloud": { "token": "remote-token" } } }'
+    })
+    mockUpdateConfig.mockResolvedValue({ success: true, version: 6 })
+
+    const ctx = createCtx(configPath)
+    const manager = new ConfigSyncManager(ctx)
+    const res = await manager.sync()
+
+    expect(res.status).toBe(SyncStatus.SUCCESS)
+    expect(mockUpdateConfig).toHaveBeenCalledTimes(1)
+
+    const [configStr, baseVersion] = mockUpdateConfig.mock.calls[0]
+    expect(baseVersion).toBe(5)
+    expect(configStr).toContain('"a": 3')
+    expect(configStr).toContain('remote-token')
+    expect(configStr).not.toContain('local-token')
+
+    const snapshot = parse(await fs.readFile(snapshotPath, 'utf8')) as any
+    expect(snapshot.version).toBe(6)
+    expect(snapshot.data.settings.picgoCloud.token).toBe('local-token')
+  })
+
+  it('Logout deletion should not conflict and should retain remote secret token when pushing', async () => {
+    await fs.writeFile(configPath, '{ "a": 2, "settings": { "picgoCloud": {} } }', 'utf8')
+    await fs.writeFile(snapshotPath, JSON.stringify({
+      version: 5,
+      updatedAt: '2020-01-01T00:00:00.000Z',
+      data: { a: 1, settings: { picgoCloud: { token: 'snapshot-token' } } }
+    }, null, 2), 'utf8')
+
+    mockFetchConfig.mockResolvedValue({
+      version: 5,
+      config: '{ "a": 1, "settings": { "picgoCloud": { "token": "remote-token" } } }'
+    })
+    mockUpdateConfig.mockResolvedValue({ success: true, version: 6 })
+
+    const ctx = createCtx(configPath)
+    const manager = new ConfigSyncManager(ctx)
+    const res = await manager.sync()
+
+    expect(res.status).toBe(SyncStatus.SUCCESS)
+    expect(mockUpdateConfig).toHaveBeenCalledTimes(1)
+
+    const [configStr, baseVersion] = mockUpdateConfig.mock.calls[0]
+    expect(baseVersion).toBe(5)
+    expect(configStr).toContain('"a": 2')
+    expect(configStr).toContain('remote-token')
+
+    const writtenLocal = parse(await fs.readFile(configPath, 'utf8')) as any
+    expect(writtenLocal.settings.picgoCloud.token).toBeUndefined()
+
+    const snapshot = parse(await fs.readFile(snapshotPath, 'utf8')) as any
+    expect(snapshot.version).toBe(6)
+    expect(snapshot.data.settings.picgoCloud.token).toBeUndefined()
   })
 })
