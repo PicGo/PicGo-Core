@@ -119,6 +119,7 @@ export class ConfigSyncManager {
       const effectiveRemote = this.maskIgnoredFields(this.originalRemote, localConfig as IConfig)
 
       // Step B: Merge
+      this.ctx.log.info('Merging configs for sync...')
       const mergeRes = ConfigMerger.merge3Way(snapshot.data, localConfig, effectiveRemote)
 
       if (mergeRes.conflict) {
@@ -284,6 +285,7 @@ export class ConfigSyncManager {
   }
 
   private async fetchRemoteConfig (): Promise<ConfigValue | null> {
+    this.ctx.log.info('Fetching remote config for sync...')
     const res = await this.configService.fetchConfig()
     if (!res) {
       this.currentRemoteVersion = 0
@@ -294,6 +296,7 @@ export class ConfigSyncManager {
   }
 
   private async pushRemoteConfig (config: IConfig): Promise<void> {
+    this.ctx.log.info('Pushing merged config to remote...')
     const res = await this.configService.updateConfig(stringify(config, null, 2), this.currentRemoteVersion)
     if (res.conflict) {
       this.currentRemoteVersion = res.version
