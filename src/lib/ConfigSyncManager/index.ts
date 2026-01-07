@@ -5,15 +5,37 @@ import { cloneDeep, get, isEqual, isPlainObject, set, unset } from 'lodash'
 import type { IPicGo, IConfig } from '../../types'
 import { ConfigService } from '../Cloud/services/ConfigService'
 import { ConfigMerger } from './Merger'
-import type { ConfigValue, ISnapshot, ISyncResult } from './types'
-import { SyncStatus } from './types'
+import { E2ECryptoService } from './E2ECryptoService'
+import type {
+  ConfigValue,
+  IApplyResolvedOptions,
+  IE2ERequestFields,
+  ISnapshot,
+  ISyncConfigResponse,
+  ISyncOptions,
+  ISyncResult
+} from './types'
+import { E2EAskPinReason, E2EVersion, EncryptionIntent, SyncStatus } from './types'
+import {
+  CorruptedDataError,
+  DecryptionFailedError,
+  InvalidPinError,
+  MaxRetryExceededError,
+  MissingHandlerError,
+  UnsupportedVersionError
+} from './errors'
 
 const IGNORED_CONFIG_PATHS = ['settings.picgoCloud.token']
+const MAX_DECRYPT_ATTEMPTS = 4
 
 interface ISnapshotLike {
   version: number
   updatedAt?: string
   data: ConfigValue
+}
+
+interface IConfigSyncManagerOptions {
+  onAskPin?: (reason: E2EAskPinReason, retryCount: number) => Promise<string | null>
 }
 
 const isSnapshotLike = (value: ConfigValue): value is ISnapshotLike => {
@@ -29,13 +51,22 @@ export class ConfigSyncManager {
   private readonly ctx: IPicGo
   private readonly snapshotPath: string
   private readonly configService: ConfigService
+  private readonly onAskPin?: (reason: E2EAskPinReason, retryCount: number) => Promise<string | null>
+  private readonly e2eService: E2ECryptoService
   private currentRemoteVersion: number = 0
   private originalRemote: IConfig | null = null
+  private remoteE2EVersion: E2EVersion = E2EVersion.NONE
+  private remoteSalt?: string
+  private remoteEncryptedDEK?: string
+  private cachedDEK?: Buffer
+  private cachedEncryptedDEK?: string
 
-  constructor (ctx: IPicGo) {
+  constructor (ctx: IPicGo, options: IConfigSyncManagerOptions = {}) {
     this.ctx = ctx
     this.snapshotPath = path.join(ctx.baseDir, 'config.snapshot.json')
     this.configService = new ConfigService(ctx)
+    this.onAskPin = options.onAskPin
+    this.e2eService = new E2ECryptoService()
   }
 
   private maskIgnoredFields (target: IConfig, source: IConfig): IConfig {
@@ -53,8 +84,9 @@ export class ConfigSyncManager {
     return result
   }
 
-  async sync (retryCount: number = 0): Promise<ISyncResult> {
+  async sync (options: ISyncOptions = {}, retryCount: number = 0): Promise<ISyncResult> {
     try {
+      const encryptionIntent = options.encryptionIntent ?? EncryptionIntent.AUTO
       const localConfig = await this.readConfigWithComments(this.ctx.configPath)
       if (!isPlainObject(localConfig)) {
         return {
@@ -89,13 +121,14 @@ export class ConfigSyncManager {
 
         // 1. Push Local -> Remote (Re-seed)
         try {
-          await this.pushRemoteConfig(localConfig as IConfig)
+          const payload = await this.buildPushPayload(localConfig as IConfig, encryptionIntent)
+          await this.pushRemoteConfig(payload.configStr, payload.e2eFields)
         } catch (e: unknown) {
           const message = e instanceof Error ? e.message : String(e)
           if (message === 'Remote config modified by another device') {
             if (retryCount < 1) {
               this.ctx.log.warn('Conflict detected during sync. Retrying automatically...')
-              return this.sync(retryCount + 1)
+              return this.sync(options, retryCount + 1)
             }
             return {
               status: SyncStatus.FAILED,
@@ -141,17 +174,18 @@ export class ConfigSyncManager {
 
       // Step D: Prepare Push (restore remote ignored fields)
       const configToPush = this.maskIgnoredFields(mergedConfig, this.originalRemote)
-      const shouldPushRemote = !isEqual(this.originalRemote, configToPush)
+      const shouldPushRemote = this.shouldChangeE2E(encryptionIntent) || !isEqual(this.originalRemote, configToPush)
 
       if (shouldPushRemote) {
         try {
-          await this.pushRemoteConfig(configToPush)
+          const payload = await this.buildPushPayload(configToPush, encryptionIntent)
+          await this.pushRemoteConfig(payload.configStr, payload.e2eFields)
         } catch (e: unknown) {
           const message = e instanceof Error ? e.message : String(e)
           if (message === 'Remote config modified by another device') {
             if (retryCount < 1) {
               this.ctx.log.warn('Conflict detected during sync. Retrying automatically...')
-              return this.sync(retryCount + 1)
+              return this.sync(options, retryCount + 1)
             }
             return {
               status: SyncStatus.FAILED,
@@ -178,7 +212,7 @@ export class ConfigSyncManager {
     }
   }
 
-  async applyResolvedConfig (resolvedConfig: IConfig): Promise<ISyncResult> {
+  async applyResolvedConfig (resolvedConfig: IConfig, options: IApplyResolvedOptions = {}): Promise<ISyncResult> {
     try {
       if (!isPlainObject(resolvedConfig)) {
         return {
@@ -217,8 +251,12 @@ export class ConfigSyncManager {
         ? this.maskIgnoredFields(configToWrite, this.originalRemote)
         : configToWrite
 
+      const useE2E = options.useE2E ?? (this.remoteE2EVersion === E2EVersion.V1)
+      const encryptionIntent = useE2E ? EncryptionIntent.FORCE_ENCRYPT : EncryptionIntent.FORCE_PLAIN
+
       // 4) Push to cloud
-      await this.pushRemoteConfig(configToPush)
+      const payload = await this.buildPushPayload(configToPush, encryptionIntent)
+      await this.pushRemoteConfig(payload.configStr, payload.e2eFields)
 
       // 5) Snapshot should match disk state
       await this.saveSnapshot(configToWrite, this.currentRemoteVersion)
@@ -289,22 +327,195 @@ export class ConfigSyncManager {
     const res = await this.configService.fetchConfig()
     if (!res) {
       this.currentRemoteVersion = 0
+      this.setRemoteE2EState(E2EVersion.NONE)
       return null
     }
     this.currentRemoteVersion = res.version
+    const e2eVersion = this.resolveE2EVersion(res.e2eVersion)
+
+    if (e2eVersion === E2EVersion.V1) {
+      const salt = this.requireSalt(res)
+      const encryptedDEK = this.requireEncryptedDEK(res)
+      this.setRemoteE2EState(E2EVersion.V1, salt, encryptedDEK)
+      const decryptedConfig = await this.decryptRemoteConfig(res.config, salt, encryptedDEK)
+      return parse(decryptedConfig)
+    }
+
+    this.setRemoteE2EState(E2EVersion.NONE)
     return parse(res.config)
   }
 
-  private async pushRemoteConfig (config: IConfig): Promise<void> {
+  private async pushRemoteConfig (configStr: string, e2eFields: IE2ERequestFields): Promise<void> {
     this.ctx.log.info('Pushing merged config to remote...')
-    const res = await this.configService.updateConfig(stringify(config, null, 2), this.currentRemoteVersion)
+    const res = await this.configService.updateConfig(configStr, this.currentRemoteVersion, e2eFields)
     if (res.conflict) {
       this.currentRemoteVersion = res.version
       throw new Error('Remote config modified by another device')
     }
     this.currentRemoteVersion = res.version
+    this.applyE2EStateAfterPush(e2eFields)
+  }
+
+  private applyE2EStateAfterPush (e2eFields: IE2ERequestFields): void {
+    if (e2eFields.e2eVersion === E2EVersion.V1 && e2eFields.salt && e2eFields.encryptedDEK) {
+      this.setRemoteE2EState(E2EVersion.V1, e2eFields.salt, e2eFields.encryptedDEK)
+      return
+    }
+    if (e2eFields.e2eVersion === E2EVersion.NONE) {
+      this.setRemoteE2EState(E2EVersion.NONE)
+    }
+  }
+
+  private setRemoteE2EState (version: E2EVersion, salt?: string, encryptedDEK?: string): void {
+    this.remoteE2EVersion = version
+    this.remoteSalt = salt
+    this.remoteEncryptedDEK = encryptedDEK
+    if (!encryptedDEK || encryptedDEK !== this.cachedEncryptedDEK) {
+      this.cachedDEK = undefined
+      this.cachedEncryptedDEK = undefined
+    }
+  }
+
+  private resolveE2EVersion (version?: number): E2EVersion {
+    if (version === E2EVersion.V1) return E2EVersion.V1
+    if (version === E2EVersion.NONE || version === undefined) return E2EVersion.NONE
+    if (typeof version === 'number') {
+      throw new UnsupportedVersionError(`Unsupported E2E version: ${version}`)
+    }
+    return E2EVersion.NONE
+  }
+
+  private requireSalt (res: ISyncConfigResponse): string {
+    if (!res.salt) {
+      throw new CorruptedDataError('Missing salt for encrypted config')
+    }
+    return res.salt
+  }
+
+  private requireEncryptedDEK (res: ISyncConfigResponse): string {
+    if (!res.encryptedDEK) {
+      throw new CorruptedDataError('Missing encryptedDEK for encrypted config')
+    }
+    return res.encryptedDEK
+  }
+
+  private async buildPushPayload (config: IConfig, intent: EncryptionIntent): Promise<{ configStr: string, e2eFields: IE2ERequestFields }> {
+    const plainConfig = stringify(config, null, 2)
+    const useE2E = this.shouldUseE2E(intent)
+
+    if (!useE2E) {
+      return {
+        configStr: plainConfig,
+        e2eFields: { e2eVersion: E2EVersion.NONE }
+      }
+    }
+
+    if (this.remoteE2EVersion === E2EVersion.V1 && this.remoteSalt && this.remoteEncryptedDEK) {
+      const dek = await this.ensureDEK(this.remoteSalt, this.remoteEncryptedDEK)
+      return {
+        configStr: this.e2eService.encryptConfig(plainConfig, dek),
+        e2eFields: {
+          e2eVersion: E2EVersion.V1,
+          salt: this.remoteSalt,
+          encryptedDEK: this.remoteEncryptedDEK
+        }
+      }
+    }
+
+    const pin = await this.askPin(E2EAskPinReason.SETUP, 0)
+    const { payload, dek } = this.e2eService.generateE2EPayload(plainConfig, pin)
+    this.cachedDEK = dek
+    this.cachedEncryptedDEK = payload.encryptedDEK
+    return {
+      configStr: payload.config,
+      e2eFields: {
+        e2eVersion: payload.e2eVersion,
+        salt: payload.salt,
+        encryptedDEK: payload.encryptedDEK
+      }
+    }
+  }
+
+  private shouldUseE2E (intent: EncryptionIntent): boolean {
+    if (intent === EncryptionIntent.FORCE_ENCRYPT) return true
+    if (intent === EncryptionIntent.FORCE_PLAIN) return false
+    return this.remoteE2EVersion === E2EVersion.V1
+  }
+
+  private shouldChangeE2E (intent: EncryptionIntent): boolean {
+    const useE2E = this.shouldUseE2E(intent)
+    const remoteIsE2E = this.remoteE2EVersion === E2EVersion.V1
+    return useE2E !== remoteIsE2E
+  }
+
+  private async decryptRemoteConfig (encryptedConfig: string, saltBase64: string, encryptedDEK: string): Promise<string> {
+    const dek = await this.ensureDEK(saltBase64, encryptedDEK)
+    try {
+      return this.e2eService.decryptConfig(encryptedConfig, dek)
+    } catch (error: unknown) {
+      if (error instanceof DecryptionFailedError) {
+        throw new CorruptedDataError('Failed to decrypt remote config payload')
+      }
+      throw error
+    }
+  }
+
+  private async ensureDEK (saltBase64: string, encryptedDEK: string): Promise<Buffer> {
+    if (this.cachedDEK && this.cachedEncryptedDEK === encryptedDEK) {
+      return this.cachedDEK
+    }
+    const salt = this.e2eService.decodeSalt(saltBase64)
+
+    for (let attempt = 0; attempt < MAX_DECRYPT_ATTEMPTS; attempt += 1) {
+      const reason = attempt === 0 ? E2EAskPinReason.DECRYPT : E2EAskPinReason.RETRY
+      const pin = await this.askPin(reason, attempt)
+      try {
+        const dek = this.e2eService.unwrapDEK(encryptedDEK, pin, salt)
+        this.cachedDEK = dek
+        this.cachedEncryptedDEK = encryptedDEK
+        return dek
+      } catch (error: unknown) {
+        if (error instanceof DecryptionFailedError) {
+          continue
+        }
+        throw error
+      }
+    }
+
+    throw new MaxRetryExceededError()
+  }
+
+  private async askPin (reason: E2EAskPinReason, retryCount: number): Promise<string> {
+    if (!this.onAskPin) {
+      throw new MissingHandlerError()
+    }
+    const pin = await this.onAskPin(reason, retryCount)
+    if (pin === null || pin === undefined || pin.length === 0) {
+      throw new InvalidPinError()
+    }
+    return pin
   }
 }
 
-export type { IDiffNode } from './types'
-export { SyncStatus, ConflictType } from './types'
+export type {
+  IDiffNode,
+  IE2EPayload,
+  ISyncConfigResponse,
+  ISyncOptions,
+  IApplyResolvedOptions
+} from './types'
+export {
+  SyncStatus,
+  ConflictType,
+  E2EVersion,
+  EncryptionIntent,
+  E2EAskPinReason
+} from './types'
+export {
+  CorruptedDataError,
+  UnsupportedVersionError,
+  MissingHandlerError,
+  InvalidPinError,
+  MaxRetryExceededError,
+  DecryptionFailedError
+} from './errors'

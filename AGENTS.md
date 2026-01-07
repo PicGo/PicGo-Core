@@ -1,9 +1,30 @@
+<!-- OPENSPEC:START -->
+# OpenSpec Instructions
+
+These instructions are for AI assistants working in this project.
+
+Always open `@/openspec/AGENTS.md` when the request:
+- Mentions planning or proposals (words like proposal, spec, change, plan)
+- Introduces new capabilities, breaking changes, architecture shifts, or big performance/security work
+- Sounds ambiguous and you need the authoritative spec before coding
+
+Use `@/openspec/AGENTS.md` to learn:
+- How to create and apply change proposals
+- Spec format and conventions
+- Project structure and guidelines
+
+Keep this managed block so 'openspec update' can refresh the instructions.
+
+Always ask questions before create proposal files if unsure about anything in these instructions or the spec file.
+
+<!-- OPENSPEC:END -->
+
 # PicGo-Core: Agent Notes
 
 ## Package Manager / Dependency Installation
 - This repo uses `pnpm` (has `pnpm-lock.yaml`).
-- If dependencies change, do not only edit `package.json`; run `pnpm install` to ensure deps + lockfile are consistent.
-- In non-TTY environments, `pnpm install` may fail with `ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY`; use `CI=true pnpm install`.
+- If dependencies change, do not only edit `package.json`; run `pnpm install` to ensure deps + lockfile are consistent. Only run this when the user explicitly asks/coordinates it.
+- In non-TTY environments, `pnpm install` may fail with `ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY`; use `CI=true pnpm install`. Only run this when the user explicitly asks/coordinates it.
 
 ## Code Conventions
 - **Exports**: do not use `export default` for new/modified modules. Prefer named exports (e.g. `export { ServerManager }`) and named imports (e.g. `import { ServerManager } from '...'`).

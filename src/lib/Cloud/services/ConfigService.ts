@@ -1,11 +1,7 @@
 import axios from 'axios'
 import type { IPicGo } from '../../../types'
+import type { IE2ERequestFields, ISyncConfigResponse } from '../../ConfigSyncManager/types'
 import { AuthRequestClient } from '../Request'
-
-export interface IFetchConfigResult {
-  version: number
-  config: string
-}
 
 export interface IUpdateConfigResult {
   success: boolean
@@ -22,9 +18,9 @@ export class ConfigService {
     this.ctx = ctx
   }
 
-  async fetchConfig (): Promise<IFetchConfigResult | null> {
+  async fetchConfig (): Promise<ISyncConfigResponse | null> {
     try {
-      const res = await this.client.request<IFetchConfigResult>({
+      const res = await this.client.request<ISyncConfigResponse>({
         method: 'GET',
         url: '/api/config'
       })
@@ -33,10 +29,7 @@ export class ConfigService {
         return null
       }
 
-      return {
-        version: res.version,
-        config: res.config
-      }
+      return res
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const status = e.response?.status
@@ -51,7 +44,7 @@ export class ConfigService {
     }
   }
 
-  async updateConfig (configStr: string, baseVersion: number): Promise<IUpdateConfigResult> {
+  async updateConfig (configStr: string, baseVersion: number, e2eFields?: IE2ERequestFields): Promise<IUpdateConfigResult> {
     try {
       const res = await this.client.request<{ version: number }>({
         method: 'PUT',
@@ -59,7 +52,8 @@ export class ConfigService {
         data: {
           config: configStr,
           baseVersion,
-          historyLimit: 10
+          historyLimit: 10,
+          ...(e2eFields ?? {})
         }
       })
 

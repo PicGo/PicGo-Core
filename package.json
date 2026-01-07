@@ -14,7 +14,7 @@
   "scripts": {
     "start": "node ./bin/picgo",
     "lint": "eslint src --ext .ts && tsc --noEmit",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "pnpm test:unit",
     "test:unit": "vitest run",
     "build": "cross-env NODE_ENV=production rimraf ./dist && rollup -c rollup.config.js",
     "dev": "cross-env NODE_ENV=development rollup -c rollup.config.js -w",

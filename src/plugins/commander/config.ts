@@ -2,7 +2,7 @@ import chalk from 'chalk'
 import { isPlainObject } from 'lodash'
 import util from 'util'
 import type { IConfig, IPicGo, IPlugin } from '../../types'
-import { ConfigSyncManager, SyncStatus, ConflictType, type IDiffNode } from '../../lib/ConfigSyncManager'
+import { ConfigSyncManager, SyncStatus, ConflictType, EncryptionIntent, E2EAskPinReason, type IDiffNode } from '../../lib/ConfigSyncManager'
 
 const formatConfigValue = (value: unknown): string => {
   if (value === undefined) return 'undefined'
@@ -55,9 +55,36 @@ const config: IPlugin = {
     configCommand
       .command('sync')
       .description('sync config with picgo cloud')
-      .action(async () => {
-        const manager = new ConfigSyncManager(ctx)
-        const res = await manager.sync()
+      .option('--encrypt', 'force enable end-to-end encryption')
+      .option('--no-encrypt', 'force disable end-to-end encryption')
+      .action(async (options: { encrypt?: boolean }) => {
+        const onAskPin = async (reason: E2EAskPinReason, retryCount: number): Promise<string | null> => {
+          const message = reason === E2EAskPinReason.SETUP
+            ? 'Set up E2E encryption. Enter PIN'
+            : reason === E2EAskPinReason.DECRYPT
+              ? 'Enter PIN to decrypt config'
+              : `Incorrect PIN. Retry (${retryCount}/3)`
+
+          const { pin } = await ctx.cmd.inquirer.prompt<{ pin: string }>([
+            {
+              type: 'password',
+              name: 'pin',
+              message,
+              mask: '*'
+            }
+          ])
+
+          return pin
+        }
+
+        const encryptionIntent = options.encrypt === true
+          ? EncryptionIntent.FORCE_ENCRYPT
+          : options.encrypt === false
+            ? EncryptionIntent.FORCE_PLAIN
+            : EncryptionIntent.AUTO
+
+        const manager = new ConfigSyncManager(ctx, { onAskPin })
+        const res = await manager.sync({ encryptionIntent })
 
         if (res.status === SyncStatus.SUCCESS) {
           ctx.log.success(res.message || 'Config sync success!')
@@ -97,7 +124,12 @@ const config: IPlugin = {
             return
           }
 
-          const applyRes = await manager.applyResolvedConfig(chosen as IConfig)
+          const applyOptions = encryptionIntent === EncryptionIntent.FORCE_ENCRYPT
+            ? { useE2E: true }
+            : encryptionIntent === EncryptionIntent.FORCE_PLAIN
+              ? { useE2E: false }
+              : undefined
+          const applyRes = await manager.applyResolvedConfig(chosen as IConfig, applyOptions)
           if (applyRes.status === SyncStatus.SUCCESS) {
             ctx.log.success(applyRes.message || 'Config sync resolved!')
             return

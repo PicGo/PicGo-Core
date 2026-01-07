@@ -14,8 +14,54 @@ export enum ConflictType {
   MODIFIED = 'modified'
 }
 
+export enum E2EVersion {
+  NONE = 0,
+  V1 = 1
+}
+
+export enum EncryptionIntent {
+  AUTO = 'auto',
+  FORCE_ENCRYPT = 'force_encrypt',
+  FORCE_PLAIN = 'force_plain'
+}
+
+export enum E2EAskPinReason {
+  SETUP = 'setup',
+  DECRYPT = 'decrypt',
+  RETRY = 'retry'
+}
+
 // Represents any node in the config tree (Object, Array, or Primitive)
 export type ConfigValue = string | number | boolean | null | undefined | any[] | Record<string, any>
+
+export interface IE2EPayload {
+  e2eVersion: E2EVersion.V1
+  salt: string
+  encryptedDEK: string
+  config: string
+}
+
+export interface IE2ERequestFields {
+  e2eVersion?: E2EVersion
+  salt?: string
+  encryptedDEK?: string
+}
+
+export interface ISyncConfigResponse {
+  version: number
+  config: string
+  e2eVersion?: number
+  salt?: string
+  encryptedDEK?: string
+}
+
+export interface ISyncOptions {
+  encryptionIntent?: EncryptionIntent
+}
+
+export interface IApplyResolvedOptions {
+  useE2E?: boolean
+}
 
 export interface ISnapshot {
   version: number

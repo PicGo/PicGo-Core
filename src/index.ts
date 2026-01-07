@@ -10,9 +10,32 @@ export { PluginLoader } from './lib/PluginLoader'
 export { Request } from './lib/Request'
 export { ServerManager } from './lib/Server'
 export { CloudManager } from './lib/Cloud'
-export { ConfigSyncManager, SyncStatus, ConflictType } from './lib/ConfigSyncManager'
+export {
+  ConfigSyncManager,
+  SyncStatus,
+  ConflictType,
+  E2EVersion,
+  E2EAskPinReason,
+  EncryptionIntent,
+  CorruptedDataError,
+  UnsupportedVersionError,
+  MissingHandlerError,
+  InvalidPinError,
+  MaxRetryExceededError,
+  DecryptionFailedError
+} from './lib/ConfigSyncManager'
 export { ConfigMerger } from './lib/ConfigSyncManager/Merger'
-export type { ConfigValue, IDiffNode, IMergeResult, ISyncResult, ISnapshot } from './lib/ConfigSyncManager/types'
+export type {
+  ConfigValue,
+  IDiffNode,
+  IMergeResult,
+  ISyncResult,
+  ISnapshot,
+  IE2EPayload,
+  ISyncConfigResponse,
+  ISyncOptions,
+  IApplyResolvedOptions
+} from './lib/ConfigSyncManager/types'
 export * as PicGoUtils from './utils/common'
 
 export * from './types'

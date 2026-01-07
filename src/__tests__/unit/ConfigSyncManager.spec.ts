@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import fs from 'fs-extra'
 import os from 'os'
 import path from 'path'
-import { parse } from 'comment-json'
+import { parse, stringify } from 'comment-json'
 import type { IPicGo } from '../../types'
 
 const { mockFetchConfig, mockUpdateConfig } = vi.hoisted(() => {
@@ -22,7 +22,8 @@ vi.mock('../../lib/Cloud/services/ConfigService', () => {
   return { ConfigService }
 })
 
-import { ConfigSyncManager, SyncStatus } from '../../lib/ConfigSyncManager'
+import { ConfigSyncManager, SyncStatus, EncryptionIntent, E2EAskPinReason } from '../../lib/ConfigSyncManager'
+import { E2ECryptoService } from '../../lib/ConfigSyncManager/E2ECryptoService'
 
 const createCtx = (configPath: string): IPicGo => {
   return {
@@ -72,7 +73,7 @@ describe('ConfigSyncManager Versioned Sync Flow', () => {
     const res = await manager.sync()
 
     expect(res.status).toBe(SyncStatus.SUCCESS)
-    expect(mockUpdateConfig).toHaveBeenCalledWith(expect.stringContaining('"a": 2'), 5)
+    expect(mockUpdateConfig).toHaveBeenCalledWith(expect.stringContaining('"a": 2'), 5, { e2eVersion: 0 })
 
     const snapshot = parse(await fs.readFile(snapshotPath, 'utf8')) as any
     expect(snapshot.version).toBe(6)
@@ -108,7 +109,7 @@ describe('ConfigSyncManager Versioned Sync Flow', () => {
 
     expect(res.status).toBe(SyncStatus.SUCCESS)
     expect(res.message).toBe('Remote config restored from local')
-    expect(mockUpdateConfig).toHaveBeenCalledWith(expect.stringContaining('"a": 1'), 0)
+    expect(mockUpdateConfig).toHaveBeenCalledWith(expect.stringContaining('"a": 1'), 0, { e2eVersion: 0 })
 
     const snapshot = parse(await fs.readFile(snapshotPath, 'utf8')) as any
     expect(snapshot.version).toBe(1)
@@ -251,5 +252,143 @@ describe('ConfigSyncManager Versioned Sync Flow', () => {
     expect(snapshot.version).toBe(6)
     expect(snapshot.data.theme).toBe('light')
     expect(snapshot.data.settings.picgoCloud.token).toBe('LOCAL_TOKEN')
+  })
+
+  it('force encrypt should upload encrypted payload for plain remote', async () => {
+    await fs.writeFile(configPath, '{ "a": 1 }', 'utf8')
+    await fs.writeFile(snapshotPath, JSON.stringify({
+      version: 1,
+      updatedAt: '2020-01-01T00:00:00.000Z',
+      data: { a: 1 }
+    }, null, 2), 'utf8')
+
+    mockFetchConfig.mockResolvedValue({ version: 1, config: '{ "a": 1 }' })
+    mockUpdateConfig.mockResolvedValue({ success: true, version: 2 })
+
+    const onAskPin = vi.fn().mockResolvedValue('1234')
+    const ctx = createCtx(configPath)
+    const manager = new ConfigSyncManager(ctx, { onAskPin })
+    const res = await manager.sync({ encryptionIntent: EncryptionIntent.FORCE_ENCRYPT })
+
+    expect(res.status).toBe(SyncStatus.SUCCESS)
+    expect(onAskPin).toHaveBeenCalledWith(E2EAskPinReason.SETUP, 0)
+
+    const [configStr, baseVersion, e2eFields] = mockUpdateConfig.mock.calls[0]
+    expect(baseVersion).toBe(1)
+    expect(e2eFields.e2eVersion).toBe(1)
+    expect(typeof e2eFields.salt).toBe('string')
+    expect(typeof e2eFields.encryptedDEK).toBe('string')
+
+    const cryptoService = new E2ECryptoService()
+    const salt = cryptoService.decodeSalt(e2eFields.salt)
+    const dek = cryptoService.unwrapDEK(e2eFields.encryptedDEK, '1234', salt)
+    const decryptedConfig = cryptoService.decryptConfig(configStr, dek)
+    expect(decryptedConfig).toContain('"a": 1')
+  })
+
+  it('force plain should downgrade encrypted remote config', async () => {
+    const configStr = stringify({ a: 1 }, null, 2)
+    const cryptoService = new E2ECryptoService()
+    const { payload } = cryptoService.generateE2EPayload(configStr, '1234')
+
+    await fs.writeFile(configPath, configStr, 'utf8')
+    await fs.writeFile(snapshotPath, JSON.stringify({
+      version: 1,
+      updatedAt: '2020-01-01T00:00:00.000Z',
+      data: { a: 1 }
+    }, null, 2), 'utf8')
+
+    mockFetchConfig.mockResolvedValue({
+      version: 1,
+      config: payload.config,
+      e2eVersion: payload.e2eVersion,
+      salt: payload.salt,
+      encryptedDEK: payload.encryptedDEK
+    })
+    mockUpdateConfig.mockResolvedValue({ success: true, version: 2 })
+
+    const onAskPin = vi.fn().mockResolvedValue('1234')
+    const ctx = createCtx(configPath)
+    const manager = new ConfigSyncManager(ctx, { onAskPin })
+    const res = await manager.sync({ encryptionIntent: EncryptionIntent.FORCE_PLAIN })
+
+    expect(res.status).toBe(SyncStatus.SUCCESS)
+    expect(onAskPin).toHaveBeenCalledWith(E2EAskPinReason.DECRYPT, 0)
+
+    const [pushedConfig, baseVersion, e2eFields] = mockUpdateConfig.mock.calls[0]
+    expect(baseVersion).toBe(1)
+    expect(pushedConfig).toContain('"a": 1')
+    expect(e2eFields).toEqual({ e2eVersion: 0 })
+  })
+
+  it('should retry decryption and succeed with correct PIN', async () => {
+    const configStr = stringify({ a: 1 }, null, 2)
+    const cryptoService = new E2ECryptoService()
+    const { payload } = cryptoService.generateE2EPayload(configStr, '1234')
+
+    await fs.writeFile(configPath, configStr, 'utf8')
+    await fs.writeFile(snapshotPath, JSON.stringify({
+      version: 1,
+      updatedAt: '2020-01-01T00:00:00.000Z',
+      data: { a: 1 }
+    }, null, 2), 'utf8')
+
+    mockFetchConfig.mockResolvedValue({
+      version: 1,
+      config: payload.config,
+      e2eVersion: payload.e2eVersion,
+      salt: payload.salt,
+      encryptedDEK: payload.encryptedDEK
+    })
+
+    const onAskPin = vi.fn()
+      .mockResolvedValueOnce('0000')
+      .mockResolvedValueOnce('1234')
+
+    const ctx = createCtx(configPath)
+    const manager = new ConfigSyncManager(ctx, { onAskPin })
+    const res = await manager.sync()
+
+    expect(res.status).toBe(SyncStatus.SUCCESS)
+    expect(onAskPin).toHaveBeenCalledTimes(2)
+    expect(onAskPin.mock.calls[0]).toEqual([E2EAskPinReason.DECRYPT, 0])
+    expect(onAskPin.mock.calls[1]).toEqual([E2EAskPinReason.RETRY, 1])
+    expect(mockUpdateConfig).not.toHaveBeenCalled()
+  })
+
+  it('should fail after max PIN retry attempts', async () => {
+    const configStr = stringify({ a: 1 }, null, 2)
+    const cryptoService = new E2ECryptoService()
+    const { payload } = cryptoService.generateE2EPayload(configStr, '1234')
+
+    await fs.writeFile(configPath, configStr, 'utf8')
+    await fs.writeFile(snapshotPath, JSON.stringify({
+      version: 1,
+      updatedAt: '2020-01-01T00:00:00.000Z',
+      data: { a: 1 }
+    }, null, 2), 'utf8')
+
+    mockFetchConfig.mockResolvedValue({
+      version: 1,
+      config: payload.config,
+      e2eVersion: payload.e2eVersion,
+      salt: payload.salt,
+      encryptedDEK: payload.encryptedDEK
+    })
+
+    const onAskPin = vi.fn().mockResolvedValue('0000')
+
+    const ctx = createCtx(configPath)
+    const manager = new ConfigSyncManager(ctx, { onAskPin })
+    const res = await manager.sync()
+
+    expect(res.status).toBe(SyncStatus.FAILED)
+    expect(res.message).toContain('Maximum retry attempts exceeded')
+    expect(onAskPin).toHaveBeenCalledTimes(4)
+    expect(onAskPin.mock.calls[0]).toEqual([E2EAskPinReason.DECRYPT, 0])
+    expect(onAskPin.mock.calls[1]).toEqual([E2EAskPinReason.RETRY, 1])
+    expect(onAskPin.mock.calls[2]).toEqual([E2EAskPinReason.RETRY, 2])
+    expect(onAskPin.mock.calls[3]).toEqual([E2EAskPinReason.RETRY, 3])
+    expect(mockUpdateConfig).not.toHaveBeenCalled()
   })
 })
