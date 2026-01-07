@@ -1,17 +1,24 @@
 import fs from 'fs-extra'
 import path from 'path'
 import { parse, stringify } from 'comment-json'
-import { cloneDeep, get, isEqual, isPlainObject, set, unset } from 'lodash'
+import { isEqual, isPlainObject, set } from 'lodash'
 import type { IPicGo, IConfig } from '../../types'
 import { ConfigService } from '../Cloud/services/ConfigService'
 import { ConfigMerger } from './Merger'
-import { E2ECryptoService } from './E2ECryptoService'
+import { E2ECryptoService, requireEncryptedDEK, requireSalt } from './E2ECryptoService'
+import {
+  getLocalEnableE2E,
+  loadSnapshot,
+  maskIgnoredFields,
+  readConfigWithComments,
+  resolveE2EVersion,
+  resolveEncryptionIntent,
+  saveSnapshot
+} from './utils'
 import type {
   ConfigValue,
   IApplyResolvedOptions,
   IE2ERequestFields,
-  ISnapshot,
-  ISyncConfigResponse,
   ISyncOptions,
   ISyncResult
 } from './types'
@@ -21,30 +28,13 @@ import {
   DecryptionFailedError,
   InvalidPinError,
   MaxRetryExceededError,
-  MissingHandlerError,
-  UnsupportedVersionError
+  MissingHandlerError
 } from './errors'
 
-const IGNORED_CONFIG_PATHS = ['settings.picgoCloud.token']
 const MAX_DECRYPT_ATTEMPTS = 4
-
-interface ISnapshotLike {
-  version: number
-  updatedAt?: string
-  data: ConfigValue
-}
 
 interface IConfigSyncManagerOptions {
   onAskPin?: (reason: E2EAskPinReason, retryCount: number) => Promise<string | null>
-}
-
-const isSnapshotLike = (value: ConfigValue): value is ISnapshotLike => {
-  if (!isPlainObject(value)) return false
-  const record = value as Record<string, unknown>
-  return (
-    typeof record.version === 'number' &&
-    Object.prototype.hasOwnProperty.call(record, 'data')
-  )
 }
 
 export class ConfigSyncManager {
@@ -69,34 +59,36 @@ export class ConfigSyncManager {
     this.e2eService = new E2ECryptoService()
   }
 
-  private maskIgnoredFields (target: IConfig, source: IConfig): IConfig {
-    const result = cloneDeep(target)
-
-    IGNORED_CONFIG_PATHS.forEach((ignoredPath: string) => {
-      const sourceValue = get(source, ignoredPath)
-      if (sourceValue !== undefined) {
-        set(result, ignoredPath, sourceValue)
-      } else {
-        unset(result, ignoredPath)
-      }
+  private async persistLocalEnableE2E (config: IConfig, enableE2E: boolean): Promise<IConfig> {
+    const current = getLocalEnableE2E(config)
+    if (current === enableE2E) {
+      return config
+    }
+    set(config, 'settings.picgoCloud.enableE2E', enableE2E)
+    this.ctx.saveConfig({
+      'settings.picgoCloud.enableE2E': enableE2E
     })
-
-    return result
+    return config
   }
 
   async sync (options: ISyncOptions = {}, retryCount: number = 0): Promise<ISyncResult> {
     try {
-      const encryptionIntent = options.encryptionIntent ?? EncryptionIntent.AUTO
-      const localConfig = await this.readConfigWithComments(this.ctx.configPath)
-      if (!isPlainObject(localConfig)) {
+      const localConfigValue = await readConfigWithComments(this.ctx.configPath)
+      if (!isPlainObject(localConfigValue)) {
         return {
           status: SyncStatus.FAILED,
           message: 'Local config is not a valid JSON object'
         }
       }
+      let localConfig = localConfigValue as IConfig
+      if (options.encryptionIntent === EncryptionIntent.FORCE_ENCRYPT || options.encryptionIntent === EncryptionIntent.FORCE_PLAIN) {
+        const shouldEnableE2E = options.encryptionIntent === EncryptionIntent.FORCE_ENCRYPT
+        localConfig = await this.persistLocalEnableE2E(localConfig, shouldEnableE2E)
+      }
+      const encryptionIntent = resolveEncryptionIntent(options.encryptionIntent, localConfig)
 
       const snapshotExists = await fs.pathExists(this.snapshotPath)
-      const snapshot = await this.loadSnapshot()
+      const snapshot = await loadSnapshot(this.snapshotPath)
       const fetchedRemote = await this.fetchRemoteConfig()
       if (fetchedRemote && !isPlainObject(fetchedRemote)) {
         return {
@@ -105,6 +97,9 @@ export class ConfigSyncManager {
         }
       }
       this.originalRemote = fetchedRemote ? fetchedRemote as IConfig : null
+      if (this.remoteE2EVersion === E2EVersion.V1 && getLocalEnableE2E(localConfig) === undefined) {
+        localConfig = await this.persistLocalEnableE2E(localConfig, true)
+      }
 
       // HANDLE MISSING REMOTE (First Run OR Remote Deleted)
       // Strategy: If remote is missing, we treat Local as the absolute truth.
@@ -121,7 +116,7 @@ export class ConfigSyncManager {
 
         // 1. Push Local -> Remote (Re-seed)
         try {
-          const payload = await this.buildPushPayload(localConfig as IConfig, encryptionIntent)
+          const payload = await this.buildPushPayload(localConfig, encryptionIntent)
           await this.pushRemoteConfig(payload.configStr, payload.e2eFields)
         } catch (e: unknown) {
           const message = e instanceof Error ? e.message : String(e)
@@ -139,17 +134,17 @@ export class ConfigSyncManager {
         }
 
         // 2. Update Snapshot (Establish new baseline)
-        await this.saveSnapshot(localConfig, this.currentRemoteVersion)
+        await saveSnapshot(this.snapshotPath, localConfig, this.currentRemoteVersion)
 
         return {
           status: SyncStatus.SUCCESS,
           message: isFirstRun ? 'Config sync initialized' : 'Remote config restored from local',
-          mergedConfig: localConfig as IConfig
+          mergedConfig: localConfig
         }
       }
 
       // Step A: Pre-Merge Masking (ignored fields)
-      const effectiveRemote = this.maskIgnoredFields(this.originalRemote, localConfig as IConfig)
+      const effectiveRemote = maskIgnoredFields(this.originalRemote, localConfig)
 
       // Step B: Merge
       this.ctx.log.info('Merging configs for sync...')
@@ -169,11 +164,11 @@ export class ConfigSyncManager {
       const shouldWriteLocal = !isEqual(localConfig, mergedConfig)
 
       if (shouldWriteLocal) {
-        await this.writeConfigWithComments(this.ctx.configPath, mergedConfig)
+        this.ctx.saveConfig(mergedConfig)
       }
 
       // Step D: Prepare Push (restore remote ignored fields)
-      const configToPush = this.maskIgnoredFields(mergedConfig, this.originalRemote)
+      const configToPush = maskIgnoredFields(mergedConfig, this.originalRemote, { cleanupEmptyParents: true })
       const shouldPushRemote = this.shouldChangeE2E(encryptionIntent) || !isEqual(this.originalRemote, configToPush)
 
       if (shouldPushRemote) {
@@ -196,7 +191,7 @@ export class ConfigSyncManager {
         }
       }
 
-      await this.saveSnapshot(mergedConfig, this.currentRemoteVersion)
+      await saveSnapshot(this.snapshotPath, mergedConfig, this.currentRemoteVersion)
 
       return {
         status: SyncStatus.SUCCESS,
@@ -221,7 +216,7 @@ export class ConfigSyncManager {
         }
       }
 
-      const currentLocalConfig = await this.readConfigWithComments(this.ctx.configPath)
+      const currentLocalConfig = await readConfigWithComments(this.ctx.configPath)
       if (!isPlainObject(currentLocalConfig)) {
         return {
           status: SyncStatus.FAILED,
@@ -230,10 +225,10 @@ export class ConfigSyncManager {
       }
 
       // 1) Mask for disk: keep local ignored fields
-      const configToWrite = this.maskIgnoredFields(resolvedConfig, currentLocalConfig as IConfig)
+      const configToWrite = maskIgnoredFields(resolvedConfig, currentLocalConfig as IConfig)
 
       // 2) Write to disk
-      await this.writeConfigWithComments(this.ctx.configPath, configToWrite)
+      this.ctx.saveConfig(configToWrite)
 
       // 3) Mask for cloud: keep original remote ignored fields
       if (!this.originalRemote) {
@@ -248,7 +243,7 @@ export class ConfigSyncManager {
       }
 
       const configToPush = this.originalRemote
-        ? this.maskIgnoredFields(configToWrite, this.originalRemote)
+        ? maskIgnoredFields(configToWrite, this.originalRemote, { cleanupEmptyParents: true })
         : configToWrite
 
       const useE2E = options.useE2E ?? (this.remoteE2EVersion === E2EVersion.V1)
@@ -259,7 +254,7 @@ export class ConfigSyncManager {
       await this.pushRemoteConfig(payload.configStr, payload.e2eFields)
 
       // 5) Snapshot should match disk state
-      await this.saveSnapshot(configToWrite, this.currentRemoteVersion)
+      await saveSnapshot(this.snapshotPath, configToWrite, this.currentRemoteVersion)
 
       return {
         status: SyncStatus.SUCCESS,
@@ -275,53 +270,6 @@ export class ConfigSyncManager {
     }
   }
 
-  private async readConfigWithComments (filePath: string): Promise<ConfigValue> {
-    if (await fs.pathExists(filePath)) {
-      const content = await fs.readFile(filePath, 'utf8')
-      return parse(content)
-    }
-    return {}
-  }
-
-  private async writeConfigWithComments (filePath: string, config: ConfigValue): Promise<void> {
-    const content = stringify(config, null, 2)
-    await fs.writeFile(filePath, content, 'utf8')
-  }
-
-  private async loadSnapshot (): Promise<ISnapshot> {
-    if (!(await fs.pathExists(this.snapshotPath))) {
-      return {
-        version: 0,
-        updatedAt: '',
-        data: {}
-      }
-    }
-
-    const raw = await this.readConfigWithComments(this.snapshotPath)
-    if (isSnapshotLike(raw)) {
-      return {
-        version: raw.version,
-        updatedAt: typeof raw.updatedAt === 'string' ? raw.updatedAt : '',
-        data: raw.data ?? {}
-      }
-    }
-
-    // Legacy snapshot (plain object)
-    return {
-      version: 0,
-      updatedAt: '',
-      data: raw
-    }
-  }
-
-  private async saveSnapshot (config: ConfigValue, version: number): Promise<void> {
-    await this.writeConfigWithComments(this.snapshotPath, {
-      version,
-      updatedAt: new Date().toISOString(),
-      data: config
-    })
-  }
-
   private async fetchRemoteConfig (): Promise<ConfigValue | null> {
     this.ctx.log.info('Fetching remote config for sync...')
     const res = await this.configService.fetchConfig()
@@ -331,11 +279,11 @@ export class ConfigSyncManager {
       return null
     }
     this.currentRemoteVersion = res.version
-    const e2eVersion = this.resolveE2EVersion(res.e2eVersion)
+    const e2eVersion = resolveE2EVersion(res.e2eVersion)
 
     if (e2eVersion === E2EVersion.V1) {
-      const salt = this.requireSalt(res)
-      const encryptedDEK = this.requireEncryptedDEK(res)
+      const salt = requireSalt(res)
+      const encryptedDEK = requireEncryptedDEK(res)
       this.setRemoteE2EState(E2EVersion.V1, salt, encryptedDEK)
       const decryptedConfig = await this.decryptRemoteConfig(res.config, salt, encryptedDEK)
       return parse(decryptedConfig)
@@ -376,28 +324,6 @@ export class ConfigSyncManager {
     }
   }
 
-  private resolveE2EVersion (version?: number): E2EVersion {
-    if (version === E2EVersion.V1) return E2EVersion.V1
-    if (version === E2EVersion.NONE || version === undefined) return E2EVersion.NONE
-    if (typeof version === 'number') {
-      throw new UnsupportedVersionError(`Unsupported E2E version: ${version}`)
-    }
-    return E2EVersion.NONE
-  }
-
-  private requireSalt (res: ISyncConfigResponse): string {
-    if (!res.salt) {
-      throw new CorruptedDataError('Missing salt for encrypted config')
-    }
-    return res.salt
-  }
-
-  private requireEncryptedDEK (res: ISyncConfigResponse): string {
-    if (!res.encryptedDEK) {
-      throw new CorruptedDataError('Missing encryptedDEK for encrypted config')
-    }
-    return res.encryptedDEK
-  }
 
   private async buildPushPayload (config: IConfig, intent: EncryptionIntent): Promise<{ configStr: string, e2eFields: IE2ERequestFields }> {
     const plainConfig = stringify(config, null, 2)

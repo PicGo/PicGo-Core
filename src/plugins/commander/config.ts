@@ -1,49 +1,7 @@
-import chalk from 'chalk'
 import { isPlainObject } from 'lodash'
-import util from 'util'
 import type { IConfig, IPicGo, IPlugin } from '../../types'
-import { ConfigSyncManager, SyncStatus, ConflictType, EncryptionIntent, E2EAskPinReason, type IDiffNode } from '../../lib/ConfigSyncManager'
-
-const formatConfigValue = (value: unknown): string => {
-  if (value === undefined) return 'undefined'
-  try {
-    return JSON.stringify(value)
-  } catch {
-    return util.inspect(value, {
-      depth: 4,
-      breakLength: 120,
-      maxArrayLength: 50
-    })
-  }
-}
-
-const printDiffTree = (node: IDiffNode, indent: number = 0): void => {
-  const pad = ' '.repeat(indent * 2)
-  const color =
-    node.status === ConflictType.CONFLICT
-      ? chalk.red
-      : node.status === ConflictType.ADDED
-        ? chalk.green
-        : node.status === ConflictType.DELETED
-          ? chalk.gray
-          : node.status === ConflictType.MODIFIED
-            ? chalk.yellow
-            : chalk.white
-
-  console.log(`${pad}${color(`[${node.status}]`)} ${node.key}`)
-
-  if (node.status === ConflictType.CONFLICT && (!node.children || node.children.length === 0)) {
-    console.log(`${pad}  ${chalk.gray('snapshot:')} ${formatConfigValue(node.snapshotValue)}`)
-    console.log(`${pad}  ${chalk.cyan('local :')} ${formatConfigValue(node.localValue)}`)
-    console.log(`${pad}  ${chalk.magenta('remote:')} ${formatConfigValue(node.remoteValue)}`)
-  }
-
-  if (node.children?.length) {
-    for (const child of node.children) {
-      printDiffTree(child, indent + 1)
-    }
-  }
-}
+import { ConfigSyncManager, SyncStatus, EncryptionIntent, E2EAskPinReason } from '../../lib/ConfigSyncManager'
+import { printDiffTree } from './utils'
 
 const config: IPlugin = {
   handle: (ctx: IPicGo) => {
@@ -59,11 +17,35 @@ const config: IPlugin = {
       .option('--no-encrypt', 'force disable end-to-end encryption')
       .action(async (options: { encrypt?: boolean }) => {
         const onAskPin = async (reason: E2EAskPinReason, retryCount: number): Promise<string | null> => {
-          const message = reason === E2EAskPinReason.SETUP
-            ? 'Set up E2E encryption. Enter PIN'
-            : reason === E2EAskPinReason.DECRYPT
-              ? 'Enter PIN to decrypt config'
-              : `Incorrect PIN. Retry (${retryCount}/3)`
+          if (reason === E2EAskPinReason.SETUP) {
+            for (let attempt = 0; attempt < 3; attempt += 1) {
+              const { pin } = await ctx.cmd.inquirer.prompt<{ pin: string }>([
+                {
+                  type: 'password',
+                  name: 'pin',
+                  message: `Set up E2E encryption. Enter PIN (${attempt + 1}/3)`,
+                  mask: '*'
+                }
+              ])
+              const { confirmPin } = await ctx.cmd.inquirer.prompt<{ confirmPin: string }>([
+                {
+                  type: 'password',
+                  name: 'confirmPin',
+                  message: `Confirm PIN (${attempt + 1}/3)`,
+                  mask: '*'
+                }
+              ])
+              if (pin === confirmPin) {
+                return pin
+              }
+              ctx.log.warn('PIN confirmation does not match. Please try again.')
+            }
+            return null
+          }
+
+          const message = reason === E2EAskPinReason.DECRYPT
+            ? 'Enter PIN to decrypt config'
+            : `Incorrect PIN. Retry (${retryCount}/3)`
 
           const { pin } = await ctx.cmd.inquirer.prompt<{ pin: string }>([
             {
@@ -81,10 +63,23 @@ const config: IPlugin = {
           ? EncryptionIntent.FORCE_ENCRYPT
           : options.encrypt === false
             ? EncryptionIntent.FORCE_PLAIN
-            : EncryptionIntent.AUTO
+            : undefined
+
+        if (encryptionIntent === EncryptionIntent.FORCE_ENCRYPT) {
+          ctx.saveConfig({
+            'settings.picgoCloud.enableE2E': true
+          })
+        }
+        if (encryptionIntent === EncryptionIntent.FORCE_PLAIN) {
+          ctx.saveConfig({
+            'settings.picgoCloud.enableE2E': false
+          })
+        }
 
         const manager = new ConfigSyncManager(ctx, { onAskPin })
-        const res = await manager.sync({ encryptionIntent })
+        const res = encryptionIntent
+          ? await manager.sync({ encryptionIntent })
+          : await manager.sync()
 
         if (res.status === SyncStatus.SUCCESS) {
           ctx.log.success(res.message || 'Config sync success!')
@@ -124,11 +119,19 @@ const config: IPlugin = {
             return
           }
 
-          const applyOptions = encryptionIntent === EncryptionIntent.FORCE_ENCRYPT
-            ? { useE2E: true }
-            : encryptionIntent === EncryptionIntent.FORCE_PLAIN
-              ? { useE2E: false }
-              : undefined
+          let applyOptions: { useE2E: boolean } | undefined
+          if (encryptionIntent === EncryptionIntent.FORCE_ENCRYPT) {
+            applyOptions = { useE2E: true }
+          } else if (encryptionIntent === EncryptionIntent.FORCE_PLAIN) {
+            applyOptions = { useE2E: false }
+          } else {
+            const preference = ctx.getConfig<boolean | undefined>('settings.picgoCloud.enableE2E')
+            if (preference === true) {
+              applyOptions = { useE2E: true }
+            } else if (preference === false) {
+              applyOptions = { useE2E: false }
+            }
+          }
           const applyRes = await manager.applyResolvedConfig(chosen as IConfig, applyOptions)
           if (applyRes.status === SyncStatus.SUCCESS) {
             ctx.log.success(applyRes.message || 'Config sync resolved!')

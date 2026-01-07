@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 import { CorruptedDataError, DecryptionFailedError } from './errors'
-import { E2EVersion, type IE2EPayload } from './types'
+import { E2EVersion, type IE2EPayload, type ISyncConfigResponse } from './types'
 
 const PBKDF2_ITERATIONS = 600000
 const PBKDF2_DIGEST = 'sha256'
@@ -86,5 +86,24 @@ class E2ECryptoService {
   }
 }
 
-export { E2ECryptoService }
+/**
+ * Ensure encrypted payload includes a salt for E2E decryption.
+ */
+const requireSalt = (res: ISyncConfigResponse): string => {
+  if (!res.salt) {
+    throw new CorruptedDataError('Missing salt for encrypted config')
+  }
+  return res.salt
+}
 
+/**
+ * Ensure encrypted payload includes an encrypted DEK for E2E decryption.
+ */
+const requireEncryptedDEK = (res: ISyncConfigResponse): string => {
+  if (!res.encryptedDEK) {
+    throw new CorruptedDataError('Missing encryptedDEK for encrypted config')
+  }
+  return res.encryptedDEK
+}
+
+export { E2ECryptoService, requireEncryptedDEK, requireSalt }
