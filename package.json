@@ -14,8 +14,6 @@
   "scripts": {
     "start": "node ./bin/picgo",
     "lint": "eslint src --ext .ts && tsc --noEmit",
-    "test": "pnpm test:unit",
-    "test:unit": "vitest run",
     "build": "cross-env NODE_ENV=production rimraf ./dist && rollup -c rollup.config.js",
     "dev": "cross-env NODE_ENV=development rollup -c rollup.config.js -w",
     "patch": "npm version patch && git push origin master && git push origin --tags",
@@ -85,8 +83,7 @@
     "rollup-plugin-copy": "^3.5.0",
     "rollup-plugin-string": "^3.0.0",
     "rimraf": "^6.1.2",
-    "typescript": "^5.9.3",
-    "vitest": "^4.0.16"
+    "typescript": "^5.9.3"
   },
   "dependencies": {
     "@picgo/i18n": "^1.0.0",
