@@ -82,7 +82,7 @@ $ picgo -h
     use [module]                         use modules of picgo
 ```
 
-Note: the plugin template initializer has moved to the standalone [picgo-init](https://github.com/PicGo/PicGo-Init) package.
+Note: the plugin's template initializer has moved to the standalone [picgo-init](https://github.com/PicGo/PicGo-Init) package.
 
 #### Upload a picture from path
 
