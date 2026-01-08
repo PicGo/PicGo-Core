@@ -5,7 +5,7 @@ import { isEqual, isPlainObject, set } from 'lodash'
 import type { IPicGo, IConfig } from '../../types'
 import { ConfigService } from '../Cloud/services/ConfigService'
 import { ConfigMerger } from './Merger'
-import { E2ECryptoService, requireEncryptedDEK, requireSalt } from './E2ECryptoService'
+import { E2ECryptoService, requireClientDekEncrypted, requireClientKekSalt } from './E2ECryptoService'
 import {
   getLocalEnableE2E,
   loadSnapshot,
@@ -46,10 +46,10 @@ export class ConfigSyncManager {
   private currentRemoteVersion: number = 0
   private originalRemote: IConfig | null = null
   private remoteE2EVersion: E2EVersion = E2EVersion.NONE
-  private remoteSalt?: string
-  private remoteEncryptedDEK?: string
+  private remoteClientKekSalt?: string
+  private remoteClientDekEncrypted?: string
   private cachedDEK?: Buffer
-  private cachedEncryptedDEK?: string
+  private cachedClientDekEncrypted?: string
 
   constructor (ctx: IPicGo, options: IConfigSyncManagerOptions = {}) {
     this.ctx = ctx
@@ -282,10 +282,10 @@ export class ConfigSyncManager {
     const e2eVersion = resolveE2EVersion(res.e2eVersion)
 
     if (e2eVersion === E2EVersion.V1) {
-      const salt = requireSalt(res)
-      const encryptedDEK = requireEncryptedDEK(res)
-      this.setRemoteE2EState(E2EVersion.V1, salt, encryptedDEK)
-      const decryptedConfig = await this.decryptRemoteConfig(res.config, salt, encryptedDEK)
+      const clientKekSalt = requireClientKekSalt(res)
+      const clientDekEncrypted = requireClientDekEncrypted(res)
+      this.setRemoteE2EState(E2EVersion.V1, clientKekSalt, clientDekEncrypted)
+      const decryptedConfig = await this.decryptRemoteConfig(res.config, clientKekSalt, clientDekEncrypted)
       return parse(decryptedConfig)
     }
 
@@ -305,8 +305,8 @@ export class ConfigSyncManager {
   }
 
   private applyE2EStateAfterPush (e2eFields: IE2ERequestFields): void {
-    if (e2eFields.e2eVersion === E2EVersion.V1 && e2eFields.salt && e2eFields.encryptedDEK) {
-      this.setRemoteE2EState(E2EVersion.V1, e2eFields.salt, e2eFields.encryptedDEK)
+    if (e2eFields.e2eVersion === E2EVersion.V1 && e2eFields.clientKekSalt && e2eFields.clientDekEncrypted) {
+      this.setRemoteE2EState(E2EVersion.V1, e2eFields.clientKekSalt, e2eFields.clientDekEncrypted)
       return
     }
     if (e2eFields.e2eVersion === E2EVersion.NONE) {
@@ -314,13 +314,13 @@ export class ConfigSyncManager {
     }
   }
 
-  private setRemoteE2EState (version: E2EVersion, salt?: string, encryptedDEK?: string): void {
+  private setRemoteE2EState (version: E2EVersion, clientKekSalt?: string, clientDekEncrypted?: string): void {
     this.remoteE2EVersion = version
-    this.remoteSalt = salt
-    this.remoteEncryptedDEK = encryptedDEK
-    if (!encryptedDEK || encryptedDEK !== this.cachedEncryptedDEK) {
+    this.remoteClientKekSalt = clientKekSalt
+    this.remoteClientDekEncrypted = clientDekEncrypted
+    if (!clientDekEncrypted || clientDekEncrypted !== this.cachedClientDekEncrypted) {
       this.cachedDEK = undefined
-      this.cachedEncryptedDEK = undefined
+      this.cachedClientDekEncrypted = undefined
     }
   }
 
@@ -336,14 +336,14 @@ export class ConfigSyncManager {
       }
     }
 
-    if (this.remoteE2EVersion === E2EVersion.V1 && this.remoteSalt && this.remoteEncryptedDEK) {
-      const dek = await this.ensureDEK(this.remoteSalt, this.remoteEncryptedDEK)
+    if (this.remoteE2EVersion === E2EVersion.V1 && this.remoteClientKekSalt && this.remoteClientDekEncrypted) {
+      const dek = await this.ensureDEK(this.remoteClientKekSalt, this.remoteClientDekEncrypted)
       return {
         configStr: this.e2eService.encryptConfig(plainConfig, dek),
         e2eFields: {
           e2eVersion: E2EVersion.V1,
-          salt: this.remoteSalt,
-          encryptedDEK: this.remoteEncryptedDEK
+          clientKekSalt: this.remoteClientKekSalt,
+          clientDekEncrypted: this.remoteClientDekEncrypted
         }
       }
     }
@@ -351,13 +351,13 @@ export class ConfigSyncManager {
     const pin = await this.askPin(E2EAskPinReason.SETUP, 0)
     const { payload, dek } = this.e2eService.generateE2EPayload(plainConfig, pin)
     this.cachedDEK = dek
-    this.cachedEncryptedDEK = payload.encryptedDEK
+    this.cachedClientDekEncrypted = payload.clientDekEncrypted
     return {
       configStr: payload.config,
       e2eFields: {
         e2eVersion: payload.e2eVersion,
-        salt: payload.salt,
-        encryptedDEK: payload.encryptedDEK
+        clientKekSalt: payload.clientKekSalt,
+        clientDekEncrypted: payload.clientDekEncrypted
       }
     }
   }
@@ -374,8 +374,8 @@ export class ConfigSyncManager {
     return useE2E !== remoteIsE2E
   }
 
-  private async decryptRemoteConfig (encryptedConfig: string, saltBase64: string, encryptedDEK: string): Promise<string> {
-    const dek = await this.ensureDEK(saltBase64, encryptedDEK)
+  private async decryptRemoteConfig (encryptedConfig: string, clientKekSaltBase64: string, clientDekEncrypted: string): Promise<string> {
+    const dek = await this.ensureDEK(clientKekSaltBase64, clientDekEncrypted)
     try {
       return this.e2eService.decryptConfig(encryptedConfig, dek)
     } catch (error: unknown) {
@@ -386,19 +386,19 @@ export class ConfigSyncManager {
     }
   }
 
-  private async ensureDEK (saltBase64: string, encryptedDEK: string): Promise<Buffer> {
-    if (this.cachedDEK && this.cachedEncryptedDEK === encryptedDEK) {
+  private async ensureDEK (clientKekSaltBase64: string, clientDekEncrypted: string): Promise<Buffer> {
+    if (this.cachedDEK && this.cachedClientDekEncrypted === clientDekEncrypted) {
       return this.cachedDEK
     }
-    const salt = this.e2eService.decodeSalt(saltBase64)
+    const salt = this.e2eService.decodeSalt(clientKekSaltBase64)
 
     for (let attempt = 0; attempt < MAX_DECRYPT_ATTEMPTS; attempt += 1) {
       const reason = attempt === 0 ? E2EAskPinReason.DECRYPT : E2EAskPinReason.RETRY
       const pin = await this.askPin(reason, attempt)
       try {
-        const dek = this.e2eService.unwrapDEK(encryptedDEK, pin, salt)
+        const dek = this.e2eService.unwrapDEK(clientDekEncrypted, pin, salt)
         this.cachedDEK = dek
-        this.cachedEncryptedDEK = encryptedDEK
+        this.cachedClientDekEncrypted = clientDekEncrypted
         return dek
       } catch (error: unknown) {
         if (error instanceof DecryptionFailedError) {

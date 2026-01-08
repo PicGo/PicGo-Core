@@ -23,7 +23,7 @@ const config: IPlugin = {
                 {
                   type: 'password',
                   name: 'pin',
-                  message: `Set up E2E encryption. Enter PIN (${attempt + 1}/3)`,
+                  message: `Set up E2E encryption. Enter PIN`,
                   mask: '*'
                 }
               ])
@@ -31,7 +31,7 @@ const config: IPlugin = {
                 {
                   type: 'password',
                   name: 'confirmPin',
-                  message: `Confirm PIN (${attempt + 1}/3)`,
+                  message: `Confirm PIN`,
                   mask: '*'
                 }
               ])

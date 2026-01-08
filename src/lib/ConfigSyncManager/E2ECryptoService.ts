@@ -20,8 +20,8 @@ class E2ECryptoService {
     return {
       payload: {
         e2eVersion: E2EVersion.V1,
-        salt: salt.toString('base64'),
-        encryptedDEK,
+        clientKekSalt: salt.toString('base64'),
+        clientDekEncrypted: encryptedDEK,
         config: encryptedConfig
       },
       dek
@@ -87,23 +87,23 @@ class E2ECryptoService {
 }
 
 /**
- * Ensure encrypted payload includes a salt for E2E decryption.
+ * Ensure encrypted payload includes a client KEK salt for E2E decryption.
  */
-const requireSalt = (res: ISyncConfigResponse): string => {
-  if (!res.salt) {
-    throw new CorruptedDataError('Missing salt for encrypted config')
+const requireClientKekSalt = (res: ISyncConfigResponse): string => {
+  if (!res.clientKekSalt) {
+    throw new CorruptedDataError('Missing clientKekSalt for encrypted config')
   }
-  return res.salt
+  return res.clientKekSalt
 }
 
 /**
  * Ensure encrypted payload includes an encrypted DEK for E2E decryption.
  */
-const requireEncryptedDEK = (res: ISyncConfigResponse): string => {
-  if (!res.encryptedDEK) {
-    throw new CorruptedDataError('Missing encryptedDEK for encrypted config')
+const requireClientDekEncrypted = (res: ISyncConfigResponse): string => {
+  if (!res.clientDekEncrypted) {
+    throw new CorruptedDataError('Missing clientDekEncrypted for encrypted config')
   }
-  return res.encryptedDEK
+  return res.clientDekEncrypted
 }
 
-export { E2ECryptoService, requireEncryptedDEK, requireSalt }
+export { E2ECryptoService, requireClientDekEncrypted, requireClientKekSalt }

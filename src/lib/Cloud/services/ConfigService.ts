@@ -1,6 +1,7 @@
 import axios from 'axios'
 import type { IPicGo } from '../../../types'
 import type { IE2ERequestFields, ISyncConfigResponse } from '../../ConfigSyncManager/types'
+import { APPType } from '../../ConfigSyncManager/types'
 import { AuthRequestClient } from '../Request'
 
 export interface IUpdateConfigResult {
@@ -12,7 +13,7 @@ export interface IUpdateConfigResult {
 export class ConfigService {
   private readonly client: AuthRequestClient
   private readonly ctx: IPicGo
-  private appType: 'GUI' | 'CLI' = 'CLI'
+  private appType: APPType = APPType.CLI
 
   constructor (ctx: IPicGo) {
     this.client = new AuthRequestClient(ctx)
@@ -20,7 +21,7 @@ export class ConfigService {
   }
 
   async fetchConfig (): Promise<ISyncConfigResponse | null> {
-    this.appType = this.ctx.GUI_VERSION ? 'GUI' : 'CLI'
+    this.appType = this.ctx.GUI_VERSION ? APPType.GUI : APPType.CLI
     try {
       const res = await this.client.request<ISyncConfigResponse>({
         method: 'GET',
@@ -50,7 +51,7 @@ export class ConfigService {
   }
 
   async updateConfig (configStr: string, baseVersion: number, e2eFields?: IE2ERequestFields): Promise<IUpdateConfigResult> {
-    this.appType = this.ctx.GUI_VERSION ? 'GUI' : 'CLI'
+    this.appType = this.ctx.GUI_VERSION ? APPType.GUI : APPType.CLI
     try {
       const res = await this.client.request<{ version: number }>({
         method: 'PUT',

@@ -31,28 +31,33 @@ export enum E2EAskPinReason {
   RETRY = 'retry'
 }
 
+export enum APPType {
+  GUI = 'gui',
+  CLI = 'cli'
+}
+
 // Represents any node in the config tree (Object, Array, or Primitive)
 export type ConfigValue = string | number | boolean | null | undefined | any[] | Record<string, any>
 
 export interface IE2EPayload {
   e2eVersion: E2EVersion.V1
-  salt: string
-  encryptedDEK: string
+  clientKekSalt: string
+  clientDekEncrypted: string
   config: string
 }
 
 export interface IE2ERequestFields {
   e2eVersion?: E2EVersion
-  salt?: string
-  encryptedDEK?: string
+  clientKekSalt?: string
+  clientDekEncrypted?: string
 }
 
 export interface ISyncConfigResponse {
   version: number
   config: string
   e2eVersion?: number
-  salt?: string
-  encryptedDEK?: string
+  clientKekSalt?: string
+  clientDekEncrypted?: string
 }
 
 export interface ISyncOptions {

@@ -328,12 +328,12 @@ describe('ConfigSyncManager Versioned Sync Flow', () => {
     const [configStr, baseVersion, e2eFields] = mockUpdateConfig.mock.calls[0]
     expect(baseVersion).toBe(1)
     expect(e2eFields.e2eVersion).toBe(1)
-    expect(typeof e2eFields.salt).toBe('string')
-    expect(typeof e2eFields.encryptedDEK).toBe('string')
+    expect(typeof e2eFields.clientKekSalt).toBe('string')
+    expect(typeof e2eFields.clientDekEncrypted).toBe('string')
 
     const cryptoService = new E2ECryptoService()
-    const salt = cryptoService.decodeSalt(e2eFields.salt)
-    const dek = cryptoService.unwrapDEK(e2eFields.encryptedDEK, '1234', salt)
+    const salt = cryptoService.decodeSalt(e2eFields.clientKekSalt)
+    const dek = cryptoService.unwrapDEK(e2eFields.clientDekEncrypted, '1234', salt)
     const decryptedConfig = cryptoService.decryptConfig(configStr, dek)
     expect(decryptedConfig).toContain('"a": 1')
   })
@@ -360,12 +360,12 @@ describe('ConfigSyncManager Versioned Sync Flow', () => {
     const [configStr, baseVersion, e2eFields] = mockUpdateConfig.mock.calls[0]
     expect(baseVersion).toBe(1)
     expect(e2eFields.e2eVersion).toBe(1)
-    expect(typeof e2eFields.salt).toBe('string')
-    expect(typeof e2eFields.encryptedDEK).toBe('string')
+    expect(typeof e2eFields.clientKekSalt).toBe('string')
+    expect(typeof e2eFields.clientDekEncrypted).toBe('string')
 
     const cryptoService = new E2ECryptoService()
-    const salt = cryptoService.decodeSalt(e2eFields.salt)
-    const dek = cryptoService.unwrapDEK(e2eFields.encryptedDEK, '1234', salt)
+    const salt = cryptoService.decodeSalt(e2eFields.clientKekSalt)
+    const dek = cryptoService.unwrapDEK(e2eFields.clientDekEncrypted, '1234', salt)
     const decryptedConfig = cryptoService.decryptConfig(configStr, dek)
     expect(decryptedConfig).toContain('"a": 1')
   })
@@ -386,8 +386,8 @@ describe('ConfigSyncManager Versioned Sync Flow', () => {
       version: 1,
       config: payload.config,
       e2eVersion: payload.e2eVersion,
-      salt: payload.salt,
-      encryptedDEK: payload.encryptedDEK
+      clientKekSalt: payload.clientKekSalt,
+      clientDekEncrypted: payload.clientDekEncrypted
     })
     mockUpdateConfig.mockResolvedValue({ success: true, version: 2 })
 
@@ -422,8 +422,8 @@ describe('ConfigSyncManager Versioned Sync Flow', () => {
       version: 1,
       config: payload.config,
       e2eVersion: payload.e2eVersion,
-      salt: payload.salt,
-      encryptedDEK: payload.encryptedDEK
+      clientKekSalt: payload.clientKekSalt,
+      clientDekEncrypted: payload.clientDekEncrypted
     })
     mockUpdateConfig.mockResolvedValue({ success: true, version: 2 })
 
@@ -457,8 +457,8 @@ describe('ConfigSyncManager Versioned Sync Flow', () => {
       version: 1,
       config: payload.config,
       e2eVersion: payload.e2eVersion,
-      salt: payload.salt,
-      encryptedDEK: payload.encryptedDEK
+      clientKekSalt: payload.clientKekSalt,
+      clientDekEncrypted: payload.clientDekEncrypted
     })
 
     const onAskPin = vi.fn()
@@ -492,8 +492,8 @@ describe('ConfigSyncManager Versioned Sync Flow', () => {
       version: 1,
       config: payload.config,
       e2eVersion: payload.e2eVersion,
-      salt: payload.salt,
-      encryptedDEK: payload.encryptedDEK
+      clientKekSalt: payload.clientKekSalt,
+      clientDekEncrypted: payload.clientDekEncrypted
     })
 
     const onAskPin = vi.fn().mockResolvedValue('0000')
@@ -528,8 +528,8 @@ describe('ConfigSyncManager Versioned Sync Flow', () => {
       version: 1,
       config: payload.config,
       e2eVersion: payload.e2eVersion,
-      salt: payload.salt,
-      encryptedDEK: payload.encryptedDEK
+      clientKekSalt: payload.clientKekSalt,
+      clientDekEncrypted: payload.clientDekEncrypted
     })
 
     const onAskPin = vi.fn().mockResolvedValue('1234')

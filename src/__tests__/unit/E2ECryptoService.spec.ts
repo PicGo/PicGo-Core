@@ -12,11 +12,11 @@ describe('E2ECryptoService', () => {
     const { payload, dek } = service.generateE2EPayload(config, pin)
 
     expect(payload.e2eVersion).toBe(E2EVersion.V1)
-    expect(payload.salt).toBeTypeOf('string')
-    expect(payload.encryptedDEK).toBeTypeOf('string')
+    expect(payload.clientKekSalt).toBeTypeOf('string')
+    expect(payload.clientDekEncrypted).toBeTypeOf('string')
 
-    const salt = service.decodeSalt(payload.salt)
-    const derivedDek = service.unwrapDEK(payload.encryptedDEK, pin, salt)
+    const salt = service.decodeSalt(payload.clientKekSalt)
+    const derivedDek = service.unwrapDEK(payload.clientDekEncrypted, pin, salt)
     expect(derivedDek.equals(dek)).toBe(true)
 
     const decryptedConfig = service.decryptConfig(payload.config, derivedDek)
