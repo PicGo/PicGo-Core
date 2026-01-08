@@ -12,6 +12,7 @@ export interface IUpdateConfigResult {
 export class ConfigService {
   private readonly client: AuthRequestClient
   private readonly ctx: IPicGo
+  private appType: 'GUI' | 'CLI' = 'CLI'
 
   constructor (ctx: IPicGo) {
     this.client = new AuthRequestClient(ctx)
@@ -19,10 +20,14 @@ export class ConfigService {
   }
 
   async fetchConfig (): Promise<ISyncConfigResponse | null> {
+    this.appType = this.ctx.GUI_VERSION ? 'GUI' : 'CLI'
     try {
       const res = await this.client.request<ISyncConfigResponse>({
         method: 'GET',
-        url: '/api/config'
+        url: '/api/config',
+        params: {
+          appType: this.appType
+        }
       })
 
       if (!res?.config || res.config.trim() === '') {
@@ -45,11 +50,13 @@ export class ConfigService {
   }
 
   async updateConfig (configStr: string, baseVersion: number, e2eFields?: IE2ERequestFields): Promise<IUpdateConfigResult> {
+    this.appType = this.ctx.GUI_VERSION ? 'GUI' : 'CLI'
     try {
       const res = await this.client.request<{ version: number }>({
         method: 'PUT',
         url: '/api/config',
         data: {
+          appType: this.appType,
           config: configStr,
           baseVersion,
           historyLimit: 10,
