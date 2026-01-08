@@ -31,7 +31,7 @@
       "es2015",
       "es6"
     ],
-    "types": ["node", "glob"]
+    "types": ["node"]
   },
   "exclude": [ "node_modules", "dist"]
 }

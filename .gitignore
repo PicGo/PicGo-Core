@@ -8,3 +8,6 @@ test.jpg
 .serena/
 .pnpm-store/
 test.js
+specs/
+.env
+openspec/
