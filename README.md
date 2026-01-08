@@ -80,8 +80,9 @@ $ picgo -h
     set|config <module> [name]           configure config of picgo modules
     upload|u [input...]                  upload, go go go
     use [module]                         use modules of picgo
-    init [options] <template> [project]  create picgo plugin\'s development templates
 ```
+
+Note: the plugin template initializer has moved to the standalone [picgo-init](https://github.com/PicGo/PicGo-Init) package.
 
 #### Upload a picture from path
 
