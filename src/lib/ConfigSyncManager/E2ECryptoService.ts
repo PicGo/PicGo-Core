@@ -90,20 +90,20 @@ class E2ECryptoService {
  * Ensure encrypted payload includes a client KEK salt for E2E decryption.
  */
 const requireClientKekSalt = (res: ISyncConfigResponse): string => {
-  if (!res.clientKekSalt) {
+  if (!res.encryption?.clientKekSalt) {
     throw new CorruptedDataError('Missing clientKekSalt for encrypted config')
   }
-  return res.clientKekSalt
+  return res.encryption.clientKekSalt
 }
 
 /**
  * Ensure encrypted payload includes an encrypted DEK for E2E decryption.
  */
 const requireClientDekEncrypted = (res: ISyncConfigResponse): string => {
-  if (!res.clientDekEncrypted) {
+  if (!res.encryption?.clientDekEncrypted) {
     throw new CorruptedDataError('Missing clientDekEncrypted for encrypted config')
   }
-  return res.clientDekEncrypted
+  return res.encryption.clientDekEncrypted
 }
 
 export { E2ECryptoService, requireClientDekEncrypted, requireClientKekSalt }

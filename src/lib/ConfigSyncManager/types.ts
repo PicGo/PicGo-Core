@@ -55,9 +55,11 @@ export interface IE2ERequestFields {
 export interface ISyncConfigResponse {
   version: number
   config: string
-  e2eVersion?: number
-  clientKekSalt?: string
-  clientDekEncrypted?: string
+  encryption?: {
+    e2eVersion?: number
+    clientKekSalt?: string
+    clientDekEncrypted?: string
+  }
 }
 
 export interface ISyncOptions {

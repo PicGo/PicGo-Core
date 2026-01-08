@@ -279,7 +279,7 @@ export class ConfigSyncManager {
       return null
     }
     this.currentRemoteVersion = res.version
-    const e2eVersion = resolveE2EVersion(res.e2eVersion)
+    const e2eVersion = resolveE2EVersion(res.encryption?.e2eVersion)
 
     if (e2eVersion === E2EVersion.V1) {
       const clientKekSalt = requireClientKekSalt(res)
