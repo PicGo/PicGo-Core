@@ -10,7 +10,7 @@ import uploaders from '../plugins/uploader'
 import transformers from '../plugins/transformer'
 import PluginLoader from '../lib/PluginLoader'
 import { get, set, unset } from 'lodash'
-import { IHelper, IImgInfo, IConfig, IPicGo, IStringKeyMap, IPluginLoader, II18nManager, IPicGoPlugin, IPicGoPluginInterface, IRequest } from '../types'
+import { IHelper, IImgInfo, IConfig, IPicGo, IStringKeyMap, IPluginLoader, II18nManager, IPicGoPlugin, IPicGoPluginInterface, IRequest, IUploaderConfigManager } from '../types'
 import getClipboardImage from '../utils/getClipboardImage'
 import Request from '../lib/Request'
 import DB from '../utils/db'
@@ -19,6 +19,7 @@ import { IBuildInEvent, IBusEvent } from '../utils/enum'
 import { eventBus } from '../utils/eventBus'
 import { isConfigKeyInBlackList, isInputConfigValid } from '../utils/common'
 import { I18nManager } from '../i18n'
+import { UploaderConfigManager } from '../lib/UploaderConfigManager'
 
 export class PicGo extends EventEmitter implements IPicGo {
   private _config!: IConfig
@@ -33,6 +34,7 @@ export class PicGo extends EventEmitter implements IPicGo {
   output: IImgInfo[]
   input: any[]
   pluginHandler: PluginHandler
+  uploaderConfig!: IUploaderConfigManager
   /**
    * @deprecated will be removed in v1.5.0+
    *
@@ -100,6 +102,7 @@ export class PicGo extends EventEmitter implements IPicGo {
       setCurrentPluginName('')
       // load third-party plugins
       this._pluginLoader.load()
+      this.uploaderConfig = new UploaderConfigManager(this)
       this.lifecycle = new Lifecycle(this)
     } catch (e: any) {
       this.emit(IBuildInEvent.UPLOAD_PROGRESS, -1)

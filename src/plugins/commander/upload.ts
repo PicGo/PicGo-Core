@@ -11,8 +11,8 @@ const upload: IPlugin = {
       .description('upload, go go go')
       .arguments('[input...]')
       .alias('u')
-      .action((input: string[]) => {
-        (async () => {
+      .action(async (input: string[]) => {
+        try {
           const inputList = input
             .map((item: string) => {
               return isUrl(item) ? item : path.resolve(item)
@@ -25,7 +25,12 @@ const upload: IPlugin = {
               return exist
             })
           await ctx.upload(inputList)
-        })().catch((e) => { ctx.log.error(e) })
+        } catch (e: any) {
+          ctx.log.error(e)
+          if (process.argv.includes('--debug')) {
+            throw e
+          }
+        }
       })
   }
 }

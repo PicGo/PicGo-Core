@@ -5,6 +5,7 @@ import setting from './setting'
 import use from './use'
 import proxy from './proxy'
 import i18n from './i18n'
+import { uploader } from './uploader'
 import { IPicGo } from '../../types'
 
 export default (ctx: IPicGo): void => {
@@ -15,4 +16,5 @@ export default (ctx: IPicGo): void => {
   ctx.cmd.register('use', use)
   ctx.cmd.register('proxy', proxy)
   ctx.cmd.register('i18n', i18n)
+  ctx.cmd.register('uploader', uploader)
 }
