@@ -102,11 +102,19 @@ Thanks to [vs-picgo](https://github.com/Spades-S/vs-picgo) && [Spades-S](https:/
 
 #### Manage uploader configs
 
-Since v1.8.0, PicGo-Core supports multiple configurations per uploader. Just like the configuration of Electron version of PicGo.
+Since v1.8.0, PicGo-Core supports multiple configurations per uploader. Just like the configuration of the Electron version of PicGo.
 
-You can use `picgo set uploader <type> [name] [configName]` to configure different uploader configurations.
+You can use `picgo set uploader <type> [configName]` to configure different uploader configurations.
 
 And you can use `picgo use uploader <type> [configName]` to switch between different uploader configurations.
+
+For example:
+
+```bash
+picgo set uploader github Test
+
+picgo use uploader github Test
+```
 
 For more details, you can use `picgo uploader -h` to check the help of uploader management:
 
