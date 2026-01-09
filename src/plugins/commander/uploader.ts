@@ -117,7 +117,7 @@ export const uploader: IPlugin = {
             {
               type: 'list',
               name: 'configName',
-              message: opAnswer.operation === 'rename' ? 'Choose a config to rename:' : 'Choose a config to delete:',
+              message: opAnswer.operation === 'rename' ? 'Choose a config to rename:' : opAnswer.operation === 'copy' ? 'Choose a config to copy:' : 'Choose a config to delete:',
               choices: names
             }
           ])

@@ -66,6 +66,10 @@ export class UploaderConfigManager implements IUploaderConfigManager {
     const store = this.readTypeStore(type)
 
     if (store.configList.length === 0) {
+      this.ctx.log.warn(
+        `[UploaderConfigManager] No existing configs for uploader type "${type}". Creating a new metadata-only config` +
+        `${configName ? ` named "${normalizeName(configName)}"` : ''}. Please configure it before uploading.`
+      )
       return this.createOrUpdate(type, configName, {})
     }
 
