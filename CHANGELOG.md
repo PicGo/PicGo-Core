@@ -1,3 +1,12 @@
+# :tada: 1.8.0 (2026-01-09)
+
+
+### :sparkles: Features
+
+* **config:** add multi-config support ([#188](https://github.com/PicGo/PicGo-Core/issues/188)) ([b43f7aa](https://github.com/PicGo/PicGo-Core/commit/b43f7aa))
+
+
+
 # :tada: 1.7.0 (2026-01-08)
 
 
