@@ -600,24 +600,6 @@ export interface IImgSize {
 }
 
 /**
- * for initUtils
- */
-export interface IFileTree {
-  [filePath: string]: string | Buffer
-}
-
-export interface IOptions {
-  template: string // template name
-  dest: string // destination for template to generate
-  hasSlash: boolean // check if is officail template
-  inPlace: boolean // check if is given project name
-  clone: boolean // check if use git clone
-  offline: boolean // check if use offline mode
-  tmp: string // cache template
-  project: string // project name
-}
-
-/**
  * for clipboard image
  */
 export interface IClipboardImage {

@@ -77,12 +77,19 @@ $ picgo -h
     install|add <plugins...>             install picgo plugin
     uninstall|rm <plugins...>            uninstall picgo plugin
     update <plugins...>                  update picgo plugin
-    set|config <module> [name]           configure config of picgo modules
+    set <module> [name]                  configure config of picgo modules
     upload|u [input...]                  upload, go go go
     server [options]                     run PicGo as a standalone server
     login [token]                        login to picgo.app
     use [module]                         use modules of picgo
-    init [options] <template> [project]  create picgo plugin\'s development templates
+```
+
+Note: the plugin's template initializer has moved to the standalone [picgo-init](https://github.com/PicGo/PicGo-Init) package.
+
+You can use the following command to init a picgo plugin template:
+
+```bash
+npx picgo-init plugin <your-plugin-folder>
 ```
 
 #### Upload a picture from path
