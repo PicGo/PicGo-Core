@@ -76,9 +76,9 @@ $ picgo -h
     install|add [options] <plugins...>       install picgo plugin
     uninstall|rm <plugins...>                uninstall picgo plugin
     update [options] <plugins...>            update picgo plugin
-    set <module> [name] [configName]         configure config of picgo modules(uploader/transformer/plugin)
+    set <module> [name] [configName]         configure config of picgo modules (uploader/transformer/plugin)
     upload|u [input...]                      upload, go go go
-    use [module] [name] [configName]         use module(uploader/transformer/plugin) of picgo
+    use [module] [name] [configName]         use module (uploader/transformer/plugin) of picgo
     i18n [lang]                              change picgo language
     uploader                                 manage uploader configurations
     help [command]                           display help for command
@@ -120,7 +120,7 @@ Options:
 Commands:
   list [type]                               list uploader configurations
   rename <type> <oldName> <newName>         rename a config
-  copy <type> <configName> <newConfigName>  copy a config(does not switch current uploader)
+  copy <type> <configName> <newConfigName>  copy a config (does not switch current uploader)
   rm <type> <configName>                    remove a config
 ```
 

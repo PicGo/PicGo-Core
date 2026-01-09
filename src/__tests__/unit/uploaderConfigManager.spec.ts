@@ -288,4 +288,64 @@ describe('UploaderConfigManager', () => {
     expect(created).toBeTruthy()
     expect(created?.token).toBe('a')
   })
+
+  it('rename() updates _configName and mirrors when the renamed config is active', () => {
+    vi.spyOn(Date, 'now').mockReturnValue(4000)
+
+    const active = {
+      token: 'a',
+      _configName: 'Default',
+      _id: '1',
+      _createdAt: 1,
+      _updatedAt: 1
+    }
+
+    const other = {
+      token: 'b',
+      _configName: 'Work',
+      _id: '2',
+      _createdAt: 2,
+      _updatedAt: 2
+    }
+
+    const { ctx, config } = createMockCtx({
+      picBed: {
+        current: 'smms',
+        uploader: 'smms',
+        smms: active
+      },
+      picgoPlugins: {},
+      uploader: {
+        smms: {
+          configList: [active, other],
+          defaultId: '1'
+        }
+      }
+    }, ['smms'])
+
+    const manager = new UploaderConfigManager(ctx)
+    manager.rename('smms', 'default', 'Personal')
+
+    expect(get(config, 'uploader.smms.defaultId')).toBe('1')
+    expect(get(config, 'picBed.current')).toBe('smms')
+    expect(get(config, 'picBed.uploader')).toBe('smms')
+
+    const list = get(config, 'uploader.smms.configList') as Array<Record<string, unknown>>
+    const renamed = list.find(item => item._id === '1') as Record<string, unknown>
+    expect(renamed._configName).toBe('Personal')
+    expect(renamed._createdAt).toBe(1)
+    expect(renamed._updatedAt).toBe(4000)
+    expect(renamed.token).toBe('a')
+
+    const untouched = list.find(item => item._id === '2') as Record<string, unknown>
+    expect(untouched._configName).toBe('Work')
+    expect(untouched._updatedAt).toBe(2)
+
+    const mirror = get(config, 'picBed.smms') as Record<string, unknown>
+    expect(mirror._id).toBe('1')
+    expect(mirror._configName).toBe('Personal')
+    expect(mirror._createdAt).toBe(1)
+    expect(mirror._updatedAt).toBe(4000)
+    expect(mirror.token).toBe('a')
+  })
 })

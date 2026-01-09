@@ -49,7 +49,7 @@ const setting = {
     cmd.program
       .command('set')
       .arguments('<module> [name] [configName]')
-      .description('configure config of picgo modules(uploader/transformer/plugin)')
+      .description('configure config of picgo modules (uploader/transformer/plugin)')
       .action(async (module: string, name?: string, configName?: string) => {
         try {
           // // load third-party plugins

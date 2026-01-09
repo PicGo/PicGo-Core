@@ -224,7 +224,7 @@ export const uploader: IPlugin = {
 
     uploaderCmd
       .command('copy <type> <configName> <newConfigName>')
-      .description('copy a config')
+      .description('copy a config (does not switch current uploader)')
       .action(async (type: string, configName: string, newConfigName: string) => {
         try {
           ctx.uploaderConfig.copy(type, configName, newConfigName)

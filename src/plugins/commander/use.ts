@@ -19,12 +19,12 @@ const use: IPlugin = {
     cmd.program
       .command('use')
       .arguments('[module] [name] [configName]')
-      .description('use module(uploader/transformer/plugin) of picgo')
+      .description('use a module (uploader/transformer/plugin) of picgo')
       .action(async (module?: string, name?: string, configName?: string) => {
         try {
           if (module === 'uploader' && name) {
             ctx.uploaderConfig.use(name, configName)
-            ctx.log.success('Configure config successfully!')
+            ctx.log.success('Activated config successfully!')
             return
           }
 
