@@ -49,6 +49,11 @@ export interface IPicGo extends NodeJS.EventEmitter {
    * plugin system core part transformer\uploader\beforeTransformPlugins...
    */
   helper: IHelper
+
+  /**
+   * uploader multi-config manager
+   */
+  uploaderConfig: IUploaderConfigManager
   /**
    * picgo-core version
    */
@@ -92,6 +97,30 @@ export interface IPicGo extends NodeJS.EventEmitter {
    * upload gogogo
    */
   upload: (input?: any[]) => Promise<IImgInfo[] | Error>
+}
+
+export interface IUploaderConfigItem {
+  _id: string
+  _configName: string
+  _createdAt: number
+  _updatedAt: number
+  [key: string]: unknown
+}
+
+export interface IUploaderTypeConfigs {
+  configList: IUploaderConfigItem[]
+  defaultId: string
+}
+
+export interface IUploaderConfigManager {
+  listUploaderTypes: () => string[]
+  getConfigList: (type: string) => IUploaderConfigItem[]
+  getActiveConfig: (type: string) => IUploaderConfigItem | undefined
+  use: (type: string, configName?: string) => IUploaderConfigItem
+  createOrUpdate: (type: string, configName?: string, configPatch?: IStringKeyMap<unknown>) => IUploaderConfigItem
+  copy: (type: string, configName: string, newConfigName: string) => IUploaderConfigItem
+  rename: (type: string, oldName: string, newName: string) => IUploaderConfigItem
+  remove: (type: string, configName: string) => void
 }
 
 /**

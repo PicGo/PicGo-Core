@@ -30,6 +30,8 @@ Always ask questions before create proposal files if unsure about anything in th
 - **Exports**: do not use `export default` for new/modified modules. Prefer named exports (e.g. `export { ServerManager }`) and named imports (e.g. `import { ServerManager } from '...'`).
 - Keep TypeScript types explicit; avoid ad-hoc `any` when possible.
 - Don't write `as any` in TypeScript code unless absolutely necessary. Always prefer explicit types.
+- **Commander actions**: prefer `.action(async (...) => { ... })` and avoid wrapping an IIFE like `.action(() => { (async () => { ... })().catch(...) })`.
+- **Commander prompts**: avoid `prompt<any>` / `prompt<IStringKeyMap<any>>`; declare a concrete answer type (e.g. `prompt<{ operation: 'list' | 'rename' }>(...)`).
 - **Config persistence**: use `ctx.saveConfig(...)` for changes that must persist to disk; use `ctx.setConfig(...)` only for in-memory/session updates.
 
 ## Execution Rules

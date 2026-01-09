@@ -65,29 +65,23 @@ $ picgo -h
   Usage: picgo [options] [command]
 
   Options:
-
-    -v, --version                 output the version number
-    -d, --debug                   debug mode
-    -s, --silent                  silent mode
-    -c, --config <path>           set config path
-    -h, --help                    output usage information
+    -v, --version                            output the version number
+    -d, --debug                              debug mode
+    -s, --silent                             silent mode
+    -c, --config <path>                      set config path
+    -p, --proxy <url>                        set proxy for uploading
+    -h, --help                               display help for command
 
   Commands:
-
-    install|add <plugins...>             install picgo plugin
-    uninstall|rm <plugins...>            uninstall picgo plugin
-    update <plugins...>                  update picgo plugin
-    set <module> [name]                  configure config of picgo modules
-    upload|u [input...]                  upload, go go go
-    use [module]                         use modules of picgo
-```
-
-Note: the plugin's template initializer has moved to the standalone [picgo-init](https://github.com/PicGo/PicGo-Init) package.
-
-You can use the following command to init a picgo plugin template:
-
-```bash
-npx picgo-init plugin <your-plugin-folder>
+    install|add [options] <plugins...>       install picgo plugin
+    uninstall|rm <plugins...>                uninstall picgo plugin
+    update [options] <plugins...>            update picgo plugin
+    set <module> [name] [configName]         configure config of picgo modules (uploader/transformer/plugin)
+    upload|u [input...]                      upload, go go go
+    use [module] [name] [configName]         use module (uploader/transformer/plugin) of picgo
+    i18n [lang]                              change picgo language
+    uploader                                 manage uploader configurations
+    help [command]                           display help for command
 ```
 
 #### Upload a picture from path
@@ -105,6 +99,41 @@ picgo upload
 ```
 
 Thanks to [vs-picgo](https://github.com/Spades-S/vs-picgo) && [Spades-S](https://github.com/Spades-S) for providing the method to upload picture from clipboard.
+
+#### Manage uploader configs
+
+Since v1.8.0, PicGo-Core supports multiple configurations per uploader. Just like the configuration of Electron version of PicGo.
+
+You can use `picgo set uploader <type> [name] [configName]` to configure different uploader configurations.
+
+And you can use `picgo use uploader <type> [configName]` to switch between different uploader configurations.
+
+For more details, you can use `picgo uploader -h` to check the help of uploader management:
+
+```bash
+Usage: picgo uploader [options] [command]
+
+
+Options:
+  -h, --help                                display help for command
+
+Commands:
+  list [type]                               list uploader configurations
+  rename <type> <oldName> <newName>         rename a config
+  copy <type> <configName> <newConfigName>  copy a config (does not switch current uploader)
+  rm <type> <configName>                    remove a config
+```
+
+
+#### Init a picgo plugin template
+
+Note: the plugin's template initializer has moved to the standalone [picgo-init](https://github.com/PicGo/PicGo-Init) package.
+
+You can use the following command to init a picgo plugin template:
+
+```bash
+npx picgo-init plugin <your-plugin-folder>
+```
 
 ### Use in node project
 
