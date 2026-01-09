@@ -81,6 +81,7 @@
     "execa": "^5.1.1",
     "globals": "^16.5.0",
     "husky": "^9.1.7",
+    "rimraf": "^6.1.2",
     "rollup": "^4.53.3",
     "rollup-plugin-copy": "^3.5.0",
     "rollup-plugin-string": "^3.0.0",
