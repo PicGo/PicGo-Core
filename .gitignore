@@ -11,3 +11,5 @@ test.js
 specs/
 .env
 openspec/
+test*.json
+test.md

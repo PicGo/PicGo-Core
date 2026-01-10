@@ -12,6 +12,7 @@ export const createContext = (ctx: IPicGo): IPicGo => {
     cmd: ctx.cmd,
     server: ctx.server,
     cloud: ctx.cloud,
+    uploaderConfig: ctx.uploaderConfig,
     output: [],
     input: [],
     pluginLoader: ctx.pluginLoader,
