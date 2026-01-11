@@ -11,26 +11,28 @@ import {
 import { URL } from 'url'
 
 export const isUrl = (url: string): boolean => (url.startsWith('http://') || url.startsWith('https://'))
-export const isUrlEncode = (url: string): boolean => {
-  url = url || ''
-  try {
-    // the whole url encode or decode shold not use encodeURIComponent or decodeURIComponent
-    return url !== decodeURI(url)
-  } catch (e) {
-    // if some error caught, try to let it go
-    return false
-  }
-}
 
 /**
  * just encode the url with encodeURI
  */
-export const handleUrlEncode = (url: string): string => {
-  if (!isUrlEncode(url)) {
-    url = encodeURI(url)
+export const handleUrlEncode = (urlStr: string): string => {
+  if (!urlStr) return ''
+
+  try {
+    return new URL(urlStr).href
+  } catch (e) {
+    if (urlStr.startsWith('//')) {
+       try {
+         const tempUrl = new URL('http:' + urlStr)
+         return tempUrl.href.slice(5) // remove 'http:'
+       } catch (_) {}
+    }
+
+    // fallback
+    return encodeURI(urlStr)
   }
-  return url
 }
+
 
 /**
  * @param urlPath the url path need to be encoded safely

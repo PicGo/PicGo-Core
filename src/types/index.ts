@@ -291,10 +291,19 @@ export interface IImgInfo {
   height?: number
   extname?: string
   imgUrl?: string
+  originImgUrl?: string
   mimeType?: string
   filePath?: string
   size?: number
   [propName: string]: any
+}
+
+export interface IUrlRewriteRule {
+  match: string
+  replace: string
+  enable?: boolean
+  global?: boolean
+  ignoreCase?: boolean
 }
 
 export interface IPathTransformedImgInfo extends IImgInfo {
