@@ -110,20 +110,22 @@ export const getURLFile = async (url: string, ctx: IPicGo): Promise<IPathTransfo
             return resp.data as Buffer
           })
         clearTimeout(timeoutId)
+        const urlPath = new URL(url).pathname
+        // Decode the URL-encoded filename to handle non-ASCII characters like Chinese
+        const decodedFileName = decodeURIComponent(path.basename(urlPath))
         if (isImage) {
-          const urlPath = new URL(url).pathname
-          // Decode the URL-encoded filename to handle non-ASCII characters like Chinese
-          const decodedFileName = decodeURIComponent(path.basename(urlPath))
           resolve({
             buffer: res,
             fileName: decodedFileName,
-            extname,
+            extname: extname || path.extname(decodedFileName) || '.png',
             success: true
           })
         } else {
           resolve({
-            success: false,
-            reason: `${url} is not image`
+            buffer: res,
+            fileName: decodedFileName,
+            extname: path.extname(decodedFileName) || '.png',
+            success: true,
           })
         }
       } catch (error: any) {
