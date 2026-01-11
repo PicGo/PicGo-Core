@@ -382,14 +382,16 @@ describe('ConfigSyncManager Versioned Sync Flow', () => {
       data: { a: 1 }
     }, null, 2), 'utf8')
 
-    mockFetchConfig.mockResolvedValue({
-      version: 1,
-      config: payload.config,
-      e2eVersion: payload.e2eVersion,
-      clientKekSalt: payload.clientKekSalt,
-      clientDekEncrypted: payload.clientDekEncrypted
-    })
-    mockUpdateConfig.mockResolvedValue({ success: true, version: 2 })
+	    mockFetchConfig.mockResolvedValue({
+	      version: 1,
+	      config: payload.config,
+	      encryption: {
+	        e2eVersion: payload.e2eVersion,
+	        clientKekSalt: payload.clientKekSalt,
+	        clientDekEncrypted: payload.clientDekEncrypted
+	      }
+	    })
+	    mockUpdateConfig.mockResolvedValue({ success: true, version: 2 })
 
     const onAskPin = vi.fn().mockResolvedValue('1234')
     const ctx = createCtx(configPath)
@@ -418,14 +420,16 @@ describe('ConfigSyncManager Versioned Sync Flow', () => {
       data: { a: 1, settings: { picgoCloud: { enableE2E: false } } }
     }, null, 2), 'utf8')
 
-    mockFetchConfig.mockResolvedValue({
-      version: 1,
-      config: payload.config,
-      e2eVersion: payload.e2eVersion,
-      clientKekSalt: payload.clientKekSalt,
-      clientDekEncrypted: payload.clientDekEncrypted
-    })
-    mockUpdateConfig.mockResolvedValue({ success: true, version: 2 })
+	    mockFetchConfig.mockResolvedValue({
+	      version: 1,
+	      config: payload.config,
+	      encryption: {
+	        e2eVersion: payload.e2eVersion,
+	        clientKekSalt: payload.clientKekSalt,
+	        clientDekEncrypted: payload.clientDekEncrypted
+	      }
+	    })
+	    mockUpdateConfig.mockResolvedValue({ success: true, version: 2 })
 
     const onAskPin = vi.fn().mockResolvedValue('1234')
     const ctx = createCtx(configPath)
@@ -453,13 +457,15 @@ describe('ConfigSyncManager Versioned Sync Flow', () => {
       data: { a: 1 }
     }, null, 2), 'utf8')
 
-    mockFetchConfig.mockResolvedValue({
-      version: 1,
-      config: payload.config,
-      e2eVersion: payload.e2eVersion,
-      clientKekSalt: payload.clientKekSalt,
-      clientDekEncrypted: payload.clientDekEncrypted
-    })
+	    mockFetchConfig.mockResolvedValue({
+	      version: 1,
+	      config: payload.config,
+	      encryption: {
+	        e2eVersion: payload.e2eVersion,
+	        clientKekSalt: payload.clientKekSalt,
+	        clientDekEncrypted: payload.clientDekEncrypted
+	      }
+	    })
 
     const onAskPin = vi.fn()
       .mockResolvedValueOnce('0000')
@@ -488,13 +494,15 @@ describe('ConfigSyncManager Versioned Sync Flow', () => {
       data: { a: 1 }
     }, null, 2), 'utf8')
 
-    mockFetchConfig.mockResolvedValue({
-      version: 1,
-      config: payload.config,
-      e2eVersion: payload.e2eVersion,
-      clientKekSalt: payload.clientKekSalt,
-      clientDekEncrypted: payload.clientDekEncrypted
-    })
+	    mockFetchConfig.mockResolvedValue({
+	      version: 1,
+	      config: payload.config,
+	      encryption: {
+	        e2eVersion: payload.e2eVersion,
+	        clientKekSalt: payload.clientKekSalt,
+	        clientDekEncrypted: payload.clientDekEncrypted
+	      }
+	    })
 
     const onAskPin = vi.fn().mockResolvedValue('0000')
 
@@ -524,13 +532,15 @@ describe('ConfigSyncManager Versioned Sync Flow', () => {
       data: { a: 1 }
     }, null, 2), 'utf8')
 
-    mockFetchConfig.mockResolvedValue({
-      version: 1,
-      config: payload.config,
-      e2eVersion: payload.e2eVersion,
-      clientKekSalt: payload.clientKekSalt,
-      clientDekEncrypted: payload.clientDekEncrypted
-    })
+	    mockFetchConfig.mockResolvedValue({
+	      version: 1,
+	      config: payload.config,
+	      encryption: {
+	        e2eVersion: payload.e2eVersion,
+	        clientKekSalt: payload.clientKekSalt,
+	        clientDekEncrypted: payload.clientDekEncrypted
+	      }
+	    })
 
     const onAskPin = vi.fn().mockResolvedValue('1234')
     const ctx = createCtx(configPath)
