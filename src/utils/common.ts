@@ -13,7 +13,7 @@ import { URL } from 'url'
 export const isUrl = (url: string): boolean => (url.startsWith('http://') || url.startsWith('https://'))
 
 /**
- * just encode the url with encodeURI
+ * handle url encode
  */
 export const handleUrlEncode = (urlStr: string): string => {
   if (!urlStr) return ''
