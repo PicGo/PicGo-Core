@@ -22,10 +22,10 @@ export const handleUrlEncode = (urlStr: string): string => {
     return new URL(urlStr).href
   } catch (e) {
     if (urlStr.startsWith('//')) {
-       try {
-         const tempUrl = new URL('http:' + urlStr)
-         return tempUrl.href.slice(5) // remove 'http:'
-       } catch (_) {}
+      try {
+        const tempUrl = new URL('http:' + urlStr)
+        return tempUrl.href.slice(5) // remove 'http:'
+      } catch (_) {}
     }
 
     // fallback

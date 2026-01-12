@@ -13,8 +13,8 @@
   },
   "scripts": {
     "start": "node ./bin/picgo",
-    "lint": "eslint src --ext .ts && tsc --noEmit",
-    "test:unit": "vitest run",
+    "lint": "tsc --noEmit && eslint src --ext .ts",
+    "test": "vitest run",
     "build": "cross-env NODE_ENV=production rimraf ./dist && rollup -c rollup.config.js",
     "dev": "cross-env NODE_ENV=development rollup -c rollup.config.js -w",
     "patch": "npm version patch && git push origin master && git push origin --tags",
@@ -55,6 +55,7 @@
     "@rollup/plugin-replace": "^6.0.3",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^12.3.0",
+    "@stylistic/eslint-plugin": "^5.7.0",
     "@types/cross-spawn": "^6.0.0",
     "@types/fs-extra": "^5.0.4",
     "@types/image-size": "^0.0.29",

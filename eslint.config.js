@@ -5,6 +5,7 @@ const tsParser = require('@typescript-eslint/parser')
 const importPlugin = require('eslint-plugin-import')
 const promisePlugin = require('eslint-plugin-promise')
 const eslintConfigPrettier = require('eslint-config-prettier')
+const stylistic = require('@stylistic/eslint-plugin')
 
 const tsEslintRecommendedAdjustments =
   tsPlugin.configs['eslint-recommended'].overrides?.[0]?.rules ?? {}
@@ -80,7 +81,8 @@ module.exports = [
     plugins: {
       '@typescript-eslint': tsPlugin,
       import: importPlugin,
-      promise: promisePlugin
+      promise: promisePlugin,
+      '@stylistic': stylistic
     },
     rules: {
       ...tsEslintRecommendedAdjustments,
@@ -122,7 +124,9 @@ module.exports = [
       'import/no-named-as-default-member': 'off',
       'promise/always-return': 'off',
       'promise/no-promise-in-callback': 'off',
-      semi: ['error', 'never']
+      '@stylistic/indent': ['error', 2],
+      '@stylistic/semi': ['error', 'never'],
+      'no-unexpected-multiline': 'error'
     },
     settings: {
       'import/resolver': {
