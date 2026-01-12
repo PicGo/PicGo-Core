@@ -1,4 +1,6 @@
 import 'dotenv/config'
+import { applyUrlRewriteToImgInfo } from './utils/urlRewrite'
+
 export { PicGo } from './core/PicGo'
 export { Lifecycle } from './core/Lifecycle'
 
@@ -36,7 +38,13 @@ export type {
   ISyncOptions,
   IApplyResolvedOptions
 } from './lib/ConfigSyncManager/types'
-export * as PicGoUtils from './utils/common'
+
+import * as PicGoCommonUtils from './utils/common'
+
+export const PicGoUtils = {
+  ...PicGoCommonUtils,
+  applyUrlRewriteToImgInfo
+}
 
 export * from './types'
 export * from './utils/enum'

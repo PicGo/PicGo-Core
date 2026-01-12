@@ -9,6 +9,9 @@ export const ZH_TW: ILocales = {
   SERVER_ERROR: '伺服器出錯，請重試',
   AUTH_FAILED: '認證失敗',
 
+  // url rewrite
+  URL_REWRITE_EMPTY_RESULT: 'URL 重寫結果為空，請檢查你的規則設定',
+
   // smms
   PICBED_SMMS: 'SM.MS',
   PICBED_SMMS_TOKEN: '設定Token',

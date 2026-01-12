@@ -1,3 +1,17 @@
+## :tada: 1.8.1 (2026-01-12)
+
+
+### :sparkles: Features
+
+* global url rewrite ([#189](https://github.com/PicGo/PicGo-Core/issues/189)) ([f86ae00](https://github.com/PicGo/PicGo-Core/commit/f86ae00))
+
+
+### :pencil: Documentation
+
+* update readme ([fc71cd1](https://github.com/PicGo/PicGo-Core/commit/fc71cd1))
+
+
+
 # :tada: 1.8.0 (2026-01-09)
 
 

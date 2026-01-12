@@ -1,6 +1,7 @@
 import { EventEmitter } from 'events'
 import { ILifecyclePlugins, IPicGo, IPlugin, Undefinable } from '../types'
 import { handleUrlEncode } from '../utils/common'
+import { applyUrlRewriteToOutput } from '../utils/urlRewrite'
 import { IBuildInEvent } from '../utils/enum'
 import { createContext } from '../utils/createContext'
 
@@ -94,6 +95,9 @@ export class Lifecycle extends EventEmitter {
   private async afterUpload (ctx: IPicGo): Promise<IPicGo> {
     ctx.emit(IBuildInEvent.AFTER_UPLOAD, ctx)
     ctx.emit(IBuildInEvent.UPLOAD_PROGRESS, 100)
+
+    applyUrlRewriteToOutput(ctx)
+
     await this.handlePlugins(ctx.helper.afterUploadPlugins, ctx)
     let msg = ''
     const length = ctx.output.length
