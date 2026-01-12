@@ -7,6 +7,9 @@ export const ZH_CN = {
   SERVER_ERROR: '服务端出错，请重试',
   AUTH_FAILED: '认证失败',
 
+  // url rewrite
+  URL_REWRITE_EMPTY_RESULT: 'URL 重写结果为空，请检查你的规则配置',
+
   // smms
   PICBED_SMMS: 'SM.MS',
   PICBED_SMMS_TOKEN: '设定Token',

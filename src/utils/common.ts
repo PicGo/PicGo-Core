@@ -11,26 +11,28 @@ import {
 import { URL } from 'url'
 
 export const isUrl = (url: string): boolean => (url.startsWith('http://') || url.startsWith('https://'))
-export const isUrlEncode = (url: string): boolean => {
-  url = url || ''
+
+/**
+ * handle url encode
+ */
+export const handleUrlEncode = (urlStr: string): string => {
+  if (!urlStr) return ''
+
   try {
-    // the whole url encode or decode shold not use encodeURIComponent or decodeURIComponent
-    return url !== decodeURI(url)
+    return new URL(urlStr).href
   } catch (e) {
-    // if some error caught, try to let it go
-    return false
+    if (urlStr.startsWith('//')) {
+      try {
+        const tempUrl = new URL('http:' + urlStr)
+        return tempUrl.href.slice(5) // remove 'http:'
+      } catch (_) {}
+    }
+
+    // fallback
+    return encodeURI(urlStr)
   }
 }
 
-/**
- * just encode the url with encodeURI
- */
-export const handleUrlEncode = (url: string): string => {
-  if (!isUrlEncode(url)) {
-    url = encodeURI(url)
-  }
-  return url
-}
 
 /**
  * @param urlPath the url path need to be encoded safely
@@ -108,20 +110,22 @@ export const getURLFile = async (url: string, ctx: IPicGo): Promise<IPathTransfo
             return resp.data as Buffer
           })
         clearTimeout(timeoutId)
+        const urlPath = new URL(url).pathname
+        // Decode the URL-encoded filename to handle non-ASCII characters like Chinese
+        const decodedFileName = decodeURIComponent(path.basename(urlPath))
         if (isImage) {
-          const urlPath = new URL(url).pathname
-          // Decode the URL-encoded filename to handle non-ASCII characters like Chinese
-          const decodedFileName = decodeURIComponent(path.basename(urlPath))
           resolve({
             buffer: res,
             fileName: decodedFileName,
-            extname,
+            extname: extname || path.extname(decodedFileName) || '.png',
             success: true
           })
         } else {
           resolve({
-            success: false,
-            reason: `${url} is not image`
+            buffer: res,
+            fileName: decodedFileName,
+            extname: path.extname(decodedFileName) || '.png',
+            success: true,
           })
         }
       } catch (error: any) {

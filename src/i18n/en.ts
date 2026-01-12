@@ -9,6 +9,9 @@ export const EN: ILocales = {
   SERVER_ERROR: 'Server error, please try again later',
   AUTH_FAILED: 'Authentication failed',
 
+  // url rewrite
+  URL_REWRITE_EMPTY_RESULT: 'URL rewrite produced an empty result, please check your rule config',
+
   // smms
   PICBED_SMMS: 'SM.MS',
   PICBED_SMMS_TOKEN: 'Set Token',
