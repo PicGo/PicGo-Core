@@ -1,4 +1,5 @@
-import type { IImgInfo, IUrlRewriteRule, Undefinable } from '../types'
+import type { IImgInfo, II18nManager, IUrlRewriteRule, Undefinable } from '../types'
+import type { ILocalesKey } from '../i18n/zh-CN'
 
 export interface IUrlRewriteLogger {
   error: (...args: any[]) => void
@@ -10,7 +11,7 @@ const compileRuleRegExp = (rule: IUrlRewriteRule): RegExp => {
   return new RegExp(rule.match, flags)
 }
 
-export const applyUrlRewriteToImgInfo = (imgInfo: IImgInfo, rules: IUrlRewriteRule[], ctx: { log: IUrlRewriteLogger }): void => {
+export const applyUrlRewriteToImgInfo = (imgInfo: IImgInfo, rules: IUrlRewriteRule[], ctx: { log: IUrlRewriteLogger, i18n?: II18nManager }): void => {
   if (!imgInfo.imgUrl) return
 
   for (const rule of rules) {
@@ -37,7 +38,8 @@ export const applyUrlRewriteToImgInfo = (imgInfo: IImgInfo, rules: IUrlRewriteRu
     imgInfo.imgUrl = nextUrl
 
     if (nextUrl === '') {
-      ctx.log.warn('urlRewrite produced an empty imgUrl, please check your rule config')
+      const warnMsg = ctx.i18n?.translate<ILocalesKey>('URL_REWRITE_EMPTY_RESULT') ?? 'URL_REWRITE_EMPTY_RESULT'
+      ctx.log.warn(warnMsg)
     }
 
     // First Match Wins
@@ -45,7 +47,7 @@ export const applyUrlRewriteToImgInfo = (imgInfo: IImgInfo, rules: IUrlRewriteRu
   }
 }
 
-export const applyUrlRewriteToOutput = (ctx: { getConfig: (name?: string) => any, log: IUrlRewriteLogger, output: IImgInfo[] }): void => {
+export const applyUrlRewriteToOutput = (ctx: { getConfig: (name?: string) => any, log: IUrlRewriteLogger, output: IImgInfo[], i18n?: II18nManager }): void => {
   const rules = ctx.getConfig('settings.urlRewrite.rules') as Undefinable<IUrlRewriteRule[]>
   if (!Array.isArray(rules) || rules.length === 0) return
 
