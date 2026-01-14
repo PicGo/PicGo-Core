@@ -7,6 +7,30 @@ export const ZH_CN = {
   SERVER_ERROR: '服务端出错，请重试',
   AUTH_FAILED: '认证失败',
 
+  // cloud login
+  CLOUD_LOGIN_CANCELLED: '登录已取消',
+  CLOUD_LOGIN_IN_PROGRESS: '登录正在进行中',
+  CLOUD_LOGIN_INVALID_TOKEN: '无效的 token',
+  CLOUD_LOGIN_SUCCESS: '登录成功！',
+  CLOUD_LOGOUT_SUCCESS: '退出登录成功！',
+  CLOUD_LOGIN_SERVER_START_FAILED: '启动登录服务失败',
+  CLOUD_LOGIN_OPEN_BROWSER_FAILED: '无法自动打开浏览器：${message}',
+  CLOUD_LOGIN_OPEN_BROWSER_TIP: '请在浏览器中打开该链接：${url}',
+  CLOUD_LOGIN_STATE_MISMATCH_WARN: 'State 校验失败或缺失，请求已拦截',
+  CLOUD_LOGIN_STATE_INVALID: 'State 无效，请重新登录。',
+  CLOUD_LOGIN_TOKEN_MISSING: '回调中缺少 token。',
+  CLOUD_LOGIN_NOT_IN_PROGRESS: '当前没有进行中的登录流程。',
+  CLOUD_LOGIN_PAGE_TITLE: 'PicGo 登录',
+  CLOUD_LOGIN_RESULT_SUCCESS_TITLE: '授权成功！',
+  CLOUD_LOGIN_RESULT_FAILED_TITLE: '授权失败',
+  CLOUD_LOGIN_RESULT_SUCCESS_MESSAGE: '你可以关闭此窗口并返回 PicGo。',
+
+  // local server
+  SERVER_INVALID_JSON_BODY: 'JSON 请求体无效',
+  SERVER_INVALID_REQUEST_BODY_LIST_REQUIRED: '请求体无效：需要 { list: string[] }',
+  SERVER_FORMDATA_NO_FILES_IN_FILES_FIELD: 'form-data 的 files 字段未找到文件',
+  SERVER_FORMDATA_FILES_MUST_BE_FILES: 'form-data 无效：files 必须是文件',
+
   // url rewrite
   URL_REWRITE_EMPTY_RESULT: 'URL 重写结果为空，请检查你的规则配置',
 

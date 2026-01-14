@@ -56,6 +56,7 @@ export interface IServerManager<E extends Env = any> {
 export interface ICloudManager {
   login: (token?: string) => Promise<void>
   logout: () => void
+  disposeLoginFlow: () => void
 }
 
 export interface IPicGo extends NodeJS.EventEmitter {

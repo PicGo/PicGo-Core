@@ -4,6 +4,7 @@ import path from 'path'
 import type { Hono } from 'hono'
 import type { IPicGo } from '../../types'
 import { BuiltinRoutePath } from '../Routes/routePath'
+import type { ILocalesKey } from '../../i18n/zh-CN'
 
 type FormDataFileLike = {
   name?: string
@@ -23,7 +24,7 @@ const getErrorMessage = (e: unknown): string => {
 type ParsedUploadRequestBody =
   | { kind: ParsedUploadRequestBodyKind.Clipboard }
   | { kind: ParsedUploadRequestBodyKind.List; list: string[] }
-  | { kind: ParsedUploadRequestBodyKind.Invalid; message: string }
+  | { kind: ParsedUploadRequestBodyKind.Invalid; messageKey: ILocalesKey }
 
 enum ParsedUploadRequestBodyKind {
   Clipboard,
@@ -33,7 +34,7 @@ enum ParsedUploadRequestBodyKind {
 
 const parseUploadRequestBody = (value: unknown): ParsedUploadRequestBody => {
   if (typeof value !== 'object' || value === null) {
-    return { kind: ParsedUploadRequestBodyKind.Invalid, message: 'Invalid request body: { list: string[] } required' }
+    return { kind: ParsedUploadRequestBodyKind.Invalid, messageKey: 'SERVER_INVALID_REQUEST_BODY_LIST_REQUIRED' }
   }
 
   if (!('list' in value)) {
@@ -47,7 +48,7 @@ const parseUploadRequestBody = (value: unknown): ParsedUploadRequestBody => {
   }
 
   if (!Array.isArray(list)) {
-    return { kind: ParsedUploadRequestBodyKind.Invalid, message: 'Invalid request body: { list: string[] } required' }
+    return { kind: ParsedUploadRequestBodyKind.Invalid, messageKey: 'SERVER_INVALID_REQUEST_BODY_LIST_REQUIRED' }
   }
 
   if (list.length === 0) {
@@ -57,7 +58,7 @@ const parseUploadRequestBody = (value: unknown): ParsedUploadRequestBody => {
 
   const valid = list.every((item) => typeof item === 'string' && item.trim() !== '')
   if (!valid) {
-    return { kind: ParsedUploadRequestBodyKind.Invalid, message: 'Invalid request body: { list: string[] } required' }
+    return { kind: ParsedUploadRequestBodyKind.Invalid, messageKey: 'SERVER_INVALID_REQUEST_BODY_LIST_REQUIRED' }
   }
 
   return { kind: ParsedUploadRequestBodyKind.List, list: list as string[] }
@@ -79,6 +80,9 @@ const registerCoreRoutes = (app: Hono<any, any, any>, ctx: IPicGo): void => {
   app.post(BuiltinRoutePath.UPLOAD, async (c) => {
     try {
       const contentType = c.req.raw.headers.get('content-type') || ''
+      const t = <T extends ILocalesKey>(key: T, args?: Record<string, string>): string => {
+        return ctx.i18n?.translate<T>(key, args) ?? String(key)
+      }
 
       if (contentType.includes('multipart/form-data')) {
         const tempDir = path.join(ctx.baseDir, 'picgo-form-images')
@@ -88,12 +92,12 @@ const registerCoreRoutes = (app: Hono<any, any, any>, ctx: IPicGo): void => {
           const formData = await c.req.formData()
           const files = formData.getAll('files') as unknown[]
           if (files.length === 0) {
-            return c.json({ success: false, result: [], message: 'No files found in form-data: files' }, 400)
+            return c.json({ success: false, result: [], message: t('SERVER_FORMDATA_NO_FILES_IN_FILES_FIELD') }, 400)
           }
 
           for (const file of files) {
             if (!isFormDataFileLike(file)) {
-              return c.json({ success: false, result: [], message: 'Invalid form-data: files must be file(s)' }, 400)
+              return c.json({ success: false, result: [], message: t('SERVER_FORMDATA_FILES_MUST_BE_FILES') }, 400)
             }
 
             const fileName = getFormDataFileName(file)
@@ -138,12 +142,12 @@ const registerCoreRoutes = (app: Hono<any, any, any>, ctx: IPicGo): void => {
       try {
         body = JSON.parse(bodyText)
       } catch {
-        return c.json({ success: false, result: [], message: 'Invalid JSON body' }, 400)
+        return c.json({ success: false, result: [], message: t('SERVER_INVALID_JSON_BODY') }, 400)
       }
 
       const parsedBody = parseUploadRequestBody(body)
       if (parsedBody.kind === ParsedUploadRequestBodyKind.Invalid) {
-        return c.json({ success: false, result: [], message: parsedBody.message }, 400)
+        return c.json({ success: false, result: [], message: t(parsedBody.messageKey) }, 400)
       }
 
       if (parsedBody.kind === ParsedUploadRequestBodyKind.Clipboard) {

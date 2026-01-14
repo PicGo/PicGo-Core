@@ -1,6 +1,7 @@
 import type { ICloudManager, IPicGo } from '../../types'
 import { AuthHandler } from './Auth'
 import { UserService } from './services/UserService'
+import type { ILocalesKey } from '../../i18n/zh-CN'
 
 class CloudManager implements ICloudManager {
   private readonly ctx: IPicGo
@@ -18,12 +19,12 @@ class CloudManager implements ICloudManager {
     if (token) {
       const ok = await this.user.verifyToken(token)
       if (!ok) {
-        throw new Error('Invalid token')
+        throw new Error(this.ctx.i18n.translate<ILocalesKey>('CLOUD_LOGIN_INVALID_TOKEN'))
       }
       this.ctx.saveConfig({
         'settings.picgoCloud.token': token
       })
-      this.ctx.log.success('Login success!')
+      this.ctx.log.success(this.ctx.i18n.translate<ILocalesKey>('CLOUD_LOGIN_SUCCESS'))
       return
     }
 
@@ -31,17 +32,21 @@ class CloudManager implements ICloudManager {
     if (existingToken) {
       const ok = await this.user.verifyToken(existingToken)
       if (ok) {
-        this.ctx.log.success('Login success!')
+        this.ctx.log.success(this.ctx.i18n.translate<ILocalesKey>('CLOUD_LOGIN_SUCCESS'))
         return
       }
     }
     await this.auth.startLoginFlow()
-    this.ctx.log.success('Login success!')
+    this.ctx.log.success(this.ctx.i18n.translate<ILocalesKey>('CLOUD_LOGIN_SUCCESS'))
   }
 
   logout (): void {
     this.ctx.removeConfig('settings.picgoCloud', 'token')
-    this.ctx.log.success('Logout success!')
+    this.ctx.log.success(this.ctx.i18n.translate<ILocalesKey>('CLOUD_LOGOUT_SUCCESS'))
+  }
+
+  disposeLoginFlow (): void {
+    this.auth.disposeLoginFlow()
   }
 }
 

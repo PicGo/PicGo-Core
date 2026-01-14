@@ -9,6 +9,30 @@ export const ZH_TW: ILocales = {
   SERVER_ERROR: '伺服器出錯，請重試',
   AUTH_FAILED: '認證失敗',
 
+  // cloud login
+  CLOUD_LOGIN_CANCELLED: '登入已取消',
+  CLOUD_LOGIN_IN_PROGRESS: '登入正在進行中',
+  CLOUD_LOGIN_INVALID_TOKEN: '無效的 token',
+  CLOUD_LOGIN_SUCCESS: '登入成功！',
+  CLOUD_LOGOUT_SUCCESS: '登出成功！',
+  CLOUD_LOGIN_SERVER_START_FAILED: '啟動登入服務失敗',
+  CLOUD_LOGIN_OPEN_BROWSER_FAILED: '無法自動打開瀏覽器：${message}',
+  CLOUD_LOGIN_OPEN_BROWSER_TIP: '請在瀏覽器中打開此連結：${url}',
+  CLOUD_LOGIN_STATE_MISMATCH_WARN: 'State 驗證失敗或缺失，請求已攔截',
+  CLOUD_LOGIN_STATE_INVALID: 'State 無效，請重新登入。',
+  CLOUD_LOGIN_TOKEN_MISSING: '回呼中缺少 token。',
+  CLOUD_LOGIN_NOT_IN_PROGRESS: '目前沒有進行中的登入流程。',
+  CLOUD_LOGIN_PAGE_TITLE: 'PicGo 登入',
+  CLOUD_LOGIN_RESULT_SUCCESS_TITLE: '授權成功！',
+  CLOUD_LOGIN_RESULT_FAILED_TITLE: '授權失敗',
+  CLOUD_LOGIN_RESULT_SUCCESS_MESSAGE: '你可以關閉此視窗並返回 PicGo。',
+
+  // local server
+  SERVER_INVALID_JSON_BODY: 'JSON 請求內容無效',
+  SERVER_INVALID_REQUEST_BODY_LIST_REQUIRED: '請求內容無效：需要 { list: string[] }',
+  SERVER_FORMDATA_NO_FILES_IN_FILES_FIELD: 'form-data 的 files 欄位未找到檔案',
+  SERVER_FORMDATA_FILES_MUST_BE_FILES: 'form-data 無效：files 必須是檔案',
+
   // url rewrite
   URL_REWRITE_EMPTY_RESULT: 'URL 重寫結果為空，請檢查你的規則設定',
 

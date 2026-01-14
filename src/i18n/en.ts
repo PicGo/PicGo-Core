@@ -9,6 +9,30 @@ export const EN: ILocales = {
   SERVER_ERROR: 'Server error, please try again later',
   AUTH_FAILED: 'Authentication failed',
 
+  // cloud login
+  CLOUD_LOGIN_CANCELLED: 'Login cancelled',
+  CLOUD_LOGIN_IN_PROGRESS: 'Login is already in progress',
+  CLOUD_LOGIN_INVALID_TOKEN: 'Invalid token',
+  CLOUD_LOGIN_SUCCESS: 'Login success!',
+  CLOUD_LOGOUT_SUCCESS: 'Logout success!',
+  CLOUD_LOGIN_SERVER_START_FAILED: 'Failed to start PicGo server for login',
+  CLOUD_LOGIN_OPEN_BROWSER_FAILED: 'Failed to open browser automatically: ${message}',
+  CLOUD_LOGIN_OPEN_BROWSER_TIP: 'Please open this url in browser: ${url}',
+  CLOUD_LOGIN_STATE_MISMATCH_WARN: 'State mismatch or missing. Request blocked.',
+  CLOUD_LOGIN_STATE_INVALID: 'Invalid state. Please try logging in again.',
+  CLOUD_LOGIN_TOKEN_MISSING: 'Token missing in callback.',
+  CLOUD_LOGIN_NOT_IN_PROGRESS: 'Login flow is not in progress.',
+  CLOUD_LOGIN_PAGE_TITLE: 'PicGo Auth',
+  CLOUD_LOGIN_RESULT_SUCCESS_TITLE: 'Authorization Successful!',
+  CLOUD_LOGIN_RESULT_FAILED_TITLE: 'Authorization Failed',
+  CLOUD_LOGIN_RESULT_SUCCESS_MESSAGE: 'You can now close this window and return to PicGo.',
+
+  // local server
+  SERVER_INVALID_JSON_BODY: 'Invalid JSON body',
+  SERVER_INVALID_REQUEST_BODY_LIST_REQUIRED: 'Invalid request body: { list: string[] } required',
+  SERVER_FORMDATA_NO_FILES_IN_FILES_FIELD: 'No files found in form-data: files',
+  SERVER_FORMDATA_FILES_MUST_BE_FILES: 'Invalid form-data: files must be file(s)',
+
   // url rewrite
   URL_REWRITE_EMPTY_RESULT: 'URL rewrite produced an empty result, please check your rule config',
 
