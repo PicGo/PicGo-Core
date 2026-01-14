@@ -5,10 +5,6 @@ import type { Hono } from 'hono'
 import type { IPicGo } from '../../types'
 import { BuiltinRoutePath } from '../Routes/routePath'
 
-type UploadRequestBody = {
-  list: string[]
-}
-
 type FormDataFileLike = {
   name?: string
   arrayBuffer: () => Promise<ArrayBuffer>
@@ -24,12 +20,47 @@ const getErrorMessage = (e: unknown): string => {
   }
 }
 
-const isUploadRequestBody = (value: unknown): value is UploadRequestBody => {
-  if (typeof value !== 'object' || value === null) return false
-  if (!('list' in value)) return false
+type ParsedUploadRequestBody =
+  | { kind: ParsedUploadRequestBodyKind.Clipboard }
+  | { kind: ParsedUploadRequestBodyKind.List; list: string[] }
+  | { kind: ParsedUploadRequestBodyKind.Invalid; message: string }
+
+enum ParsedUploadRequestBodyKind {
+  Clipboard,
+  List,
+  Invalid
+}
+
+const parseUploadRequestBody = (value: unknown): ParsedUploadRequestBody => {
+  if (typeof value !== 'object' || value === null) {
+    return { kind: ParsedUploadRequestBodyKind.Invalid, message: 'Invalid request body: { list: string[] } required' }
+  }
+
+  if (!('list' in value)) {
+    // GUI compatibility: JSON without list -> upload from clipboard.
+    return { kind: ParsedUploadRequestBodyKind.Clipboard }
+  }
+
   const list = (value as { list?: unknown }).list
-  if (!Array.isArray(list) || list.length === 0) return false
-  return list.every((item) => typeof item === 'string' && item.trim() !== '')
+  if (list === undefined) {
+    return { kind: ParsedUploadRequestBodyKind.Clipboard }
+  }
+
+  if (!Array.isArray(list)) {
+    return { kind: ParsedUploadRequestBodyKind.Invalid, message: 'Invalid request body: { list: string[] } required' }
+  }
+
+  if (list.length === 0) {
+    // GUI compatibility: empty list -> upload from clipboard.
+    return { kind: ParsedUploadRequestBodyKind.Clipboard }
+  }
+
+  const valid = list.every((item) => typeof item === 'string' && item.trim() !== '')
+  if (!valid) {
+    return { kind: ParsedUploadRequestBodyKind.Invalid, message: 'Invalid request body: { list: string[] } required' }
+  }
+
+  return { kind: ParsedUploadRequestBodyKind.List, list: list as string[] }
 }
 
 const isFormDataFileLike = (value: unknown): value is FormDataFileLike => {
@@ -67,8 +98,6 @@ const registerCoreRoutes = (app: Hono<any, any, any>, ctx: IPicGo): void => {
 
             const fileName = getFormDataFileName(file)
             const safeName = path.basename(fileName)
-            const ext = path.extname(safeName)
-            console.log(fileName, safeName, ext)
             const filePath = path.join(tempDir, safeName)
             const buffer = Buffer.from(await file.arrayBuffer())
             await fs.writeFile(filePath, buffer)
@@ -112,11 +141,23 @@ const registerCoreRoutes = (app: Hono<any, any, any>, ctx: IPicGo): void => {
         return c.json({ success: false, result: [], message: 'Invalid JSON body' }, 400)
       }
 
-      if (!isUploadRequestBody(body)) {
-        return c.json({ success: false, result: [], message: 'Invalid request body: { list: string[] } required' }, 400)
+      const parsedBody = parseUploadRequestBody(body)
+      if (parsedBody.kind === ParsedUploadRequestBodyKind.Invalid) {
+        return c.json({ success: false, result: [], message: parsedBody.message }, 400)
       }
 
-      const result = await ctx.upload(body.list)
+      if (parsedBody.kind === ParsedUploadRequestBodyKind.Clipboard) {
+        const result = await ctx.upload()
+        if (result instanceof Error) {
+          return c.json({ success: false, result: [], message: result.message }, 500)
+        }
+        const urls = result
+          .map(item => item.imgUrl)
+          .filter((url): url is string => typeof url === 'string' && url !== '')
+        return c.json({ success: true, result: urls })
+      }
+
+      const result = await ctx.upload(parsedBody.list)
       if (result instanceof Error) {
         return c.json({ success: false, result: [], message: result.message }, 500)
       }
