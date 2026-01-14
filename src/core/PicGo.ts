@@ -10,7 +10,7 @@ import uploaders from '../plugins/uploader'
 import transformers from '../plugins/transformer'
 import PluginLoader from '../lib/PluginLoader'
 import { get, set, unset } from 'lodash'
-import { IHelper, IImgInfo, IConfig, IPicGo, IStringKeyMap, IPluginLoader, II18nManager, IPicGoPlugin, IPicGoPluginInterface, IRequest, IUploaderConfigManager } from '../types'
+import { IHelper, IImgInfo, IConfig, IPicGo, IStringKeyMap, IPluginLoader, II18nManager, IPicGoPlugin, IPicGoPluginInterface, IRequest, IUploaderConfigManager, IServerManager } from '../types'
 import getClipboardImage from '../utils/getClipboardImage'
 import Request from '../lib/Request'
 import DB from '../utils/db'
@@ -36,7 +36,7 @@ export class PicGo extends EventEmitter implements IPicGo {
   output: IImgInfo[]
   input: any[]
   pluginHandler: PluginHandler
-  server!: ServerManager
+  server!: IServerManager
   cloud!: CloudManager
   uploaderConfig!: IUploaderConfigManager
   /**
