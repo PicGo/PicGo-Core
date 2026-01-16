@@ -10,12 +10,16 @@ class UserService {
     this.ctx = ctx
   }
 
+  async whoami (token: string): Promise<{ user: string }> {
+    return await this.client.request<{ user: string }>({
+      method: 'GET',
+      url: '/api/whoami'
+    }, token)
+  }
+
   async verifyToken (token: string): Promise<boolean> {
     try {
-      const res = await this.client.request<{ user: string }>({
-        method: 'GET',
-        url: '/api/whoami'
-      }, token)
+      const res = await this.whoami(token)
       this.ctx.log.success('Welcome:', res.user)
       return true
     } catch {

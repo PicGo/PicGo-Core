@@ -1,4 +1,5 @@
 import type { ICloudManager, IPicGo } from '../../types'
+import axios from 'axios'
 import { AuthHandler } from './Auth'
 import { UserService } from './services/UserService'
 import type { ILocalesKey } from '../../i18n/zh-CN'
@@ -47,6 +48,27 @@ class CloudManager implements ICloudManager {
 
   disposeLoginFlow (): void {
     this.auth.disposeLoginFlow()
+  }
+
+  async getUserInfo (): Promise<{ user: string } | null> {
+    const token = this.ctx.getConfig<string | undefined>('settings.picgoCloud.token')
+    if (!token) return null
+
+    try {
+      return await this.user.whoami(token)
+    } catch (e: unknown) {
+      if (axios.isAxiosError(e)) {
+        const status = e.response?.status
+        if (status === 401 || status === 403) {
+          // Treat invalid token as logged-out and clear it for later retries.
+          this.ctx.removeConfig('settings.picgoCloud', 'token')
+          return null
+        }
+        const message = (e.response?.data as { message?: string } | undefined)?.message ?? e.message
+        throw new Error(message)
+      }
+      throw e
+    }
   }
 }
 

@@ -57,6 +57,7 @@ export interface ICloudManager {
   login: (token?: string) => Promise<void>
   logout: () => void
   disposeLoginFlow: () => void
+  getUserInfo: () => Promise<{ user: string } | null>
 }
 
 export interface IPicGo extends NodeJS.EventEmitter {

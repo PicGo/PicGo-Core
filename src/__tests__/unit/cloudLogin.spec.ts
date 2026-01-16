@@ -130,3 +130,66 @@ describe('CloudManager login flow disposal', () => {
   })
 })
 
+describe('CloudManager getUserInfo', () => {
+  it('returns null when no token is persisted', async () => {
+    const { cloud, ctx } = createCloud(false)
+    const whoamiSpy = vi.spyOn(cloud.user, 'whoami')
+
+    const res = await cloud.getUserInfo()
+
+    expect(res).toBeNull()
+    expect(whoamiSpy).not.toHaveBeenCalled()
+    expect(ctx.removeConfig).not.toHaveBeenCalled()
+  })
+
+  it('returns user info when whoami succeeds', async () => {
+    const { cloud, ctx } = createCloud(false)
+    ;(ctx.getConfig as unknown as ReturnType<typeof vi.fn>).mockReturnValue('token')
+
+    const whoamiSpy = vi.spyOn(cloud.user, 'whoami').mockResolvedValue({
+      user: 'molunerfinn'
+    })
+
+    const res = await cloud.getUserInfo()
+
+    expect(res).toEqual({ user: 'molunerfinn' })
+    expect(whoamiSpy).toHaveBeenCalledWith('token')
+    expect(ctx.removeConfig).not.toHaveBeenCalled()
+  })
+
+  it.each([401, 403])('clears token and returns null when whoami returns %s', async (status) => {
+    const { cloud, ctx } = createCloud(false)
+    ;(ctx.getConfig as unknown as ReturnType<typeof vi.fn>).mockReturnValue('token')
+
+    vi.spyOn(cloud.user, 'whoami').mockRejectedValue({
+      isAxiosError: true,
+      message: 'invalid',
+      response: {
+        status
+      }
+    })
+
+    const res = await cloud.getUserInfo()
+
+    expect(res).toBeNull()
+    expect(ctx.removeConfig).toHaveBeenCalledWith('settings.picgoCloud', 'token')
+  })
+
+  it('throws when whoami fails with non-401/403 axios error', async () => {
+    const { cloud, ctx } = createCloud(false)
+    ;(ctx.getConfig as unknown as ReturnType<typeof vi.fn>).mockReturnValue('token')
+
+    vi.spyOn(cloud.user, 'whoami').mockRejectedValue({
+      isAxiosError: true,
+      message: 'Request failed',
+      response: {
+        status: 500,
+        data: {
+          message: 'server error'
+        }
+      }
+    })
+
+    await expect(cloud.getUserInfo()).rejects.toThrow('server error')
+  })
+})
