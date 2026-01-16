@@ -65,7 +65,9 @@ class CloudManager implements ICloudManager {
           return null
         }
         const message = (e.response?.data as { message?: string } | undefined)?.message ?? e.message
-        throw new Error(message)
+        if (message) {
+          throw new Error(`${e.code ? `Error code: ${e.code}` : ''}, ${message}`)
+        }
       }
       throw e
     }
