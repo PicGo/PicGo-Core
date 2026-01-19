@@ -1,1 +1,1 @@
-export const BASE_URL = process.env.PICGO_CLOUD_API_URL || 'https://picgo.app'
+export const BASE_URL = process.env.PICGO_CLOUD_API_URL || 'https://api.picgo.app'
