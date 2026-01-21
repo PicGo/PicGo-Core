@@ -1,6 +1,6 @@
 import axios, { type AxiosRequestConfig } from 'axios'
 import type { IPicGo } from '../../types'
-import { BASE_URL } from '../utils'
+import { API_BASE_URL } from '../utils'
 
 /**
  * Authenticated Request Client for PicGo Cloud API
@@ -9,7 +9,7 @@ class AuthRequestClient {
   private readonly ctx: IPicGo
   private readonly baseURL: string
 
-  constructor (ctx: IPicGo, baseURL: string = BASE_URL) {
+  constructor (ctx: IPicGo, baseURL: string = API_BASE_URL) {
     this.ctx = ctx
     this.baseURL = baseURL
   }

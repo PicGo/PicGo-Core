@@ -3,7 +3,7 @@ import type { Context } from 'hono'
 import * as crypto from 'node:crypto'
 import { BuiltinRoutePath } from '../Routes/routePath'
 import { IInternalServerManager } from '../../types/internal'
-import { BASE_URL } from '../utils'
+import { CLOUD_BASE_URL } from '../utils'
 import type { ILocalesKey } from '../../i18n/zh-CN'
 
 type IPendingLogin = {
@@ -89,7 +89,7 @@ class AuthHandler {
 
     const callback = encodeURIComponent(`http://127.0.0.1:${actualPort}/auth/callback`)
     this.authState = crypto.randomUUID()
-    const authUrl = `${BASE_URL}/auth/cli?callback=${callback}&state=${this.authState}`
+    const authUrl = `${CLOUD_BASE_URL}?callback=${callback}&state=${this.authState}`
 
     if (abortController.signal.aborted) {
       return await tokenPromise

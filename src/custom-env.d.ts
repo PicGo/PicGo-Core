@@ -14,6 +14,6 @@ declare module '*.ps1' {
 declare namespace NodeJS {
   interface ProcessEnv {
     readonly PICGO_VERSION: string
-    readonly PICGO_CLOUD_API_URL: string
+    readonly PICGO_API_URL: string
   }
 }
