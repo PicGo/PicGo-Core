@@ -171,4 +171,4 @@ picgo.upload()
 
 ## Documentation
 
-For more details, you can checkout [documentation](https://picgo.github.io/PicGo-Core-Doc/).
+For more details, you can checkout [documentation](https://docs.picgo.app/core/).
