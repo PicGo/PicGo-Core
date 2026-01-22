@@ -11,11 +11,12 @@ const server: IPlugin = {
       .option('-p, --port <n>', 'server port')
       .option('-h, --host <s>', 'server host')
       .option('-i, --ignore-existing-external-server', 'ignore existing PicGo server instance')
-      .action(async (options: { port?: string; host?: string; ignoreExistingExternalServer?: boolean }) => {
+      .option('--secret <s>', 'server authentication secret')
+      .action(async (options: { port?: string; host?: string; secret?: string; ignoreExistingExternalServer?: boolean }) => {
         try {
           const port = options.port ? Number(options.port) : undefined
           const host = options.host
-          await ctx.server.listen(port, host, options.ignoreExistingExternalServer)
+          await ctx.server.listen(port, host, options.ignoreExistingExternalServer, options.secret)
         } catch (e) {
           ctx.log.error(e as Error)
         }

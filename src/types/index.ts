@@ -15,9 +15,10 @@ export interface IServerManager<E extends Env = any> {
    * @param port
    * @param host
    * @param ignoreExistingExternalServer PicGo GUI may start a server instance already, if you want to start a new one, set this to true
+   * @param secret shared secret for server authentication
    * @returns
    */
-  listen: (port?: number, host?: string, ignoreExistingExternalServer?: boolean) => Promise<number | void>
+  listen: (port?: number, host?: string, ignoreExistingExternalServer?: boolean, secret?: string) => Promise<number | void>
   shutdown: () => void
   isListening: () => boolean
 
@@ -521,6 +522,7 @@ export interface IConfig {
       port?: number
       host?: string
       enable?: boolean
+      secret?: string
       [others: string]: any
     }
     [others: string]: any

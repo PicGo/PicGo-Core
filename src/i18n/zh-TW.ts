@@ -32,6 +32,10 @@ export const ZH_TW: ILocales = {
   SERVER_INVALID_REQUEST_BODY_LIST_REQUIRED: '請求內容無效：需要 { list: string[] }',
   SERVER_FORMDATA_NO_FILES_IN_FILES_FIELD: 'form-data 的 files 欄位未找到檔案',
   SERVER_FORMDATA_FILES_MUST_BE_FILES: 'form-data 無效：files 必須是檔案',
+  SERVER_AUTH_ENABLED: '[PicGo Server] 認證已啟用。',
+  SERVER_AUTH_DISABLED_WARNING: '[PicGo Server] 警告：認證已關閉，任何人都可以上傳圖片。',
+  SERVER_AUTH_UNAUTHORIZED_REQUEST: '[PicGo Server] 未授權的請求，來源 ${ip}',
+  SERVER_AUTH_QUERY_SECRET_WARNING: '[PicGo Server] 警告：透過 URL 參數傳遞 secret 不安全，請使用 Authorization Header。',
 
   // url rewrite
   URL_REWRITE_EMPTY_RESULT: 'URL 重寫結果為空，請檢查你的規則設定',

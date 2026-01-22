@@ -3,17 +3,30 @@ import { serveStatic } from '@hono/node-server/serve-static'
 import axios from 'axios'
 import { Hono } from 'hono'
 import type { AddressInfo } from 'node:net'
-import type { Handler, MiddlewareHandler } from 'hono'
+import type { Context, Handler, MiddlewareHandler } from 'hono'
 import type { IPicGo, IServerManager, PluginRouterSetup } from '../../types'
 import { rebuildApp } from './utils'
 import { registerCoreRoutes } from './routes'
 import { logger } from 'hono/logger'
 import { cors } from 'hono/cors'
-import { isBuiltinRoutePath } from '../Routes/routePath'
+import { BuiltinRoutePath, isBuiltinRoutePath } from '../Routes/routePath'
+import type { ILocalesKey } from '../../i18n/zh-CN'
 
 type StartServerResult = {
   server: ServerType
   port: number
+}
+
+enum AuthTokenSource {
+  Authorization = 'authorization',
+  Header = 'header',
+  Query = 'query',
+  None = 'none'
+}
+
+type AuthToken = {
+  source: AuthTokenSource
+  token?: string
 }
 
 const normalizePort = (value: unknown): number | undefined => {
@@ -25,6 +38,12 @@ const normalizePort = (value: unknown): number | undefined => {
   return undefined
 }
 
+const normalizeSecret = (value: unknown): string | undefined => {
+  if (typeof value !== 'string') return undefined
+  const trimmed = value.trim()
+  return trimmed === '' ? undefined : trimmed
+}
+
 
 
 class ServerManager implements IServerManager {
@@ -34,6 +53,9 @@ class ServerManager implements IServerManager {
   private server?: ServerType
   private listeningPort?: number
   private listeningHost?: string
+  private authSecret?: string
+  private warnedQuerySecret = false
+  private staticRoutePrefixes: string[] = []
 
   constructor (ctx: IPicGo) {
     this.ctx = ctx
@@ -64,6 +86,10 @@ class ServerManager implements IServerManager {
 
   registerStatic (path: string, root: string): void {
     const routePath = path.endsWith('/*') ? path : `${path}/*`
+    const normalizedPrefix = routePath.replace(/\/\*$/, '') || '/'
+    if (!this.staticRoutePrefixes.includes(normalizedPrefix)) {
+      this.staticRoutePrefixes.push(normalizedPrefix)
+    }
     this.app.use(routePath, serveStatic({ root }))
   }
 
@@ -98,12 +124,108 @@ class ServerManager implements IServerManager {
 
   private initMiddleware (): void {
     this.app.use(cors())
+    this.app.use((c, next) => this.handleAuth(c, next))
     // TODO: replace with custom logger with ctx.log
     this.app.use(logger())
   }
 
   private initCoreRoutes (): void {
     registerCoreRoutes(this.app, this.ctx)
+  }
+
+  private t<T extends ILocalesKey> (key: T, args?: Record<string, string>): string {
+    return this.ctx.i18n?.translate<T>(key, args) ?? String(key)
+  }
+
+  private getRequestPath (c: Context): string {
+    if (typeof c.req.path === 'string') return c.req.path
+    return new URL(c.req.url).pathname
+  }
+
+  private isStaticPath (path: string): boolean {
+    return this.staticRoutePrefixes.some((prefix) => {
+      if (!prefix) return false
+      if (prefix === '/') return path === '/'
+      return path === prefix || path.startsWith(`${prefix}/`)
+    })
+  }
+
+  private shouldSkipAuth (method: string, path: string): boolean {
+    if (method.toUpperCase() === 'OPTIONS') return true
+    if (path === '' || path === '/') return true
+    if (this.isStaticPath(path)) return true
+    if (isBuiltinRoutePath(path) && path !== BuiltinRoutePath.UPLOAD) return true
+    return false
+  }
+
+  private extractAuthToken (c: Context): AuthToken {
+    const headers = c.req.raw.headers
+    if (headers.has('authorization')) {
+      const authHeader = headers.get('authorization') ?? ''
+      const match = authHeader.match(/^\s*Bearer\s+(.+)$/i)
+      return { source: AuthTokenSource.Authorization, token: match?.[1] }
+    }
+
+    if (headers.has('x-picgo-secret')) {
+      return { source: AuthTokenSource.Header, token: headers.get('x-picgo-secret') ?? '' }
+    }
+
+    const url = new URL(c.req.url)
+    if (url.searchParams.has('secret')) {
+      return { source: AuthTokenSource.Query, token: url.searchParams.get('secret') ?? '' }
+    }
+
+    return { source: AuthTokenSource.None }
+  }
+
+  private warnQuerySecretOnce (): void {
+    if (this.warnedQuerySecret) return
+    this.warnedQuerySecret = true
+    this.ctx.log.warn(this.t('SERVER_AUTH_QUERY_SECRET_WARNING'))
+  }
+
+  private getClientIp (c: Context): string {
+    const forwardedFor = c.req.raw.headers.get('x-forwarded-for')
+    if (forwardedFor) {
+      const first = forwardedFor.split(',')[0]?.trim()
+      if (first) return first
+    }
+    const env = c.env as {
+      server?: { incoming?: { socket?: { remoteAddress?: string } } }
+      incoming?: { socket?: { remoteAddress?: string } }
+    }
+    const bindings = env.server ?? env
+    return bindings?.incoming?.socket?.remoteAddress ?? 'unknown'
+  }
+
+  private logUnauthorized (c: Context): void {
+    const ip = this.getClientIp(c)
+    this.ctx.log.warn(this.t('SERVER_AUTH_UNAUTHORIZED_REQUEST', { ip }))
+  }
+
+  private async handleAuth (c: Context, next: () => Promise<void>): Promise<Response | void> {
+    if (!this.authSecret) {
+      return await next()
+    }
+
+    const method = c.req.method
+    const path = this.getRequestPath(c)
+
+    if (this.shouldSkipAuth(method, path)) {
+      return await next()
+    }
+
+    const { source, token } = this.extractAuthToken(c)
+    if (source === AuthTokenSource.Query) {
+      this.warnQuerySecretOnce()
+    }
+
+    if (!token || token !== this.authSecret) {
+      this.logUnauthorized(c)
+      return c.json({ success: false, message: 'Unauthorized' }, 401)
+    }
+
+    return await next()
   }
 
   private async startServer (port: number, host: string): Promise<StartServerResult> {
@@ -143,7 +265,7 @@ class ServerManager implements IServerManager {
     }
   }
 
-  async listen (port?: number, host?: string, ignoreExistingExternalServer: boolean = false): Promise<number | void> {
+  async listen (port?: number, host?: string, ignoreExistingExternalServer: boolean = false, secret?: string): Promise<number | void> {
     if (this.server && this.listeningPort !== undefined) {
       if (host && this.listeningHost && host !== this.listeningHost) {
         this.ctx.log.warn(`Server is already listening at http://${this.listeningHost}:${this.listeningPort}`)
@@ -153,9 +275,15 @@ class ServerManager implements IServerManager {
 
     const configPort = this.ctx.getConfig('settings.server.port')
     const configHost = this.ctx.getConfig('settings.server.host')
+    const configSecret = this.ctx.getConfig('settings.server.secret')
 
     const resolvedPort = normalizePort(port) ?? normalizePort(configPort) ?? 36677
     const resolvedHost = (host ?? (typeof configHost === 'string' ? configHost : undefined) ?? '127.0.0.1')
+
+    this.authSecret = normalizeSecret(secret)
+      ?? normalizeSecret(process.env.PICGO_SERVER_SECRET)
+      ?? normalizeSecret(configSecret)
+    this.warnedQuerySecret = false
 
     this.app = rebuildApp(this.app)
 
@@ -165,6 +293,11 @@ class ServerManager implements IServerManager {
         this.server = server
         this.listeningPort = actualPort
         this.listeningHost = resolvedHost
+        if (this.authSecret) {
+          this.ctx.log.info(this.t('SERVER_AUTH_ENABLED'))
+        } else {
+          this.ctx.log.warn(this.t('SERVER_AUTH_DISABLED_WARNING'))
+        }
         this.ctx.log.info(`[PicGo Server] Listening at http://${resolvedHost}:${actualPort}`)
         return actualPort
       } catch (e: any) {
@@ -195,6 +328,8 @@ class ServerManager implements IServerManager {
       this.server = undefined
       this.listeningPort = undefined
       this.listeningHost = undefined
+      this.authSecret = undefined
+      this.warnedQuerySecret = false
     }
   }
 }

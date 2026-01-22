@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import fs from 'fs-extra'
 import http from 'node:http'
 import os from 'node:os'
@@ -6,7 +6,8 @@ import path from 'node:path'
 import type { AddressInfo } from 'node:net'
 import { get, set } from 'lodash'
 import { ServerManager } from '../../lib/Server'
-import type { IPicGo, IImgInfo } from '../../types'
+import { EN } from '../../i18n/en'
+import type { II18nManager, IPicGo, IImgInfo } from '../../types'
 
 type ILogSpy = {
   warn: ReturnType<typeof vi.fn>
@@ -20,6 +21,28 @@ const createTempDir = async (prefix: string): Promise<string> => {
   return await fs.mkdtemp(path.join(os.tmpdir(), prefix))
 }
 
+const formatI18n = (template: string, args?: Record<string, string>): string => {
+  if (!args) return template
+  return Object.entries(args).reduce((result, [key, value]) => {
+    return result.replaceAll(`\${${key}}`, value)
+  }, template)
+}
+
+const createMockI18n = (): II18nManager => {
+  return {
+    translate: <T extends string>(key: T, args?: Record<string, string>) => {
+      const template = EN[key as keyof typeof EN] ?? String(key)
+      return formatI18n(template, args)
+    },
+    addLocale: () => false,
+    setLanguage: () => {},
+    addLanguage: () => false,
+    getLanguageList: () => []
+  }
+}
+
+const originalEnvSecret = process.env.PICGO_SERVER_SECRET
+
 const createMockCtx = async (
   initialConfig: Record<string, unknown>,
   uploadMock: (input?: any[]) => Promise<IImgInfo[] | Error>
@@ -32,6 +55,7 @@ const createMockCtx = async (
 }> => {
   const config: Record<string, unknown> = structuredClone(initialConfig)
   const baseDir = await createTempDir('picgo-core-server-')
+  const i18n = createMockI18n()
 
   const log: ILogSpy = {
     warn: vi.fn(),
@@ -57,6 +81,7 @@ const createMockCtx = async (
     log,
     getConfig: getConfigMock,
     saveConfig: saveConfigMock,
+    i18n,
     upload: uploadMock
   } as unknown as IPicGo
 
@@ -73,8 +98,13 @@ const toJson = async (res: Response): Promise<any> => {
 }
 
 describe('ServerManager (local server)', () => {
+  beforeEach(() => {
+    process.env.PICGO_SERVER_SECRET = ''
+  })
+
   afterEach(() => {
     vi.restoreAllMocks()
+    process.env.PICGO_SERVER_SECRET = originalEnvSecret
   })
 
   it('listens idempotently and exposes /heartbeat', async () => {
@@ -191,6 +221,106 @@ describe('ServerManager (local server)', () => {
     for (const filePath of uploadedFiles) {
       expect(await fs.pathExists(filePath)).toBe(false)
     }
+
+    server.shutdown()
+    await fs.remove(baseDir)
+  })
+
+  it('enforces authentication for upload and plugin routes with strict priority', async () => {
+    process.env.PICGO_SERVER_SECRET = 'env-secret'
+    const uploadMock = vi.fn(async () => [{ imgUrl: 'https://a.example/secure.png' }])
+    const { ctx, baseDir } = await createMockCtx({
+      settings: { server: { port: 0, host: '127.0.0.1', secret: 'config-secret' } }
+    }, uploadMock)
+
+    const server = new ServerManager(ctx)
+    server.registerGet('/plugin/ping', (c) => c.text('ok'))
+    const port = await server.listen(0, '127.0.0.1', true, 'cli-secret')
+    expect(typeof port).toBe('number')
+
+    const baseUrl = `http://127.0.0.1:${port as number}`
+
+    const heartbeat = await fetch(`${baseUrl}/heartbeat`, { method: 'POST' })
+    expect(heartbeat.status).toBe(200)
+
+    const resNoFallback = await fetch(`${baseUrl}/upload`, {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer wrong',
+        'X-PicGo-Secret': 'cli-secret'
+      }
+    })
+    expect(resNoFallback.status).toBe(401)
+
+    const resEnv = await fetch(`${baseUrl}/upload`, {
+      method: 'POST',
+      headers: { Authorization: 'Bearer env-secret' }
+    })
+    expect(resEnv.status).toBe(401)
+
+    const resAuth = await fetch(`${baseUrl}/upload`, {
+      method: 'POST',
+      headers: { Authorization: 'bearer cli-secret' }
+    })
+    expect(resAuth.status).toBe(200)
+
+    const resPlugin = await fetch(`${baseUrl}/plugin/ping`)
+    expect(resPlugin.status).toBe(401)
+
+    const resPluginAuth = await fetch(`${baseUrl}/plugin/ping`, {
+      headers: { 'X-PicGo-Secret': 'cli-secret' }
+    })
+    expect(resPluginAuth.status).toBe(200)
+
+    server.shutdown()
+    await fs.remove(baseDir)
+  })
+
+  it('logs unauthorized requests with forwarded ip', async () => {
+    const uploadMock = vi.fn(async () => [{ imgUrl: 'https://a.example/secure.png' }])
+    const { ctx, baseDir, log } = await createMockCtx({
+      settings: { server: { port: 0, host: '127.0.0.1' } }
+    }, uploadMock)
+
+    const server = new ServerManager(ctx)
+    const port = await server.listen(0, '127.0.0.1', true, 'secret')
+    expect(typeof port).toBe('number')
+
+    const baseUrl = `http://127.0.0.1:${port as number}`
+    const res = await fetch(`${baseUrl}/upload`, {
+      method: 'POST',
+      headers: { 'X-Forwarded-For': '10.0.0.1, 10.0.0.2' }
+    })
+    expect(res.status).toBe(401)
+
+    const expected = EN.SERVER_AUTH_UNAUTHORIZED_REQUEST.replace('${ip}', '10.0.0.1')
+    expect(log.warn).toHaveBeenCalledWith(expected)
+
+    server.shutdown()
+    await fs.remove(baseDir)
+  })
+
+  it('warns once when query secret is used', async () => {
+    const uploadMock = vi.fn(async () => [{ imgUrl: 'https://a.example/secure.png' }])
+    const { ctx, baseDir, log } = await createMockCtx({
+      settings: { server: { port: 0, host: '127.0.0.1' } }
+    }, uploadMock)
+
+    const server = new ServerManager(ctx)
+    const port = await server.listen(0, '127.0.0.1', true, 'secret')
+    expect(typeof port).toBe('number')
+
+    const baseUrl = `http://127.0.0.1:${port as number}`
+    const res1 = await fetch(`${baseUrl}/upload?secret=secret`, { method: 'POST' })
+    expect(res1.status).toBe(200)
+
+    const res2 = await fetch(`${baseUrl}/upload?secret=secret`, { method: 'POST' })
+    expect(res2.status).toBe(200)
+
+    const warningCalls = log.warn.mock.calls
+      .map(call => call[0])
+      .filter(message => message === EN.SERVER_AUTH_QUERY_SECRET_WARNING)
+    expect(warningCalls).toHaveLength(1)
 
     server.shutdown()
     await fs.remove(baseDir)

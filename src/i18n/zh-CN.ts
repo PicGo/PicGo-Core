@@ -30,6 +30,10 @@ export const ZH_CN = {
   SERVER_INVALID_REQUEST_BODY_LIST_REQUIRED: '请求体无效：需要 { list: string[] }',
   SERVER_FORMDATA_NO_FILES_IN_FILES_FIELD: 'form-data 的 files 字段未找到文件',
   SERVER_FORMDATA_FILES_MUST_BE_FILES: 'form-data 无效：files 必须是文件',
+  SERVER_AUTH_ENABLED: '[PicGo Server] 认证已启用。',
+  SERVER_AUTH_DISABLED_WARNING: '[PicGo Server] 警告：认证已关闭，任何人都可以上传图片。',
+  SERVER_AUTH_UNAUTHORIZED_REQUEST: '[PicGo Server] 未授权的请求，来源 ${ip}',
+  SERVER_AUTH_QUERY_SECRET_WARNING: '[PicGo Server] 警告：通过 URL 参数传递 secret 不安全，请使用 Authorization Header。',
 
   // url rewrite
   URL_REWRITE_EMPTY_RESULT: 'URL 重写结果为空，请检查你的规则配置',

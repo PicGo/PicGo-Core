@@ -32,6 +32,10 @@ export const EN: ILocales = {
   SERVER_INVALID_REQUEST_BODY_LIST_REQUIRED: 'Invalid request body: { list: string[] } required',
   SERVER_FORMDATA_NO_FILES_IN_FILES_FIELD: 'No files found in form-data: files',
   SERVER_FORMDATA_FILES_MUST_BE_FILES: 'Invalid form-data: files must be file(s)',
+  SERVER_AUTH_ENABLED: '[PicGo Server] Authentication enabled.',
+  SERVER_AUTH_DISABLED_WARNING: '[PicGo Server] Warning: Authentication disabled. Anyone can upload images.',
+  SERVER_AUTH_UNAUTHORIZED_REQUEST: '[PicGo Server] Unauthorized request from ${ip}',
+  SERVER_AUTH_QUERY_SECRET_WARNING: '[PicGo Server] Warning: Passing secret via URL query is insecure. Please use Authorization header.',
 
   // url rewrite
   URL_REWRITE_EMPTY_RESULT: 'URL rewrite produced an empty result, please check your rule config',
