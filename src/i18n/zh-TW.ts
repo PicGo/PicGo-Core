@@ -21,6 +21,8 @@ export const ZH_TW: ILocales = {
   CLOUD_LOGIN_STATE_MISMATCH_WARN: 'State 驗證失敗或缺失，請求已攔截',
   CLOUD_LOGIN_STATE_INVALID: 'State 無效，請重新登入。',
   CLOUD_LOGIN_TOKEN_MISSING: '回呼中缺少 token。',
+  CLOUD_LOGIN_CODE_MISSING: '回呼中缺少 code。',
+  CLOUD_LOGIN_EXCHANGE_FAILED: '登入 code 交換失敗。',
   CLOUD_LOGIN_NOT_IN_PROGRESS: '目前沒有進行中的登入流程。',
   CLOUD_LOGIN_PAGE_TITLE: 'PicGo 登入',
   CLOUD_LOGIN_RESULT_SUCCESS_TITLE: '授權成功！',

@@ -1,10 +1,40 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import type { IPicGo } from '../../types'
+import type { ICloudManager, ICommander, IPicGo } from '../../types'
 import { CloudManager } from '../../lib/Cloud'
+import { logout as logoutCommand } from '../../plugins/commander/logout'
+
+const axiosPostMock = vi.hoisted(() => {
+  return vi.fn()
+})
+
+vi.mock('axios', () => {
+  return {
+    default: {
+      post: axiosPostMock,
+      isAxiosError: (error: unknown) => {
+        return typeof error === 'object' && error !== null && 'isAxiosError' in error && (error as { isAxiosError?: boolean }).isAxiosError === true
+      }
+    }
+  }
+})
 
 type II18nMock = {
   translate: ReturnType<typeof vi.fn>
 }
+
+type CallbackResponse = {
+  body: string
+  status: number
+}
+
+type CallbackContext = {
+  req: {
+    query: (key: string) => string | undefined
+  }
+  html: (body: string, status?: number) => CallbackResponse
+}
+
+type CallbackHandler = (c: CallbackContext) => CallbackResponse | Promise<CallbackResponse>
 
 const createI18n = (): II18nMock => {
   return {
@@ -20,6 +50,8 @@ const createI18n = (): II18nMock => {
       if (key === 'CLOUD_LOGIN_STATE_MISMATCH_WARN') return 'State mismatch or missing. Request blocked.'
       if (key === 'CLOUD_LOGIN_STATE_INVALID') return 'Invalid state. Please try logging in again.'
       if (key === 'CLOUD_LOGIN_TOKEN_MISSING') return 'Token missing in callback.'
+      if (key === 'CLOUD_LOGIN_CODE_MISSING') return 'Code missing in callback.'
+      if (key === 'CLOUD_LOGIN_EXCHANGE_FAILED') return 'Failed to exchange login code.'
       if (key === 'CLOUD_LOGIN_NOT_IN_PROGRESS') return 'Login flow is not in progress.'
       if (key === 'CLOUD_LOGIN_PAGE_TITLE') return 'PicGo Auth'
       if (key === 'CLOUD_LOGIN_RESULT_SUCCESS_TITLE') return 'Authorization Successful!'
@@ -33,6 +65,8 @@ const createI18n = (): II18nMock => {
 const createCloud = (serverWasListening: boolean): {
   cloud: CloudManager
   ctx: IPicGo
+  openUrl: ReturnType<typeof vi.fn>
+  openUrlCalled: Promise<string>
   server: {
     isListening: ReturnType<typeof vi.fn>
     listen: ReturnType<typeof vi.fn>
@@ -40,6 +74,7 @@ const createCloud = (serverWasListening: boolean): {
     registerGet: ReturnType<typeof vi.fn>
   }
   i18n: II18nMock
+  authCallbackHandler: CallbackHandler
 } => {
   const log = {
     success: vi.fn(),
@@ -49,11 +84,23 @@ const createCloud = (serverWasListening: boolean): {
     debug: vi.fn()
   }
 
+  let resolveOpenUrl: ((url: string) => void) | undefined
+  const openUrlCalled = new Promise<string>(resolve => {
+    resolveOpenUrl = resolve
+  })
+  const openUrl = vi.fn(async (url: string) => {
+    resolveOpenUrl?.(url)
+  })
+  let authCallbackHandler: CallbackHandler | undefined
   const server = {
     isListening: vi.fn(() => serverWasListening),
     listen: vi.fn(async () => 36677),
     shutdown: vi.fn(),
-    registerGet: vi.fn((_path: string, _handler: unknown, _isInternal?: boolean) => {})
+    registerGet: vi.fn((path: string, handler: CallbackHandler) => {
+      if (path === '/auth/callback') {
+        authCallbackHandler = handler
+      }
+    })
   }
 
   const i18n = createI18n()
@@ -65,12 +112,39 @@ const createCloud = (serverWasListening: boolean): {
     getConfig: vi.fn((_key?: string) => undefined),
     saveConfig: vi.fn(),
     removeConfig: vi.fn(),
-    openUrl: vi.fn(async () => {})
+    openUrl
   } as unknown as IPicGo
 
   const cloud = new CloudManager(ctx)
+  if (!authCallbackHandler) {
+    throw new Error('Auth callback handler not registered')
+  }
 
-  return { cloud, ctx, server, i18n }
+  return { cloud, ctx, openUrl, openUrlCalled, server, i18n, authCallbackHandler }
+}
+
+const createCallbackContext = (query: Record<string, string | undefined>): { ctx: CallbackContext; response: CallbackResponse } => {
+  const response: CallbackResponse = { body: '', status: 0 }
+  const ctx: CallbackContext = {
+    req: {
+      query: (key: string) => query[key]
+    },
+    html: (body: string, status = 200) => {
+      response.body = body
+      response.status = status
+      return response
+    }
+  }
+  return { ctx, response }
+}
+
+const getLoginParams = (authUrl: string): { callback: string | null; state: string | null; challenge: string | null } => {
+  const url = new URL(authUrl)
+  return {
+    callback: url.searchParams.get('callback'),
+    state: url.searchParams.get('state'),
+    challenge: url.searchParams.get('challenge')
+  }
 }
 
 describe('CloudManager login flow disposal', () => {
@@ -127,6 +201,96 @@ describe('CloudManager login flow disposal', () => {
   it('disposeLoginFlow is a no-op when no login is in progress', () => {
     const { cloud } = createCloud(false)
     expect(() => cloud.disposeLoginFlow()).not.toThrow()
+  })
+})
+
+describe('CloudManager PKCE login flow', () => {
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('includes PKCE challenge in auth URL', async () => {
+    const { cloud, openUrlCalled } = createCloud(false)
+
+    const loginPromise = cloud.login()
+
+    const authUrl = await openUrlCalled
+    const { callback, state, challenge } = getLoginParams(authUrl)
+    expect(callback).toBe('http://127.0.0.1:36677/auth/callback')
+    expect(state).toBeTruthy()
+    expect(challenge).toBeTruthy()
+    expect(challenge).toMatch(/^[A-Za-z0-9_-]+$/)
+
+    cloud.disposeLoginFlow()
+    await expect(loginPromise).rejects.toThrow('Login cancelled')
+  })
+
+  it('exchanges code and persists token', async () => {
+    const { cloud, ctx, openUrlCalled, authCallbackHandler } = createCloud(false)
+
+    axiosPostMock.mockResolvedValue({
+      data: { success: true, token: 'token-123' }
+    })
+
+    const loginPromise = cloud.login()
+    const authUrl = await openUrlCalled
+    const { state } = getLoginParams(authUrl)
+    const { ctx: callbackCtx, response } = createCallbackContext({ state: state ?? undefined, code: 'auth-code' })
+    await authCallbackHandler(callbackCtx)
+
+    await expect(loginPromise).resolves.toBeUndefined()
+    expect(ctx.saveConfig).toHaveBeenCalledWith({ 'settings.picgoCloud.token': 'token-123' })
+    expect(response.status).toBe(200)
+  })
+
+  it('returns API message on exchange failure and rejects login', async () => {
+    const { cloud, ctx, openUrlCalled, authCallbackHandler } = createCloud(false)
+
+    axiosPostMock.mockRejectedValue({
+      isAxiosError: true,
+      response: {
+        status: 400,
+        data: { message: 'Invalid code' }
+      }
+    })
+
+    const loginPromise = cloud.login()
+    const authUrl = await openUrlCalled
+    const { state } = getLoginParams(authUrl)
+    const { ctx: callbackCtx, response } = createCallbackContext({ state: state ?? undefined, code: 'bad-code' })
+    await authCallbackHandler(callbackCtx)
+
+    await expect(loginPromise).rejects.toThrow('Invalid code')
+    expect(ctx.saveConfig).not.toHaveBeenCalled()
+    expect(response.status).toBe(400)
+    expect(response.body).toContain('Invalid code')
+  })
+
+  it('rejects when code is missing', async () => {
+    const { cloud, openUrlCalled, authCallbackHandler } = createCloud(false)
+
+    const loginPromise = cloud.login()
+    const authUrl = await openUrlCalled
+    const { state } = getLoginParams(authUrl)
+    const { ctx: callbackCtx, response } = createCallbackContext({ state: state ?? undefined })
+    await authCallbackHandler(callbackCtx)
+
+    await expect(loginPromise).rejects.toThrow('Code missing in callback.')
+    expect(response.status).toBe(400)
+  })
+
+  it('returns 403 on state mismatch and keeps login pending', async () => {
+    const { cloud, openUrlCalled, authCallbackHandler } = createCloud(false)
+
+    const loginPromise = cloud.login()
+    const authUrl = await openUrlCalled
+    const { state } = getLoginParams(authUrl)
+    const { ctx: callbackCtx, response } = createCallbackContext({ state: state ? `${state}-wrong` : 'state-wrong', code: 'auth-code' })
+    await authCallbackHandler(callbackCtx)
+
+    expect(response.status).toBe(403)
+    cloud.disposeLoginFlow()
+    await expect(loginPromise).rejects.toThrow('Login cancelled')
   })
 })
 
@@ -191,5 +355,94 @@ describe('CloudManager getUserInfo', () => {
     })
 
     await expect(cloud.getUserInfo()).rejects.toThrow('server error')
+  })
+})
+
+describe('CloudManager logout', () => {
+  it('clears token and logs success', () => {
+    const { cloud, ctx } = createCloud(false)
+
+    cloud.logout()
+
+    expect(ctx.removeConfig).toHaveBeenCalledWith('settings.picgoCloud', 'token')
+    expect(ctx.log.success).toHaveBeenCalledWith('Logout success!')
+  })
+})
+
+describe('logout command', () => {
+  it('calls cloud.logout', async () => {
+    let actionHandler: (() => void | Promise<void>) | undefined
+    const commandBuilder = {
+      description: vi.fn().mockReturnThis(),
+      action: vi.fn((handler: () => void | Promise<void>) => {
+        actionHandler = handler
+        return commandBuilder
+      })
+    }
+    const program = {
+      command: vi.fn(() => commandBuilder)
+    }
+    const cloud = {
+      logout: vi.fn()
+    }
+    const ctx = {
+      cmd: {
+        program,
+        inquirer: {}
+      },
+      cloud,
+      log: {
+        error: vi.fn()
+      }
+    } as unknown as IPicGo
+
+    logoutCommand.handle(ctx)
+
+    expect(program.command).toHaveBeenCalledWith('logout')
+    expect(commandBuilder.description).toHaveBeenCalledWith('logout from cloud.picgo.app')
+    expect(actionHandler).toBeDefined()
+
+    await actionHandler?.()
+
+    expect(cloud.logout).toHaveBeenCalledTimes(1)
+  })
+
+  it('logs errors from cloud.logout', async () => {
+    let actionHandler: (() => void | Promise<void>) | undefined
+    const commandBuilder = {
+      description: vi.fn().mockReturnThis(),
+      action: vi.fn((handler: () => void | Promise<void>) => {
+        actionHandler = handler
+        return commandBuilder
+      })
+    }
+    const program = {
+      command: vi.fn(() => commandBuilder)
+    }
+    const error = new Error('logout failed')
+    const cloud: ICloudManager = {
+      login: async () => {},
+      logout: () => {
+        throw error
+      },
+      disposeLoginFlow: () => {},
+      getUserInfo: async () => null
+    }
+    const logError = vi.fn()
+    const ctx = {
+      cmd: {
+        program,
+        inquirer: {}
+      } as unknown as ICommander,
+      cloud,
+      log: {
+        error: logError
+      }
+    } as unknown as IPicGo
+
+    logoutCommand.handle(ctx)
+    await actionHandler?.()
+
+    expect(logError).toHaveBeenCalledWith(error)
   })
 })

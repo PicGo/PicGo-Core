@@ -21,6 +21,8 @@ export const EN: ILocales = {
   CLOUD_LOGIN_STATE_MISMATCH_WARN: 'State mismatch or missing. Request blocked.',
   CLOUD_LOGIN_STATE_INVALID: 'Invalid state. Please try logging in again.',
   CLOUD_LOGIN_TOKEN_MISSING: 'Token missing in callback.',
+  CLOUD_LOGIN_CODE_MISSING: 'Code missing in callback.',
+  CLOUD_LOGIN_EXCHANGE_FAILED: 'Failed to exchange login code.',
   CLOUD_LOGIN_NOT_IN_PROGRESS: 'Login flow is not in progress.',
   CLOUD_LOGIN_PAGE_TITLE: 'PicGo Auth',
   CLOUD_LOGIN_RESULT_SUCCESS_TITLE: 'Authorization Successful!',

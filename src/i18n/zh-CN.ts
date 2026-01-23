@@ -19,6 +19,8 @@ export const ZH_CN = {
   CLOUD_LOGIN_STATE_MISMATCH_WARN: 'State 校验失败或缺失，请求已拦截',
   CLOUD_LOGIN_STATE_INVALID: 'State 无效，请重新登录。',
   CLOUD_LOGIN_TOKEN_MISSING: '回调中缺少 token。',
+  CLOUD_LOGIN_CODE_MISSING: '回调中缺少 code。',
+  CLOUD_LOGIN_EXCHANGE_FAILED: '登录 code 交换失败。',
   CLOUD_LOGIN_NOT_IN_PROGRESS: '当前没有进行中的登录流程。',
   CLOUD_LOGIN_PAGE_TITLE: 'PicGo 登录',
   CLOUD_LOGIN_RESULT_SUCCESS_TITLE: '授权成功！',

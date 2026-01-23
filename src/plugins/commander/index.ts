@@ -8,6 +8,7 @@ import proxy from './proxy'
 import i18n from './i18n'
 import { server } from './server'
 import { login } from './login'
+import { logout } from './logout'
 import { uploader } from './uploader'
 import { IPicGo } from '../../types'
 
@@ -22,6 +23,7 @@ const commanders = (ctx: IPicGo): void => {
   ctx.cmd.register('i18n', i18n)
   ctx.cmd.register('server', server)
   ctx.cmd.register('login', login)
+  ctx.cmd.register('logout', logout)
   ctx.cmd.register('uploader', uploader)
 }
 

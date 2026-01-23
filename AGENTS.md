@@ -40,6 +40,7 @@ Always ask questions before create proposal files if unsure about anything in th
 ## Execution Rules
 - If a command fails due to insufficient permissions, rerun with elevated approval.
 - For `pnpm` commands that hit network issues, retry first.
+- After completing a task, run `pnpm lint` and `pnpm test` and ensure they pass before handing work back.
 
 ## Serena MCP & Context7 Tools
 When starting work or if you hit issues, try checking MCP for Serena or Context7 tooling. If available, use those tools to navigate, edit, or fetch docs efficiently.

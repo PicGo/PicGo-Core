@@ -1,9 +1,11 @@
 import type { IPicGo } from '../../types'
 import type { Context } from 'hono'
+import axios from 'axios'
 import * as crypto from 'node:crypto'
 import { BuiltinRoutePath } from '../Routes/routePath'
 import { IInternalServerManager } from '../../types/internal'
 import { CLOUD_BASE_URL } from '../utils'
+import { exchangeToken, generatePkceVerifier, isErrorResponse, pkceChallengeFromVerifier } from './utils'
 import type { ILocalesKey } from '../../i18n/zh-CN'
 
 type IPendingLogin = {
@@ -16,6 +18,7 @@ type IPendingLogin = {
 class AuthHandler {
   private readonly ctx: IPicGo
   private authState: string | null = null
+  private pkceVerifier: string | null = null
   private pending?: IPendingLogin
 
   constructor (ctx: IPicGo) {
@@ -53,6 +56,7 @@ class AuthHandler {
 
         this.pending = undefined
         this.authState = null
+        this.pkceVerifier = null
 
         const reason = abortController.signal.reason
         const fallback = this.ctx.i18n.translate<ILocalesKey>('CLOUD_LOGIN_CANCELLED')
@@ -89,7 +93,9 @@ class AuthHandler {
 
     const callback = encodeURIComponent(`http://127.0.0.1:${actualPort}/auth/callback`)
     this.authState = crypto.randomUUID()
-    const authUrl = `${CLOUD_BASE_URL}?callback=${callback}&state=${this.authState}`
+    this.pkceVerifier = generatePkceVerifier()
+    const challenge = encodeURIComponent(await pkceChallengeFromVerifier(this.pkceVerifier))
+    const authUrl = `${CLOUD_BASE_URL}?callback=${callback}&state=${encodeURIComponent(this.authState)}&challenge=${challenge}`
 
     if (abortController.signal.aborted) {
       return await tokenPromise
@@ -187,8 +193,13 @@ class AuthHandler {
     `
   }
 
-  private handleCallback (c: Context) {
-    const token = c.req.query('token')
+  private abortPendingLogin (pending: IPendingLogin, message: string): void {
+    if (pending.abortController.signal.aborted) return
+    pending.abortController.abort(new Error(message))
+  }
+
+  private async handleCallback (c: Context) {
+    const code = c.req.query('code')
     const state = c.req.query('state')
 
     if (!state || state !== this.authState) {
@@ -196,8 +207,13 @@ class AuthHandler {
       return c.html(this.renderResultPage(false, this.ctx.i18n.translate<ILocalesKey>('CLOUD_LOGIN_STATE_INVALID')), 403)
     }
 
-    if (!token) {
-      return c.html(this.renderResultPage(false, this.ctx.i18n.translate<ILocalesKey>('CLOUD_LOGIN_TOKEN_MISSING')), 400)
+    if (!code) {
+      const message = this.ctx.i18n.translate<ILocalesKey>('CLOUD_LOGIN_CODE_MISSING')
+      const pending = this.pending
+      if (pending) {
+        this.abortPendingLogin(pending, message)
+      }
+      return c.html(this.renderResultPage(false, message), 400)
     }
 
     const pending = this.pending
@@ -205,22 +221,54 @@ class AuthHandler {
       return c.html(this.renderResultPage(false, this.ctx.i18n.translate<ILocalesKey>('CLOUD_LOGIN_NOT_IN_PROGRESS')), 409)
     }
 
-    this.ctx.saveConfig({
-      'settings.picgoCloud.token': token
-    })
-
-    this.authState = null
-
-    this.pending = undefined
-    pending?.resolve(token)
-
-    if (pending?.shouldShutdown) {
-      setTimeout(() => {
-        this.ctx.server.shutdown()
-      }, 100)
+    const verifier = this.pkceVerifier
+    if (!verifier) {
+      const message = this.ctx.i18n.translate<ILocalesKey>('CLOUD_LOGIN_EXCHANGE_FAILED')
+      this.abortPendingLogin(pending, message)
+      return c.html(this.renderResultPage(false, message), 500)
     }
 
-    return c.html(this.renderResultPage(true, this.ctx.i18n.translate<ILocalesKey>('CLOUD_LOGIN_RESULT_SUCCESS_MESSAGE')), 200)
+    try {
+      const exchange = await exchangeToken(code, verifier)
+      if (!exchange.token) {
+        const message = exchange.message ?? this.ctx.i18n.translate<ILocalesKey>('CLOUD_LOGIN_EXCHANGE_FAILED')
+        this.abortPendingLogin(pending, message)
+        return c.html(this.renderResultPage(false, message), 500)
+      }
+
+      this.ctx.saveConfig({
+        'settings.picgoCloud.token': exchange.token
+      })
+
+      this.authState = null
+      this.pkceVerifier = null
+      this.pending = undefined
+      pending.resolve(exchange.token)
+
+      if (pending.shouldShutdown) {
+        setTimeout(() => {
+          this.ctx.server.shutdown()
+        }, 100)
+      }
+
+      return c.html(this.renderResultPage(true, this.ctx.i18n.translate<ILocalesKey>('CLOUD_LOGIN_RESULT_SUCCESS_MESSAGE')), 200)
+    } catch (error: unknown) {
+      let message: string | undefined
+      let status: number | undefined
+      if (axios.isAxiosError(error)) {
+        status = error.response?.status
+        const data = error.response?.data
+        if (isErrorResponse(data)) {
+          message = data.message
+        }
+      }
+
+      const fallback = this.ctx.i18n.translate<ILocalesKey>('CLOUD_LOGIN_EXCHANGE_FAILED')
+      const finalMessage = message ?? fallback
+      const finalStatus = status === 400 ? 400 : 500
+      this.abortPendingLogin(pending, finalMessage)
+      return c.html(this.renderResultPage(false, finalMessage), finalStatus)
+    }
   }
 
   private registerRoutes (): void {

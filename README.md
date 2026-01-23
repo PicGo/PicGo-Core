@@ -82,7 +82,8 @@ $ picgo -h
     i18n [lang]                              change picgo language
     uploader                                 manage uploader configurations
     server [options]                     run PicGo as a standalone server
-    login [token]                        login to picgo.app
+    login [token]                        login to cloud.picgo.app
+    logout                               logout from cloud.picgo.app
     help [command]                           display help for command
 ```
 
@@ -114,6 +115,12 @@ picgo server -p 36677 -h 127.0.0.1
 picgo login
 # or
 picgo login <token>
+```
+
+#### Logout from PicGo Cloud
+
+```bash
+picgo logout
 ```
 
 #### Manage uploader configs

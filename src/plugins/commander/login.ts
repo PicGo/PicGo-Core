@@ -5,7 +5,7 @@ const login: IPlugin = {
     const cmd = ctx.cmd
     cmd.program
       .command('login')
-      .description('login to picgo.app')
+      .description('login to cloud.picgo.app')
       .arguments('[token]')
       .action(async (token?: string) => {
         try {
