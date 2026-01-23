@@ -23,7 +23,7 @@ vi.mock('../../lib/Cloud/services/ConfigService', () => {
   return { ConfigService }
 })
 
-import { ConfigSyncManager, SyncStatus, EncryptionIntent, E2EAskPinReason } from '../../lib/ConfigSyncManager'
+import { ConfigSyncManager, SyncStatus, EncryptionMethod, E2EAskPinReason } from '../../lib/ConfigSyncManager'
 import { E2ECryptoService } from '../../lib/ConfigSyncManager/E2ECryptoService'
 
 const createCtx = (configPath: string): IPicGo => {
@@ -64,6 +64,15 @@ const createCtx = (configPath: string): IPicGo => {
     fs.writeFileSync(configPath, content, 'utf8')
   }
 
+  const i18n = {
+    translate: (key: string, args?: Record<string, string>): string => {
+      if (key === 'CONFIG_SYNC_INVALID_ENCRYPTION_METHOD') {
+        return `Invalid configuration: settings.picgoCloud.encryptionMethod must be one of 'auto', 'sse', 'e2ee'. Found: ${args?.value ?? ''}`
+      }
+      return key
+    }
+  }
+
   return {
     configPath,
     baseDir: path.dirname(configPath),
@@ -77,7 +86,8 @@ const createCtx = (configPath: string): IPicGo => {
     saveConfig,
     getConfig,
     setConfig,
-    removeConfig
+    removeConfig,
+    i18n
   } as unknown as IPicGo
 }
 
@@ -160,16 +170,16 @@ describe('ConfigSyncManager Versioned Sync Flow', () => {
   })
 
   it('should ignore conflicts on ignored fields and avoid pushing them', async () => {
-    await fs.writeFile(configPath, '{ "a": 1, "settings": { "picgoCloud": { "token": "local-token", "enableE2E": false }, "server": { "port": 36677 } } }', 'utf8')
+    await fs.writeFile(configPath, '{ "a": 1, "settings": { "picgoCloud": { "token": "local-token", "encryptionMethod": "sse" }, "server": { "port": 36677 } } }', 'utf8')
     await fs.writeFile(snapshotPath, JSON.stringify({
       version: 5,
       updatedAt: '2020-01-01T00:00:00.000Z',
-      data: { a: 1, settings: { picgoCloud: { token: 'snapshot-token', enableE2E: true }, server: { port: 36677 } } }
+      data: { a: 1, settings: { picgoCloud: { token: 'snapshot-token', encryptionMethod: 'e2ee' }, server: { port: 36677 } } }
     }, null, 2), 'utf8')
 
     mockFetchConfig.mockResolvedValue({
       version: 5,
-      config: '{ "a": 2, "settings": { "picgoCloud": { "token": "remote-token", "enableE2E": true }, "server": { "port": 36677 } } }'
+      config: '{ "a": 2, "settings": { "picgoCloud": { "token": "remote-token", "encryptionMethod": "e2ee" }, "server": { "port": 36677 } } }'
     })
 
     const ctx = createCtx(configPath)
@@ -178,12 +188,12 @@ describe('ConfigSyncManager Versioned Sync Flow', () => {
 
     expect(res.status).toBe(SyncStatus.SUCCESS)
     expect(ctx.getConfig<string>('settings.picgoCloud.token')).toBe('local-token')
-    expect(ctx.getConfig<boolean>('settings.picgoCloud.enableE2E')).toBe(false)
+    expect(ctx.getConfig<string>('settings.picgoCloud.encryptionMethod')).toBe('sse')
     expect(mockUpdateConfig).not.toHaveBeenCalled()
 
     const writtenLocal = parse(await fs.readFile(configPath, 'utf8')) as any
     expect(writtenLocal.settings.picgoCloud.token).toBe('local-token')
-    expect(writtenLocal.settings.picgoCloud.enableE2E).toBe(false)
+    expect(writtenLocal.settings.picgoCloud.encryptionMethod).toBe('sse')
     expect(writtenLocal.a).toBe(2)
   })
 
@@ -319,10 +329,10 @@ describe('ConfigSyncManager Versioned Sync Flow', () => {
     const onAskPin = vi.fn().mockResolvedValue('1234')
     const ctx = createCtx(configPath)
     const manager = new ConfigSyncManager(ctx, { onAskPin })
-    const res = await manager.sync({ encryptionIntent: EncryptionIntent.FORCE_ENCRYPT })
+    const res = await manager.sync({ encryptionMethod: EncryptionMethod.E2EE })
 
     expect(res.status).toBe(SyncStatus.SUCCESS)
-    expect(ctx.getConfig<boolean>('settings.picgoCloud.enableE2E')).toBe(true)
+    expect(ctx.getConfig<string | undefined>('settings.picgoCloud.encryptionMethod')).toBeUndefined()
     expect(onAskPin).toHaveBeenCalledWith(E2EAskPinReason.SETUP, 0)
 
     const [configStr, baseVersion, e2eFields] = mockUpdateConfig.mock.calls[0]
@@ -338,12 +348,12 @@ describe('ConfigSyncManager Versioned Sync Flow', () => {
     expect(decryptedConfig).toContain('"a": 1')
   })
 
-  it('should default to force encrypt when local enableE2E is true', async () => {
-    await fs.writeFile(configPath, '{ "a": 1, "settings": { "picgoCloud": { "enableE2E": true } } }', 'utf8')
+  it('should default to force encrypt when local encryptionMethod is e2ee', async () => {
+    await fs.writeFile(configPath, '{ "a": 1, "settings": { "picgoCloud": { "encryptionMethod": "e2ee" } } }', 'utf8')
     await fs.writeFile(snapshotPath, JSON.stringify({
       version: 1,
       updatedAt: '2020-01-01T00:00:00.000Z',
-      data: { a: 1, settings: { picgoCloud: { enableE2E: true } } }
+      data: { a: 1, settings: { picgoCloud: { encryptionMethod: 'e2ee' } } }
     }, null, 2), 'utf8')
 
     mockFetchConfig.mockResolvedValue({ version: 1, config: '{ "a": 1 }' })
@@ -396,10 +406,10 @@ describe('ConfigSyncManager Versioned Sync Flow', () => {
     const onAskPin = vi.fn().mockResolvedValue('1234')
     const ctx = createCtx(configPath)
     const manager = new ConfigSyncManager(ctx, { onAskPin })
-    const res = await manager.sync({ encryptionIntent: EncryptionIntent.FORCE_PLAIN })
+    const res = await manager.sync({ encryptionMethod: EncryptionMethod.SSE })
 
     expect(res.status).toBe(SyncStatus.SUCCESS)
-    expect(ctx.getConfig<boolean>('settings.picgoCloud.enableE2E')).toBe(false)
+    expect(ctx.getConfig<string | undefined>('settings.picgoCloud.encryptionMethod')).toBeUndefined()
     expect(onAskPin).toHaveBeenCalledWith(E2EAskPinReason.DECRYPT, 0)
 
     const [pushedConfig, baseVersion, e2eFields] = mockUpdateConfig.mock.calls[0]
@@ -408,8 +418,8 @@ describe('ConfigSyncManager Versioned Sync Flow', () => {
     expect(e2eFields).toEqual({ e2eVersion: 0 })
   })
 
-  it('should default to force plain when local enableE2E is false', async () => {
-    const configStr = stringify({ a: 1, settings: { picgoCloud: { enableE2E: false } } }, null, 2)
+  it('should default to force plain when local encryptionMethod is sse', async () => {
+    const configStr = stringify({ a: 1, settings: { picgoCloud: { encryptionMethod: 'sse' } } }, null, 2)
     const cryptoService = new E2ECryptoService()
     const { payload } = cryptoService.generateE2EPayload(stringify({ a: 1 }, null, 2), '1234')
 
@@ -417,7 +427,7 @@ describe('ConfigSyncManager Versioned Sync Flow', () => {
     await fs.writeFile(snapshotPath, JSON.stringify({
       version: 1,
       updatedAt: '2020-01-01T00:00:00.000Z',
-      data: { a: 1, settings: { picgoCloud: { enableE2E: false } } }
+      data: { a: 1, settings: { picgoCloud: { encryptionMethod: 'sse' } } }
     }, null, 2), 'utf8')
 
     mockFetchConfig.mockResolvedValue({
@@ -443,6 +453,23 @@ describe('ConfigSyncManager Versioned Sync Flow', () => {
     expect(baseVersion).toBe(1)
     expect(pushedConfig).toContain('"a": 1')
     expect(e2eFields).toEqual({ e2eVersion: 0 })
+  })
+
+  it('should fail sync when local encryptionMethod is invalid', async () => {
+    await fs.writeFile(configPath, '{ "a": 1, "settings": { "picgoCloud": { "encryptionMethod": "invalid" } } }', 'utf8')
+    await fs.writeFile(snapshotPath, JSON.stringify({
+      version: 1,
+      updatedAt: '2020-01-01T00:00:00.000Z',
+      data: { a: 1 }
+    }, null, 2), 'utf8')
+
+    const ctx = createCtx(configPath)
+    const manager = new ConfigSyncManager(ctx)
+    const res = await manager.sync()
+
+    expect(res.status).toBe(SyncStatus.FAILED)
+    expect(res.message).toBe(`Invalid configuration: settings.picgoCloud.encryptionMethod must be one of 'auto', 'sse', 'e2ee'. Found: "invalid"`)
+    expect(mockFetchConfig).not.toHaveBeenCalled()
   })
 
   it('should retry decryption and succeed with correct PIN', async () => {
@@ -520,7 +547,7 @@ describe('ConfigSyncManager Versioned Sync Flow', () => {
     expect(mockUpdateConfig).not.toHaveBeenCalled()
   })
 
-  it('should auto-enable local preference when remote is encrypted and preference is missing', async () => {
+  it('should keep encryptionMethod undefined when remote is encrypted and preference is missing', async () => {
     const plainConfig = stringify({ a: 1 }, null, 2)
     const cryptoService = new E2ECryptoService()
     const { payload } = cryptoService.generateE2EPayload(plainConfig, '1234')
@@ -548,11 +575,11 @@ describe('ConfigSyncManager Versioned Sync Flow', () => {
     const res = await manager.sync()
 
     expect(res.status).toBe(SyncStatus.SUCCESS)
-    expect(ctx.getConfig<boolean>('settings.picgoCloud.enableE2E')).toBe(true)
+    expect(ctx.getConfig<string | undefined>('settings.picgoCloud.encryptionMethod')).toBeUndefined()
     expect(onAskPin).toHaveBeenCalledWith(E2EAskPinReason.DECRYPT, 0)
     expect(mockUpdateConfig).not.toHaveBeenCalled()
 
     const writtenLocal = parse(await fs.readFile(configPath, 'utf8')) as any
-    expect(writtenLocal.settings.picgoCloud.enableE2E).toBe(true)
+    expect(writtenLocal.settings?.picgoCloud?.encryptionMethod).toBeUndefined()
   })
 })

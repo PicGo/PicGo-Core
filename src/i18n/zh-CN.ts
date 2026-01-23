@@ -141,7 +141,10 @@ export const ZH_CN = {
   PLUGIN_HANDLER_PLUGIN_UPDATE_SUCCESS: '插件更新成功',
   PLUGIN_HANDLER_PLUGIN_UPDATE_FAILED: '插件更新失败',
   PLUGIN_HANDLER_PLUGIN_UPDATE_FAILED_REASON: '插件更新失败，失败码为${code}，错误日志为 \n ${data}',
-  PLUGIN_HANDLER_PLUGIN_UPDATE_FAILED_VALID: '插件更新失败，请输入合法插件名'
+  PLUGIN_HANDLER_PLUGIN_UPDATE_FAILED_VALID: '插件更新失败，请输入合法插件名',
+
+  // config sync
+  CONFIG_SYNC_INVALID_ENCRYPTION_METHOD: '配置无效：settings.picgoCloud.encryptionMethod 必须是 \"auto\"、\"sse\" 或 \"e2ee\" 之一，当前为：${value}'
 }
 
 export type ILocalesKey = keyof typeof ZH_CN

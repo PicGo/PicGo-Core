@@ -143,5 +143,8 @@ export const EN: ILocales = {
   PLUGIN_HANDLER_PLUGIN_UPDATE_SUCCESS: 'Plugin updated successfully',
   PLUGIN_HANDLER_PLUGIN_UPDATE_FAILED: 'Plugin update failed',
   PLUGIN_HANDLER_PLUGIN_UPDATE_FAILED_REASON: 'Plugin update failed, error code is ${code}, error log is \n ${data}',
-  PLUGIN_HANDLER_PLUGIN_UPDATE_FAILED_VALID: 'Plugin update failed, please enter a valid plugin name'
+  PLUGIN_HANDLER_PLUGIN_UPDATE_FAILED_VALID: 'Plugin update failed, please enter a valid plugin name',
+
+  // config sync
+  CONFIG_SYNC_INVALID_ENCRYPTION_METHOD: 'Invalid configuration: settings.picgoCloud.encryptionMethod must be one of \'auto\', \'sse\', \'e2ee\'. Found: ${value}'
 }

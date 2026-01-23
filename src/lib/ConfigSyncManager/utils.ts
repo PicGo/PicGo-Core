@@ -3,10 +3,12 @@ import { parse, stringify } from 'comment-json'
 import { cloneDeep, get, isPlainObject, set, unset } from 'lodash'
 import type { IConfig } from '../../types'
 import type { ConfigValue, ISnapshot } from './types'
-import { E2EVersion, EncryptionIntent } from './types'
-import { UnsupportedVersionError } from './errors'
+import { E2EVersion, EncryptionMethod } from './types'
+import { InvalidEncryptionMethodError, UnsupportedVersionError } from './errors'
 
-const IGNORED_PATHS = ['settings.picgoCloud.token', 'settings.picgoCloud.enableE2E']
+const ENCRYPTION_METHOD_PATH = 'settings.picgoCloud.encryptionMethod'
+
+const IGNORED_PATHS = ['settings.picgoCloud.token', ENCRYPTION_METHOD_PATH]
 
 interface IMaskIgnoredOptions {
   cleanupEmptyParents?: boolean
@@ -50,29 +52,30 @@ const maskIgnoredFields = (target: IConfig, source: IConfig, options: IMaskIgnor
   return result
 }
 
+
 /**
- * Read the local E2E preference from config when it is a boolean.
+ * Read the local encryption method preference from config.
  */
-const getLocalEnableE2E = (config: IConfig): boolean | undefined => {
-  const value = get(config, 'settings.picgoCloud.enableE2E')
-  return typeof value === 'boolean' ? value : undefined
+const getLocalEncryptionMethod = (config: IConfig): EncryptionMethod | undefined => {
+  const value = get(config, ENCRYPTION_METHOD_PATH)
+  if (value === undefined) {
+    return undefined
+  }
+  if (value === EncryptionMethod.AUTO || value === EncryptionMethod.SSE || value === EncryptionMethod.E2EE) {
+    return value
+  }
+  throw new InvalidEncryptionMethodError(value)
 }
 
 /**
- * Resolve encryption intent based on explicit intent or local preference.
+ * Resolve encryption method based on explicit method or local preference.
  */
-const resolveEncryptionIntent = (intent: EncryptionIntent | undefined, localConfig: IConfig): EncryptionIntent => {
-  if (intent) {
-    return intent
+const resolveEncryptionMethod = (method: EncryptionMethod | undefined, localConfig: IConfig): EncryptionMethod => {
+  if (method) {
+    return method
   }
-  const preference = getLocalEnableE2E(localConfig)
-  if (preference === true) {
-    return EncryptionIntent.FORCE_ENCRYPT
-  }
-  if (preference === false) {
-    return EncryptionIntent.FORCE_PLAIN
-  }
-  return EncryptionIntent.AUTO
+  const preference = getLocalEncryptionMethod(localConfig)
+  return preference ?? EncryptionMethod.AUTO
 }
 
 /**
@@ -166,12 +169,13 @@ const saveSnapshot = async (snapshotPath: string, config: ConfigValue, version: 
 
 export {
   IGNORED_PATHS,
-  getLocalEnableE2E,
+  ENCRYPTION_METHOD_PATH,
+  getLocalEncryptionMethod,
   loadSnapshot,
   maskIgnoredFields,
   readConfigWithComments,
   resolveE2EVersion,
-  resolveEncryptionIntent,
+  resolveEncryptionMethod,
   saveSnapshot,
   writeConfigWithComments
 }

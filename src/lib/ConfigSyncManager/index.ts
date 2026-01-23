@@ -1,18 +1,17 @@
 import fs from 'fs-extra'
 import path from 'path'
 import { parse, stringify } from 'comment-json'
-import { isEqual, isPlainObject, set } from 'lodash'
+import { isEqual, isPlainObject } from 'lodash'
 import type { IPicGo, IConfig } from '../../types'
 import { ConfigService } from '../Cloud/services/ConfigService'
 import { ConfigMerger } from './Merger'
 import { E2ECryptoService, requireClientDekEncrypted, requireClientKekSalt } from './E2ECryptoService'
 import {
-  getLocalEnableE2E,
   loadSnapshot,
   maskIgnoredFields,
   readConfigWithComments,
   resolveE2EVersion,
-  resolveEncryptionIntent,
+  resolveEncryptionMethod,
   saveSnapshot
 } from './utils'
 import type {
@@ -22,10 +21,11 @@ import type {
   ISyncOptions,
   ISyncResult
 } from './types'
-import { E2EAskPinReason, E2EVersion, EncryptionIntent, SyncStatus } from './types'
+import { E2EAskPinReason, E2EVersion, EncryptionMethod, SyncStatus } from './types'
 import {
   CorruptedDataError,
   DecryptionFailedError,
+  InvalidEncryptionMethodError,
   InvalidPinError,
   MaxRetryExceededError,
   MissingHandlerError
@@ -59,18 +59,6 @@ export class ConfigSyncManager {
     this.e2eService = new E2ECryptoService()
   }
 
-  private async persistLocalEnableE2E (config: IConfig, enableE2E: boolean): Promise<IConfig> {
-    const current = getLocalEnableE2E(config)
-    if (current === enableE2E) {
-      return config
-    }
-    set(config, 'settings.picgoCloud.enableE2E', enableE2E)
-    this.ctx.saveConfig({
-      'settings.picgoCloud.enableE2E': enableE2E
-    })
-    return config
-  }
-
   async sync (options: ISyncOptions = {}, retryCount: number = 0): Promise<ISyncResult> {
     try {
       const localConfigValue = await readConfigWithComments(this.ctx.configPath)
@@ -80,12 +68,8 @@ export class ConfigSyncManager {
           message: 'Local config is not a valid JSON object'
         }
       }
-      let localConfig = localConfigValue as IConfig
-      if (options.encryptionIntent === EncryptionIntent.FORCE_ENCRYPT || options.encryptionIntent === EncryptionIntent.FORCE_PLAIN) {
-        const shouldEnableE2E = options.encryptionIntent === EncryptionIntent.FORCE_ENCRYPT
-        localConfig = await this.persistLocalEnableE2E(localConfig, shouldEnableE2E)
-      }
-      const encryptionIntent = resolveEncryptionIntent(options.encryptionIntent, localConfig)
+      const localConfig = localConfigValue as IConfig
+      const encryptionMethod = resolveEncryptionMethod(options.encryptionMethod, localConfig)
 
       const snapshotExists = await fs.pathExists(this.snapshotPath)
       const snapshot = await loadSnapshot(this.snapshotPath)
@@ -97,9 +81,6 @@ export class ConfigSyncManager {
         }
       }
       this.originalRemote = fetchedRemote ? fetchedRemote as IConfig : null
-      if (this.remoteE2EVersion === E2EVersion.V1 && getLocalEnableE2E(localConfig) === undefined) {
-        localConfig = await this.persistLocalEnableE2E(localConfig, true)
-      }
 
       // HANDLE MISSING REMOTE (First Run OR Remote Deleted)
       // Strategy: If remote is missing, we treat Local as the absolute truth.
@@ -116,7 +97,7 @@ export class ConfigSyncManager {
 
         // 1. Push Local -> Remote (Re-seed)
         try {
-          const payload = await this.buildPushPayload(localConfig, encryptionIntent)
+          const payload = await this.buildPushPayload(localConfig, encryptionMethod)
           await this.pushRemoteConfig(payload.configStr, payload.e2eFields)
         } catch (e: unknown) {
           const message = e instanceof Error ? e.message : String(e)
@@ -169,11 +150,11 @@ export class ConfigSyncManager {
 
       // Step D: Prepare Push (restore remote ignored fields)
       const configToPush = maskIgnoredFields(mergedConfig, this.originalRemote, { cleanupEmptyParents: true })
-      const shouldPushRemote = this.shouldChangeE2E(encryptionIntent) || !isEqual(this.originalRemote, configToPush)
+      const shouldPushRemote = this.shouldChangeE2E(encryptionMethod) || !isEqual(this.originalRemote, configToPush)
 
       if (shouldPushRemote) {
         try {
-          const payload = await this.buildPushPayload(configToPush, encryptionIntent)
+          const payload = await this.buildPushPayload(configToPush, encryptionMethod)
           await this.pushRemoteConfig(payload.configStr, payload.e2eFields)
         } catch (e: unknown) {
           const message = e instanceof Error ? e.message : String(e)
@@ -199,6 +180,14 @@ export class ConfigSyncManager {
         mergedConfig
       }
     } catch (e: unknown) {
+      if (e instanceof InvalidEncryptionMethodError) {
+        return {
+          status: SyncStatus.FAILED,
+          message: this.ctx.i18n.translate('CONFIG_SYNC_INVALID_ENCRYPTION_METHOD', {
+            value: `"${String(e.value)}"`
+          })
+        }
+      }
       const message = e instanceof Error ? e.message : String(e)
       return {
         status: SyncStatus.FAILED,
@@ -247,10 +236,10 @@ export class ConfigSyncManager {
         : configToWrite
 
       const useE2E = options.useE2E ?? (this.remoteE2EVersion === E2EVersion.V1)
-      const encryptionIntent = useE2E ? EncryptionIntent.FORCE_ENCRYPT : EncryptionIntent.FORCE_PLAIN
+      const encryptionMethod = useE2E ? EncryptionMethod.E2EE : EncryptionMethod.SSE
 
       // 4) Push to cloud
-      const payload = await this.buildPushPayload(configToPush, encryptionIntent)
+      const payload = await this.buildPushPayload(configToPush, encryptionMethod)
       await this.pushRemoteConfig(payload.configStr, payload.e2eFields)
 
       // 5) Snapshot should match disk state
@@ -325,9 +314,9 @@ export class ConfigSyncManager {
   }
 
 
-  private async buildPushPayload (config: IConfig, intent: EncryptionIntent): Promise<{ configStr: string, e2eFields: IE2ERequestFields }> {
+  private async buildPushPayload (config: IConfig, method: EncryptionMethod): Promise<{ configStr: string, e2eFields: IE2ERequestFields }> {
     const plainConfig = stringify(config, null, 2)
-    const useE2E = this.shouldUseE2E(intent)
+    const useE2E = this.shouldUseE2E(method)
 
     if (!useE2E) {
       return {
@@ -362,14 +351,14 @@ export class ConfigSyncManager {
     }
   }
 
-  private shouldUseE2E (intent: EncryptionIntent): boolean {
-    if (intent === EncryptionIntent.FORCE_ENCRYPT) return true
-    if (intent === EncryptionIntent.FORCE_PLAIN) return false
+  private shouldUseE2E (method: EncryptionMethod): boolean {
+    if (method === EncryptionMethod.E2EE) return true
+    if (method === EncryptionMethod.SSE) return false
     return this.remoteE2EVersion === E2EVersion.V1
   }
 
-  private shouldChangeE2E (intent: EncryptionIntent): boolean {
-    const useE2E = this.shouldUseE2E(intent)
+  private shouldChangeE2E (method: EncryptionMethod): boolean {
+    const useE2E = this.shouldUseE2E(method)
     const remoteIsE2E = this.remoteE2EVersion === E2EVersion.V1
     return useE2E !== remoteIsE2E
   }
@@ -434,7 +423,7 @@ export {
   SyncStatus,
   ConflictType,
   E2EVersion,
-  EncryptionIntent,
+  EncryptionMethod,
   E2EAskPinReason
 } from './types'
 export {

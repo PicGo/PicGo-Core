@@ -19,10 +19,10 @@ export enum E2EVersion {
   V1 = 1
 }
 
-export enum EncryptionIntent {
+export enum EncryptionMethod {
   AUTO = 'auto',
-  FORCE_ENCRYPT = 'force_encrypt',
-  FORCE_PLAIN = 'force_plain'
+  SSE = 'sse',
+  E2EE = 'e2ee'
 }
 
 export enum E2EAskPinReason {
@@ -63,7 +63,7 @@ export interface ISyncConfigResponse {
 }
 
 export interface ISyncOptions {
-  encryptionIntent?: EncryptionIntent
+  encryptionMethod?: EncryptionMethod
 }
 
 export interface IApplyResolvedOptions {

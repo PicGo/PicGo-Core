@@ -41,3 +41,10 @@ export class DecryptionFailedError extends BaseE2EError {
   }
 }
 
+export class InvalidEncryptionMethodError extends BaseE2EError {
+  readonly value: unknown
+  constructor (value: unknown) {
+    super('Invalid encryption method')
+    this.value = value
+  }
+}

@@ -18,7 +18,7 @@ export {
   ConflictType,
   E2EVersion,
   E2EAskPinReason,
-  EncryptionIntent,
+  EncryptionMethod,
   CorruptedDataError,
   UnsupportedVersionError,
   MissingHandlerError,

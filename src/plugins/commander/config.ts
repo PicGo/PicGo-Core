@@ -1,6 +1,6 @@
 import { isPlainObject } from 'lodash'
 import type { IConfig, IPicGo, IPlugin } from '../../types'
-import { ConfigSyncManager, SyncStatus, EncryptionIntent, E2EAskPinReason } from '../../lib/ConfigSyncManager'
+import { ConfigSyncManager, SyncStatus, E2EAskPinReason, EncryptionMethod } from '../../lib/ConfigSyncManager'
 import { printDiffTree } from './utils'
 
 const config: IPlugin = {
@@ -13,9 +13,8 @@ const config: IPlugin = {
     configCommand
       .command('sync')
       .description('sync config with picgo cloud')
-      .option('--encrypt', 'force enable end-to-end encryption')
-      .option('--no-encrypt', 'force disable end-to-end encryption')
-      .action(async (options: { encrypt?: boolean }) => {
+      .option('--encrypt [method]', 'encryption method (auto|sse|e2ee)')
+      .action(async (options: { encrypt?: string | boolean }) => {
         const onAskPin = async (reason: E2EAskPinReason, retryCount: number): Promise<string | null> => {
           if (reason === E2EAskPinReason.SETUP) {
             for (let attempt = 0; attempt < 3; attempt += 1) {
@@ -59,26 +58,26 @@ const config: IPlugin = {
           return pin
         }
 
-        const encryptionIntent = options.encrypt === true
-          ? EncryptionIntent.FORCE_ENCRYPT
-          : options.encrypt === false
-            ? EncryptionIntent.FORCE_PLAIN
-            : undefined
+        const rawMethod = options.encrypt
+        let encryptionMethod: EncryptionMethod | undefined
 
-        if (encryptionIntent === EncryptionIntent.FORCE_ENCRYPT) {
-          ctx.saveConfig({
-            'settings.picgoCloud.enableE2E': true
-          })
-        }
-        if (encryptionIntent === EncryptionIntent.FORCE_PLAIN) {
-          ctx.saveConfig({
-            'settings.picgoCloud.enableE2E': false
-          })
+        if (rawMethod !== undefined) {
+          const methodValue = typeof rawMethod === 'string' ? rawMethod : undefined
+          if (methodValue === EncryptionMethod.AUTO || methodValue === EncryptionMethod.SSE || methodValue === EncryptionMethod.E2EE) {
+            encryptionMethod = methodValue
+            ctx.saveConfig({
+              'settings.picgoCloud.encryptionMethod': methodValue
+            })
+          } else {
+            const valueLabel = methodValue ?? 'undefined'
+            ctx.log.error(ctx.i18n.translate('CONFIG_SYNC_INVALID_ENCRYPTION_METHOD', { value: `"${valueLabel}"` }))
+            return
+          }
         }
 
         const manager = new ConfigSyncManager(ctx, { onAskPin })
-        const res = encryptionIntent
-          ? await manager.sync({ encryptionIntent })
+        const res = encryptionMethod
+          ? await manager.sync({ encryptionMethod })
           : await manager.sync()
 
         if (res.status === SyncStatus.SUCCESS) {
@@ -120,15 +119,15 @@ const config: IPlugin = {
           }
 
           let applyOptions: { useE2E: boolean } | undefined
-          if (encryptionIntent === EncryptionIntent.FORCE_ENCRYPT) {
+          if (encryptionMethod === EncryptionMethod.E2EE) {
             applyOptions = { useE2E: true }
-          } else if (encryptionIntent === EncryptionIntent.FORCE_PLAIN) {
+          } else if (encryptionMethod === EncryptionMethod.SSE) {
             applyOptions = { useE2E: false }
           } else {
-            const preference = ctx.getConfig<boolean | undefined>('settings.picgoCloud.enableE2E')
-            if (preference === true) {
+            const preference = ctx.getConfig<EncryptionMethod | undefined>('settings.picgoCloud.encryptionMethod')
+            if (preference === EncryptionMethod.E2EE) {
               applyOptions = { useE2E: true }
-            } else if (preference === false) {
+            } else if (preference === EncryptionMethod.SSE) {
               applyOptions = { useE2E: false }
             }
           }
