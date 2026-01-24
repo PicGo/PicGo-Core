@@ -315,12 +315,12 @@ export class ConfigSyncManager {
 
 
   private async buildPushPayload (config: IConfig, method: EncryptionMethod): Promise<{ configStr: string, e2eFields: IE2ERequestFields }> {
-    const plainConfig = stringify(config, null, 2)
+    const compactConfig = stringify(config)
     const useE2E = this.shouldUseE2E(method)
 
     if (!useE2E) {
       return {
-        configStr: plainConfig,
+        configStr: compactConfig,
         e2eFields: { e2eVersion: E2EVersion.NONE }
       }
     }
@@ -328,7 +328,7 @@ export class ConfigSyncManager {
     if (this.remoteE2EVersion === E2EVersion.V1 && this.remoteClientKekSalt && this.remoteClientDekEncrypted) {
       const dek = await this.ensureDEK(this.remoteClientKekSalt, this.remoteClientDekEncrypted)
       return {
-        configStr: this.e2eService.encryptConfig(plainConfig, dek),
+        configStr: this.e2eService.encryptConfig(compactConfig, dek),
         e2eFields: {
           e2eVersion: E2EVersion.V1,
           clientKekSalt: this.remoteClientKekSalt,
@@ -338,7 +338,7 @@ export class ConfigSyncManager {
     }
 
     const pin = await this.askPin(E2EAskPinReason.SETUP, 0)
-    const { payload, dek } = this.e2eService.generateE2EPayload(plainConfig, pin)
+    const { payload, dek } = this.e2eService.generateE2EPayload(compactConfig, pin)
     this.cachedDEK = dek
     this.cachedClientDekEncrypted = payload.clientDekEncrypted
     return {

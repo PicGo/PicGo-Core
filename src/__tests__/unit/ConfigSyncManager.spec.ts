@@ -95,6 +95,11 @@ const createTmpDir = async (): Promise<string> => {
   return fs.mkdtemp(path.join(os.tmpdir(), 'picgo-core-config-sync-'))
 }
 
+const parseConfig = (content: string): Record<string, unknown> => {
+  const parsed = parse(content)
+  return isPlainObject(parsed) ? parsed as Record<string, unknown> : {}
+}
+
 describe('ConfigSyncManager Versioned Sync Flow', () => {
   let tmpDir: string
   let configPath: string
@@ -126,7 +131,12 @@ describe('ConfigSyncManager Versioned Sync Flow', () => {
 
     expect(res.status).toBe(SyncStatus.SUCCESS)
     expect(ctx.getConfig<number>('a')).toBe(2)
-    expect(mockUpdateConfig).toHaveBeenCalledWith(expect.stringContaining('"a": 2'), 5, { e2eVersion: 0 })
+    expect(mockUpdateConfig).toHaveBeenCalledTimes(1)
+    const [configStr, baseVersion, e2eFields] = mockUpdateConfig.mock.calls[0]
+    const pushedConfig = parseConfig(configStr)
+    expect(baseVersion).toBe(5)
+    expect(e2eFields).toEqual({ e2eVersion: 0 })
+    expect(pushedConfig.a).toBe(2)
 
     const snapshot = parse(await fs.readFile(snapshotPath, 'utf8')) as any
     expect(snapshot.version).toBe(6)
@@ -162,7 +172,12 @@ describe('ConfigSyncManager Versioned Sync Flow', () => {
 
     expect(res.status).toBe(SyncStatus.SUCCESS)
     expect(res.message).toBe('Remote config restored from local')
-    expect(mockUpdateConfig).toHaveBeenCalledWith(expect.stringContaining('"a": 1'), 0, { e2eVersion: 0 })
+    expect(mockUpdateConfig).toHaveBeenCalledTimes(1)
+    const [configStr, baseVersion, e2eFields] = mockUpdateConfig.mock.calls[0]
+    const pushedConfig = parseConfig(configStr)
+    expect(baseVersion).toBe(0)
+    expect(e2eFields).toEqual({ e2eVersion: 0 })
+    expect(pushedConfig.a).toBe(1)
 
     const snapshot = parse(await fs.readFile(snapshotPath, 'utf8')) as any
     expect(snapshot.version).toBe(1)
@@ -220,11 +235,12 @@ describe('ConfigSyncManager Versioned Sync Flow', () => {
     expect(ctx.getConfig<number>('a')).toBe(3)
     expect(mockUpdateConfig).toHaveBeenCalledTimes(1)
 
-    const [configStr, baseVersion] = mockUpdateConfig.mock.calls[0]
+    const [configStr, baseVersion, e2eFields] = mockUpdateConfig.mock.calls[0]
+    const pushedConfig = parseConfig(configStr)
     expect(baseVersion).toBe(5)
-    expect(configStr).toContain('"a": 3')
-    expect(configStr).toContain('remote-token')
-    expect(configStr).not.toContain('local-token')
+    expect(e2eFields).toEqual({ e2eVersion: 0 })
+    expect(pushedConfig.a).toBe(3)
+    expect(get(pushedConfig, 'settings.picgoCloud.token')).toBe('remote-token')
 
     const snapshot = parse(await fs.readFile(snapshotPath, 'utf8')) as any
     expect(snapshot.version).toBe(6)
@@ -253,10 +269,12 @@ describe('ConfigSyncManager Versioned Sync Flow', () => {
     expect(ctx.getConfig<string | undefined>('settings.picgoCloud.token')).toBeUndefined()
     expect(mockUpdateConfig).toHaveBeenCalledTimes(1)
 
-    const [configStr, baseVersion] = mockUpdateConfig.mock.calls[0]
+    const [configStr, baseVersion, e2eFields] = mockUpdateConfig.mock.calls[0]
+    const pushedConfig = parseConfig(configStr)
     expect(baseVersion).toBe(5)
-    expect(configStr).toContain('"a": 2')
-    expect(configStr).toContain('remote-token')
+    expect(e2eFields).toEqual({ e2eVersion: 0 })
+    expect(pushedConfig.a).toBe(2)
+    expect(get(pushedConfig, 'settings.picgoCloud.token')).toBe('remote-token')
 
     const writtenLocal = parse(await fs.readFile(configPath, 'utf8')) as any
     expect(writtenLocal.settings.picgoCloud.token).toBeUndefined()
@@ -299,11 +317,12 @@ describe('ConfigSyncManager Versioned Sync Flow', () => {
     expect(ctx.getConfig<string>('settings.picgoCloud.token')).toBe('LOCAL_TOKEN')
     expect(mockUpdateConfig).toHaveBeenCalledTimes(1)
 
-    const [configStr, baseVersion] = mockUpdateConfig.mock.calls[0]
+    const [configStr, baseVersion, e2eFields] = mockUpdateConfig.mock.calls[0]
+    const pushedConfig = parseConfig(configStr)
     expect(baseVersion).toBe(5)
-    expect(configStr).toContain('"theme": "light"')
-    expect(configStr).toContain('REMOTE_TOKEN')
-    expect(configStr).not.toContain('LOCAL_TOKEN')
+    expect(e2eFields).toEqual({ e2eVersion: 0 })
+    expect(pushedConfig.theme).toBe('light')
+    expect(get(pushedConfig, 'settings.picgoCloud.token')).toBe('REMOTE_TOKEN')
 
     const writtenLocal = parse(await fs.readFile(configPath, 'utf8')) as any
     expect(writtenLocal.theme).toBe('light')
@@ -345,7 +364,8 @@ describe('ConfigSyncManager Versioned Sync Flow', () => {
     const salt = cryptoService.decodeSalt(e2eFields.clientKekSalt)
     const dek = cryptoService.unwrapDEK(e2eFields.clientDekEncrypted, '1234', salt)
     const decryptedConfig = cryptoService.decryptConfig(configStr, dek)
-    expect(decryptedConfig).toContain('"a": 1')
+    const decryptedPayload = parseConfig(decryptedConfig)
+    expect(decryptedPayload.a).toBe(1)
   })
 
   it('should default to force encrypt when local encryptionMethod is e2ee', async () => {
@@ -377,7 +397,8 @@ describe('ConfigSyncManager Versioned Sync Flow', () => {
     const salt = cryptoService.decodeSalt(e2eFields.clientKekSalt)
     const dek = cryptoService.unwrapDEK(e2eFields.clientDekEncrypted, '1234', salt)
     const decryptedConfig = cryptoService.decryptConfig(configStr, dek)
-    expect(decryptedConfig).toContain('"a": 1')
+    const decryptedPayload = parseConfig(decryptedConfig)
+    expect(decryptedPayload.a).toBe(1)
   })
 
   it('force plain should downgrade encrypted remote config', async () => {
@@ -413,8 +434,9 @@ describe('ConfigSyncManager Versioned Sync Flow', () => {
     expect(onAskPin).toHaveBeenCalledWith(E2EAskPinReason.DECRYPT, 0)
 
     const [pushedConfig, baseVersion, e2eFields] = mockUpdateConfig.mock.calls[0]
+    const parsedConfig = parseConfig(pushedConfig)
     expect(baseVersion).toBe(1)
-    expect(pushedConfig).toContain('"a": 1')
+    expect(parsedConfig.a).toBe(1)
     expect(e2eFields).toEqual({ e2eVersion: 0 })
   })
 
@@ -450,8 +472,9 @@ describe('ConfigSyncManager Versioned Sync Flow', () => {
     expect(onAskPin).toHaveBeenCalledWith(E2EAskPinReason.DECRYPT, 0)
 
     const [pushedConfig, baseVersion, e2eFields] = mockUpdateConfig.mock.calls[0]
+    const parsedConfig = parseConfig(pushedConfig)
     expect(baseVersion).toBe(1)
-    expect(pushedConfig).toContain('"a": 1')
+    expect(parsedConfig.a).toBe(1)
     expect(e2eFields).toEqual({ e2eVersion: 0 })
   })
 
