@@ -23,6 +23,12 @@ export class MissingHandlerError extends BaseE2EError {
   }
 }
 
+export class MissingEncryptionSwitchHandlerError extends BaseE2EError {
+  constructor (message: string = 'Encryption switch confirmation handler is required') {
+    super(message)
+  }
+}
+
 export class InvalidPinError extends BaseE2EError {
   constructor (message: string = 'Invalid PIN input') {
     super(message)

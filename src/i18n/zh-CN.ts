@@ -144,7 +144,15 @@ export const ZH_CN = {
   PLUGIN_HANDLER_PLUGIN_UPDATE_FAILED_VALID: '插件更新失败，请输入合法插件名',
 
   // config sync
-  CONFIG_SYNC_INVALID_ENCRYPTION_METHOD: '配置无效：settings.picgoCloud.encryptionMethod 必须是 \"auto\"、\"sse\" 或 \"e2ee\" 之一，当前为：${value}'
+  CONFIG_SYNC_INVALID_ENCRYPTION_METHOD: '配置无效：settings.picgoCloud.encryptionMethod 必须是 \"auto\"、\"sse\" 或 \"e2ee\" 之一，当前为：${value}',
+  CONFIG_SYNC_ENCRYPTION_METHOD_E2EE: '端到端加密',
+  CONFIG_SYNC_ENCRYPTION_METHOD_SSE: '服务端加密',
+  CONFIG_SYNC_ENCRYPTION_SWITCH_TITLE: '确认切换加密方式吗？',
+  CONFIG_SYNC_ENCRYPTION_SWITCH_BODY: '您正在从“${from}”切换为“${to}”。\n\n注意：切换加密模式将清空您所有的云端历史版本记录。\n这是因为旧的历史版本无法在新模式下被解密或验证。\n切换后，系统将立即为您创建一份新的备份作为起点。',
+  CONFIG_SYNC_ENCRYPTION_SWITCH_CONFIRM: '确认切换并清空历史',
+  CONFIG_SYNC_ENCRYPTION_SWITCH_CANCEL: '取消',
+  CONFIG_SYNC_ENCRYPTION_SWITCH_CANCELLED: '已取消切换加密方式',
+  CONFIG_SYNC_ENCRYPTION_SWITCH_MISSING_HANDLER: '需要提供加密方式切换确认处理器'
 }
 
 export type ILocalesKey = keyof typeof ZH_CN

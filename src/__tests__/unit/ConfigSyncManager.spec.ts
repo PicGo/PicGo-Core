@@ -69,6 +69,30 @@ const createCtx = (configPath: string): IPicGo => {
       if (key === 'CONFIG_SYNC_INVALID_ENCRYPTION_METHOD') {
         return `Invalid configuration: settings.picgoCloud.encryptionMethod must be one of 'auto', 'sse', 'e2ee'. Found: ${args?.value ?? ''}`
       }
+      if (key === 'CONFIG_SYNC_ENCRYPTION_METHOD_E2EE') {
+        return 'E2EE'
+      }
+      if (key === 'CONFIG_SYNC_ENCRYPTION_METHOD_SSE') {
+        return 'SSE'
+      }
+      if (key === 'CONFIG_SYNC_ENCRYPTION_SWITCH_TITLE') {
+        return 'Confirm switch encryption method?'
+      }
+      if (key === 'CONFIG_SYNC_ENCRYPTION_SWITCH_BODY') {
+        return `Switch from ${args?.from ?? ''} to ${args?.to ?? ''}`
+      }
+      if (key === 'CONFIG_SYNC_ENCRYPTION_SWITCH_CONFIRM') {
+        return 'Confirm switch'
+      }
+      if (key === 'CONFIG_SYNC_ENCRYPTION_SWITCH_CANCEL') {
+        return 'Cancel'
+      }
+      if (key === 'CONFIG_SYNC_ENCRYPTION_SWITCH_CANCELLED') {
+        return 'Encryption switch cancelled by user'
+      }
+      if (key === 'CONFIG_SYNC_ENCRYPTION_SWITCH_MISSING_HANDLER') {
+        return 'Encryption switch confirmation handler is required'
+      }
       return key
     }
   }
@@ -346,13 +370,18 @@ describe('ConfigSyncManager Versioned Sync Flow', () => {
     mockUpdateConfig.mockResolvedValue({ success: true, version: 2 })
 
     const onAskPin = vi.fn().mockResolvedValue('1234')
+    const onAskEncryptionSwitch = vi.fn().mockResolvedValue(true)
     const ctx = createCtx(configPath)
-    const manager = new ConfigSyncManager(ctx, { onAskPin })
+    const manager = new ConfigSyncManager(ctx, { onAskPin, onAskEncryptionSwitch })
     const res = await manager.sync({ encryptionMethod: EncryptionMethod.E2EE })
 
     expect(res.status).toBe(SyncStatus.SUCCESS)
     expect(ctx.getConfig<string | undefined>('settings.picgoCloud.encryptionMethod')).toBeUndefined()
     expect(onAskPin).toHaveBeenCalledWith(E2EAskPinReason.SETUP, 0)
+    expect(onAskEncryptionSwitch).toHaveBeenCalledWith({
+      from: EncryptionMethod.SSE,
+      to: EncryptionMethod.E2EE
+    })
 
     const [configStr, baseVersion, e2eFields] = mockUpdateConfig.mock.calls[0]
     expect(baseVersion).toBe(1)
@@ -380,12 +409,17 @@ describe('ConfigSyncManager Versioned Sync Flow', () => {
     mockUpdateConfig.mockResolvedValue({ success: true, version: 2 })
 
     const onAskPin = vi.fn().mockResolvedValue('1234')
+    const onAskEncryptionSwitch = vi.fn().mockResolvedValue(true)
     const ctx = createCtx(configPath)
-    const manager = new ConfigSyncManager(ctx, { onAskPin })
+    const manager = new ConfigSyncManager(ctx, { onAskPin, onAskEncryptionSwitch })
     const res = await manager.sync()
 
     expect(res.status).toBe(SyncStatus.SUCCESS)
     expect(onAskPin).toHaveBeenCalledWith(E2EAskPinReason.SETUP, 0)
+    expect(onAskEncryptionSwitch).toHaveBeenCalledWith({
+      from: EncryptionMethod.SSE,
+      to: EncryptionMethod.E2EE
+    })
 
     const [configStr, baseVersion, e2eFields] = mockUpdateConfig.mock.calls[0]
     expect(baseVersion).toBe(1)
@@ -425,13 +459,18 @@ describe('ConfigSyncManager Versioned Sync Flow', () => {
     mockUpdateConfig.mockResolvedValue({ success: true, version: 2 })
 
     const onAskPin = vi.fn().mockResolvedValue('1234')
+    const onAskEncryptionSwitch = vi.fn().mockResolvedValue(true)
     const ctx = createCtx(configPath)
-    const manager = new ConfigSyncManager(ctx, { onAskPin })
+    const manager = new ConfigSyncManager(ctx, { onAskPin, onAskEncryptionSwitch })
     const res = await manager.sync({ encryptionMethod: EncryptionMethod.SSE })
 
     expect(res.status).toBe(SyncStatus.SUCCESS)
     expect(ctx.getConfig<string | undefined>('settings.picgoCloud.encryptionMethod')).toBeUndefined()
     expect(onAskPin).toHaveBeenCalledWith(E2EAskPinReason.DECRYPT, 0)
+    expect(onAskEncryptionSwitch).toHaveBeenCalledWith({
+      from: EncryptionMethod.E2EE,
+      to: EncryptionMethod.SSE
+    })
 
     const [pushedConfig, baseVersion, e2eFields] = mockUpdateConfig.mock.calls[0]
     const parsedConfig = parseConfig(pushedConfig)
@@ -464,18 +503,118 @@ describe('ConfigSyncManager Versioned Sync Flow', () => {
     mockUpdateConfig.mockResolvedValue({ success: true, version: 2 })
 
     const onAskPin = vi.fn().mockResolvedValue('1234')
+    const onAskEncryptionSwitch = vi.fn().mockResolvedValue(true)
     const ctx = createCtx(configPath)
-    const manager = new ConfigSyncManager(ctx, { onAskPin })
+    const manager = new ConfigSyncManager(ctx, { onAskPin, onAskEncryptionSwitch })
     const res = await manager.sync()
 
     expect(res.status).toBe(SyncStatus.SUCCESS)
     expect(onAskPin).toHaveBeenCalledWith(E2EAskPinReason.DECRYPT, 0)
+    expect(onAskEncryptionSwitch).toHaveBeenCalledWith({
+      from: EncryptionMethod.E2EE,
+      to: EncryptionMethod.SSE
+    })
 
     const [pushedConfig, baseVersion, e2eFields] = mockUpdateConfig.mock.calls[0]
     const parsedConfig = parseConfig(pushedConfig)
     expect(baseVersion).toBe(1)
     expect(parsedConfig.a).toBe(1)
     expect(e2eFields).toEqual({ e2eVersion: 0 })
+  })
+
+  it('should abort sync when encryption switch confirmation is declined', async () => {
+    await fs.writeFile(configPath, '{ "a": 1 }', 'utf8')
+    await fs.writeFile(snapshotPath, JSON.stringify({
+      version: 1,
+      updatedAt: '2020-01-01T00:00:00.000Z',
+      data: { a: 1 }
+    }, null, 2), 'utf8')
+
+    mockFetchConfig.mockResolvedValue({ version: 1, config: '{ "a": 1 }' })
+    mockUpdateConfig.mockResolvedValue({ success: true, version: 2 })
+
+    const onAskEncryptionSwitch = vi.fn().mockResolvedValue(false)
+    const onAskPin = vi.fn().mockResolvedValue('1234')
+    const ctx = createCtx(configPath)
+    const manager = new ConfigSyncManager(ctx, { onAskEncryptionSwitch, onAskPin })
+    const res = await manager.sync({ encryptionMethod: EncryptionMethod.E2EE })
+
+    expect(res.status).toBe(SyncStatus.FAILED)
+    expect(res.message).toBe('Encryption switch cancelled by user')
+    expect(onAskEncryptionSwitch).toHaveBeenCalledWith({
+      from: EncryptionMethod.SSE,
+      to: EncryptionMethod.E2EE
+    })
+    expect(onAskPin).not.toHaveBeenCalled()
+    expect(mockUpdateConfig).not.toHaveBeenCalled()
+  })
+
+  it('should skip confirmation when skip flag is set', async () => {
+    await fs.writeFile(configPath, '{ "a": 1 }', 'utf8')
+    await fs.writeFile(snapshotPath, JSON.stringify({
+      version: 1,
+      updatedAt: '2020-01-01T00:00:00.000Z',
+      data: { a: 1 }
+    }, null, 2), 'utf8')
+
+    mockFetchConfig.mockResolvedValue({ version: 1, config: '{ "a": 1 }' })
+    mockUpdateConfig.mockResolvedValue({ success: true, version: 2 })
+
+    const onAskPin = vi.fn().mockResolvedValue('1234')
+    const onAskEncryptionSwitch = vi.fn().mockResolvedValue(true)
+    const ctx = createCtx(configPath)
+    const manager = new ConfigSyncManager(ctx, { onAskPin, onAskEncryptionSwitch })
+    const res = await manager.sync({
+      encryptionMethod: EncryptionMethod.E2EE,
+      skipEncryptionSwitchConfirm: true
+    })
+
+    expect(res.status).toBe(SyncStatus.SUCCESS)
+    expect(onAskEncryptionSwitch).not.toHaveBeenCalled()
+    expect(onAskPin).toHaveBeenCalledWith(E2EAskPinReason.SETUP, 0)
+    expect(mockUpdateConfig).toHaveBeenCalledTimes(1)
+  })
+
+  it('should request confirmation before returning conflict when switching modes', async () => {
+    await fs.writeFile(configPath, '{ "a": 2 }', 'utf8')
+    await fs.writeFile(snapshotPath, JSON.stringify({
+      version: 1,
+      updatedAt: '2020-01-01T00:00:00.000Z',
+      data: { a: 1 }
+    }, null, 2), 'utf8')
+
+    mockFetchConfig.mockResolvedValue({ version: 1, config: '{ "a": 3 }' })
+
+    const onAskEncryptionSwitch = vi.fn().mockResolvedValue(true)
+    const ctx = createCtx(configPath)
+    const manager = new ConfigSyncManager(ctx, { onAskEncryptionSwitch })
+    const res = await manager.sync({ encryptionMethod: EncryptionMethod.E2EE })
+
+    expect(res.status).toBe(SyncStatus.CONFLICT)
+    expect(onAskEncryptionSwitch).toHaveBeenCalledWith({
+      from: EncryptionMethod.SSE,
+      to: EncryptionMethod.E2EE
+    })
+    expect(mockUpdateConfig).not.toHaveBeenCalled()
+  })
+
+  it('should fail when encryption switch confirmation handler is missing', async () => {
+    await fs.writeFile(configPath, '{ "a": 1 }', 'utf8')
+    await fs.writeFile(snapshotPath, JSON.stringify({
+      version: 1,
+      updatedAt: '2020-01-01T00:00:00.000Z',
+      data: { a: 1 }
+    }, null, 2), 'utf8')
+
+    mockFetchConfig.mockResolvedValue({ version: 1, config: '{ "a": 1 }' })
+
+    const ctx = createCtx(configPath)
+    const manager = new ConfigSyncManager(ctx)
+    const res = await manager.sync({ encryptionMethod: EncryptionMethod.E2EE })
+
+    expect(res.status).toBe(SyncStatus.FAILED)
+    expect(res.message).toBe('Encryption switch confirmation handler is required')
+    expect(mockUpdateConfig).not.toHaveBeenCalled()
   })
 
   it('should fail sync when local encryptionMethod is invalid', async () => {

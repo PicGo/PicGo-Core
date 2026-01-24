@@ -146,5 +146,13 @@ export const EN: ILocales = {
   PLUGIN_HANDLER_PLUGIN_UPDATE_FAILED_VALID: 'Plugin update failed, please enter a valid plugin name',
 
   // config sync
-  CONFIG_SYNC_INVALID_ENCRYPTION_METHOD: 'Invalid configuration: settings.picgoCloud.encryptionMethod must be one of \'auto\', \'sse\', \'e2ee\'. Found: ${value}'
+  CONFIG_SYNC_INVALID_ENCRYPTION_METHOD: 'Invalid configuration: settings.picgoCloud.encryptionMethod must be one of \'auto\', \'sse\', \'e2ee\'. Found: ${value}',
+  CONFIG_SYNC_ENCRYPTION_METHOD_E2EE: 'End-to-end encryption',
+  CONFIG_SYNC_ENCRYPTION_METHOD_SSE: 'Server-side encryption',
+  CONFIG_SYNC_ENCRYPTION_SWITCH_TITLE: 'Confirm switch encryption method?',
+  CONFIG_SYNC_ENCRYPTION_SWITCH_BODY: 'You are switching from \"${from}\" to \"${to}\".\n\nNote: Switching encryption modes will clear all your cloud history versions.\nThis is because older history versions cannot be decrypted or verified under the new mode.\nAfter switching, the system will immediately create a new backup as the starting point.',
+  CONFIG_SYNC_ENCRYPTION_SWITCH_CONFIRM: 'Confirm switch and clear history',
+  CONFIG_SYNC_ENCRYPTION_SWITCH_CANCEL: 'Cancel',
+  CONFIG_SYNC_ENCRYPTION_SWITCH_CANCELLED: 'Encryption switch cancelled by user',
+  CONFIG_SYNC_ENCRYPTION_SWITCH_MISSING_HANDLER: 'Encryption switch confirmation handler is required'
 }

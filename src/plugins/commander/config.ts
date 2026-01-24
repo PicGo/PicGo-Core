@@ -1,6 +1,7 @@
 import { isPlainObject } from 'lodash'
 import type { IConfig, IPicGo, IPlugin } from '../../types'
 import { ConfigSyncManager, SyncStatus, E2EAskPinReason, EncryptionMethod } from '../../lib/ConfigSyncManager'
+import type { IEncryptionSwitchContext } from '../../lib/ConfigSyncManager'
 import { printDiffTree } from './utils'
 
 const config: IPlugin = {
@@ -14,7 +15,8 @@ const config: IPlugin = {
       .command('sync')
       .description('sync config with picgo cloud')
       .option('--encrypt [method]', 'encryption method (auto|sse|e2ee)')
-      .action(async (options: { encrypt?: string | boolean }) => {
+      .option('--skip-encryption-switch-confirm', 'skip encryption switch confirmation')
+      .action(async (options: { encrypt?: string | boolean; skipEncryptionSwitchConfirm?: boolean }) => {
         const onAskPin = async (reason: E2EAskPinReason, retryCount: number): Promise<string | null> => {
           if (reason === E2EAskPinReason.SETUP) {
             for (let attempt = 0; attempt < 3; attempt += 1) {
@@ -75,10 +77,38 @@ const config: IPlugin = {
           }
         }
 
-        const manager = new ConfigSyncManager(ctx, { onAskPin })
-        const res = encryptionMethod
-          ? await manager.sync({ encryptionMethod })
-          : await manager.sync()
+        const onAskEncryptionSwitch = async ({ from, to }: IEncryptionSwitchContext): Promise<boolean> => {
+          const fromLabel = ctx.i18n.translate(
+            from === EncryptionMethod.E2EE
+              ? 'CONFIG_SYNC_ENCRYPTION_METHOD_E2EE'
+              : 'CONFIG_SYNC_ENCRYPTION_METHOD_SSE'
+          )
+          const toLabel = ctx.i18n.translate(
+            to === EncryptionMethod.E2EE
+              ? 'CONFIG_SYNC_ENCRYPTION_METHOD_E2EE'
+              : 'CONFIG_SYNC_ENCRYPTION_METHOD_SSE'
+          )
+          const title = ctx.i18n.translate('CONFIG_SYNC_ENCRYPTION_SWITCH_TITLE')
+          const body = ctx.i18n.translate('CONFIG_SYNC_ENCRYPTION_SWITCH_BODY', { from: fromLabel, to: toLabel })
+          const { confirm } = await ctx.cmd.inquirer.prompt<{ confirm: boolean }>([
+            {
+              type: 'list',
+              name: 'confirm',
+              message: `${title}\n\n${body}`,
+              choices: [
+                { name: ctx.i18n.translate('CONFIG_SYNC_ENCRYPTION_SWITCH_CONFIRM'), value: true },
+                { name: ctx.i18n.translate('CONFIG_SYNC_ENCRYPTION_SWITCH_CANCEL'), value: false }
+              ]
+            }
+          ])
+          return confirm
+        }
+
+        const manager = new ConfigSyncManager(ctx, { onAskPin, onAskEncryptionSwitch })
+        const res = await manager.sync({
+          encryptionMethod,
+          skipEncryptionSwitchConfirm: options.skipEncryptionSwitchConfirm
+        })
 
         if (res.status === SyncStatus.SUCCESS) {
           ctx.log.success(res.message || 'Config sync success!')

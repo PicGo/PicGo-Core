@@ -146,5 +146,13 @@ export const ZH_TW: ILocales = {
   PLUGIN_HANDLER_PLUGIN_UPDATE_FAILED_VALID: '插件更新失敗，請輸入正確的插件名稱',
 
   // config sync
-  CONFIG_SYNC_INVALID_ENCRYPTION_METHOD: '設定無效：settings.picgoCloud.encryptionMethod 必須是「auto」、「sse」或「e2ee」之一，目前為：${value}'
+  CONFIG_SYNC_INVALID_ENCRYPTION_METHOD: '設定無效：settings.picgoCloud.encryptionMethod 必須是「auto」、「sse」或「e2ee」之一，目前為：${value}',
+  CONFIG_SYNC_ENCRYPTION_METHOD_E2EE: '端對端加密',
+  CONFIG_SYNC_ENCRYPTION_METHOD_SSE: '伺服器端加密',
+  CONFIG_SYNC_ENCRYPTION_SWITCH_TITLE: '確認切換加密方式嗎？',
+  CONFIG_SYNC_ENCRYPTION_SWITCH_BODY: '您正在從「${from}」切換為「${to}」。\n\n注意：切換加密模式將清空您所有的雲端歷史版本記錄。\n這是因為舊的歷史版本無法在新模式下被解密或驗證。\n切換後，系統將立即為您建立一份新的備份作為起點。',
+  CONFIG_SYNC_ENCRYPTION_SWITCH_CONFIRM: '確認切換並清空歷史',
+  CONFIG_SYNC_ENCRYPTION_SWITCH_CANCEL: '取消',
+  CONFIG_SYNC_ENCRYPTION_SWITCH_CANCELLED: '已取消切換加密方式',
+  CONFIG_SYNC_ENCRYPTION_SWITCH_MISSING_HANDLER: '需要提供加密方式切換確認處理器'
 }

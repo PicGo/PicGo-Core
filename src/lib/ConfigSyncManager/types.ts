@@ -52,6 +52,11 @@ export interface IE2ERequestFields {
   clientDekEncrypted?: string
 }
 
+export interface IEncryptionSwitchContext {
+  from: EncryptionMethod
+  to: EncryptionMethod
+}
+
 export interface ISyncConfigResponse {
   version: number
   config: string
@@ -64,6 +69,7 @@ export interface ISyncConfigResponse {
 
 export interface ISyncOptions {
   encryptionMethod?: EncryptionMethod
+  skipEncryptionSwitchConfirm?: boolean
 }
 
 export interface IApplyResolvedOptions {

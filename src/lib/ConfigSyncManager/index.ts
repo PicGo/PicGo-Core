@@ -17,6 +17,7 @@ import {
 import type {
   ConfigValue,
   IApplyResolvedOptions,
+  IEncryptionSwitchContext,
   IE2ERequestFields,
   ISyncOptions,
   ISyncResult
@@ -28,6 +29,7 @@ import {
   InvalidEncryptionMethodError,
   InvalidPinError,
   MaxRetryExceededError,
+  MissingEncryptionSwitchHandlerError,
   MissingHandlerError
 } from './errors'
 
@@ -35,6 +37,7 @@ const MAX_DECRYPT_ATTEMPTS = 4
 
 interface IConfigSyncManagerOptions {
   onAskPin?: (reason: E2EAskPinReason, retryCount: number) => Promise<string | null>
+  onAskEncryptionSwitch?: (context: IEncryptionSwitchContext) => Promise<boolean>
 }
 
 export class ConfigSyncManager {
@@ -42,6 +45,7 @@ export class ConfigSyncManager {
   private readonly snapshotPath: string
   private readonly configService: ConfigService
   private readonly onAskPin?: (reason: E2EAskPinReason, retryCount: number) => Promise<string | null>
+  private readonly onAskEncryptionSwitch?: (context: IEncryptionSwitchContext) => Promise<boolean>
   private readonly e2eService: E2ECryptoService
   private currentRemoteVersion: number = 0
   private originalRemote: IConfig | null = null
@@ -56,6 +60,7 @@ export class ConfigSyncManager {
     this.snapshotPath = path.join(ctx.baseDir, 'config.snapshot.json')
     this.configService = new ConfigService(ctx)
     this.onAskPin = options.onAskPin
+    this.onAskEncryptionSwitch = options.onAskEncryptionSwitch
     this.e2eService = new E2ECryptoService()
   }
 
@@ -124,6 +129,20 @@ export class ConfigSyncManager {
         }
       }
 
+      if (
+        this.originalRemote &&
+        this.isEncryptionModeSwitch(encryptionMethod) &&
+        !options.skipEncryptionSwitchConfirm
+      ) {
+        const confirmed = await this.confirmEncryptionSwitch(encryptionMethod)
+        if (!confirmed) {
+          return {
+            status: SyncStatus.FAILED,
+            message: this.ctx.i18n.translate('CONFIG_SYNC_ENCRYPTION_SWITCH_CANCELLED')
+          }
+        }
+      }
+
       // Step A: Pre-Merge Masking (ignored fields)
       const effectiveRemote = maskIgnoredFields(this.originalRemote, localConfig)
 
@@ -150,7 +169,7 @@ export class ConfigSyncManager {
 
       // Step D: Prepare Push (restore remote ignored fields)
       const configToPush = maskIgnoredFields(mergedConfig, this.originalRemote, { cleanupEmptyParents: true })
-      const shouldPushRemote = this.shouldChangeE2E(encryptionMethod) || !isEqual(this.originalRemote, configToPush)
+      const shouldPushRemote = this.isEncryptionModeSwitch(encryptionMethod) || !isEqual(this.originalRemote, configToPush)
 
       if (shouldPushRemote) {
         try {
@@ -186,6 +205,12 @@ export class ConfigSyncManager {
           message: this.ctx.i18n.translate('CONFIG_SYNC_INVALID_ENCRYPTION_METHOD', {
             value: `"${String(e.value)}"`
           })
+        }
+      }
+      if (e instanceof MissingEncryptionSwitchHandlerError) {
+        return {
+          status: SyncStatus.FAILED,
+          message: this.ctx.i18n.translate('CONFIG_SYNC_ENCRYPTION_SWITCH_MISSING_HANDLER')
         }
       }
       const message = e instanceof Error ? e.message : String(e)
@@ -313,6 +338,21 @@ export class ConfigSyncManager {
     }
   }
 
+  private async confirmEncryptionSwitch (method: EncryptionMethod): Promise<boolean> {
+    if (!this.onAskEncryptionSwitch) {
+      throw new MissingEncryptionSwitchHandlerError()
+    }
+
+    const from = this.remoteE2EVersion === E2EVersion.V1
+      ? EncryptionMethod.E2EE
+      : EncryptionMethod.SSE
+    const to = this.shouldUseE2E(method)
+      ? EncryptionMethod.E2EE
+      : EncryptionMethod.SSE
+
+    return this.onAskEncryptionSwitch({ from, to })
+  }
+
 
   private async buildPushPayload (config: IConfig, method: EncryptionMethod): Promise<{ configStr: string, e2eFields: IE2ERequestFields }> {
     const compactConfig = stringify(config)
@@ -357,7 +397,8 @@ export class ConfigSyncManager {
     return this.remoteE2EVersion === E2EVersion.V1
   }
 
-  private shouldChangeE2E (method: EncryptionMethod): boolean {
+  /* True when the intended encryption mode differs from the remote mode (E2EE ↔ SSE). */
+  private isEncryptionModeSwitch (method: EncryptionMethod): boolean {
     const useE2E = this.shouldUseE2E(method)
     const remoteIsE2E = this.remoteE2EVersion === E2EVersion.V1
     return useE2E !== remoteIsE2E
@@ -415,6 +456,7 @@ export class ConfigSyncManager {
 export type {
   IDiffNode,
   IE2EPayload,
+  IEncryptionSwitchContext,
   ISyncConfigResponse,
   ISyncOptions,
   IApplyResolvedOptions
@@ -430,6 +472,7 @@ export {
   CorruptedDataError,
   UnsupportedVersionError,
   MissingHandlerError,
+  MissingEncryptionSwitchHandlerError,
   InvalidPinError,
   MaxRetryExceededError,
   DecryptionFailedError
