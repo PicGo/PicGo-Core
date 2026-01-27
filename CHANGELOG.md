@@ -1,3 +1,17 @@
+# :tada: 2.0.0 (2026-01-27)
+
+
+### :sparkles: Features
+
+* add picgo server and cloud and config sync ([#190](https://github.com/PicGo/PicGo-Core/issues/190)) ([71d3861](https://github.com/PicGo/PicGo-Core/commit/71d3861))
+
+
+### :pencil: Documentation
+
+* update readme ([1471e7b](https://github.com/PicGo/PicGo-Core/commit/1471e7b))
+
+
+
 ## :tada: 1.8.1 (2026-01-12)
 
 
