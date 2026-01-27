@@ -30,13 +30,17 @@ Always ask questions before create proposal files if unsure about anything in th
 - **Exports**: do not use `export default` for new/modified modules. Prefer named exports (e.g. `export { ServerManager }`) and named imports (e.g. `import { ServerManager } from '...'`).
 - Keep TypeScript types explicit; avoid ad-hoc `any` when possible.
 - Don't write `as any` in TypeScript code unless absolutely necessary. Always prefer explicit types.
+- **i18n / user-facing text**: do not hard-code user-facing strings (logs, errors, HTML result pages). Add i18n keys under `src/i18n/zh-CN.ts` and provide corresponding entries in `src/i18n/en.ts` and `src/i18n/zh-TW.ts`, then use `ctx.i18n.translate<ILocalesKey>(...)` (supports `${var}` placeholders via args). CLI option descriptions are exempt unless explicitly requested.
 - **Commander actions**: prefer `.action(async (...) => { ... })` and avoid wrapping an IIFE like `.action(() => { (async () => { ... })().catch(...) })`.
 - **Commander prompts**: avoid `prompt<any>` / `prompt<IStringKeyMap<any>>`; declare a concrete answer type (e.g. `prompt<{ operation: 'list' | 'rename' }>(...)`).
+- **Commander option descriptions**: for CLI options, use plain strings without i18n keys unless explicitly requested.
+- **TypeScript enums**: when representing a fixed set of values, prefer `enum` over union string literal types unless explicitly requested otherwise.
 - **Config persistence**: use `ctx.saveConfig(...)` for changes that must persist to disk; use `ctx.setConfig(...)` only for in-memory/session updates.
 
 ## Execution Rules
 - If a command fails due to insufficient permissions, rerun with elevated approval.
 - For `pnpm` commands that hit network issues, retry first.
+- After completing a task, run `pnpm lint` and `pnpm test` and ensure they pass before handing work back.
 
 ## Serena MCP & Context7 Tools
 When starting work or if you hit issues, try checking MCP for Serena or Context7 tooling. If available, use those tools to navigate, edit, or fetch docs efficiently.

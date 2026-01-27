@@ -9,6 +9,36 @@ export const ZH_TW: ILocales = {
   SERVER_ERROR: '伺服器出錯，請重試',
   AUTH_FAILED: '認證失敗',
 
+  // cloud login
+  CLOUD_LOGIN_CANCELLED: '登入已取消',
+  CLOUD_LOGIN_IN_PROGRESS: '登入正在進行中',
+  CLOUD_LOGIN_INVALID_TOKEN: '無效的 token',
+  CLOUD_LOGIN_SUCCESS: '登入成功！',
+  CLOUD_LOGOUT_SUCCESS: '登出成功！',
+  CLOUD_LOGIN_SERVER_START_FAILED: '啟動登入服務失敗',
+  CLOUD_LOGIN_OPEN_BROWSER_FAILED: '無法自動打開瀏覽器：${message}',
+  CLOUD_LOGIN_OPEN_BROWSER_TIP: '請在瀏覽器中打開此連結：${url}',
+  CLOUD_LOGIN_STATE_MISMATCH_WARN: 'State 驗證失敗或缺失，請求已攔截',
+  CLOUD_LOGIN_STATE_INVALID: 'State 無效，請重新登入。',
+  CLOUD_LOGIN_TOKEN_MISSING: '回呼中缺少 token。',
+  CLOUD_LOGIN_CODE_MISSING: '回呼中缺少 code。',
+  CLOUD_LOGIN_EXCHANGE_FAILED: '登入 code 交換失敗。',
+  CLOUD_LOGIN_NOT_IN_PROGRESS: '目前沒有進行中的登入流程。',
+  CLOUD_LOGIN_PAGE_TITLE: 'PicGo 登入',
+  CLOUD_LOGIN_RESULT_SUCCESS_TITLE: '授權成功！',
+  CLOUD_LOGIN_RESULT_FAILED_TITLE: '授權失敗',
+  CLOUD_LOGIN_RESULT_SUCCESS_MESSAGE: '你可以關閉此視窗並返回 PicGo。',
+
+  // local server
+  SERVER_INVALID_JSON_BODY: 'JSON 請求內容無效',
+  SERVER_INVALID_REQUEST_BODY_LIST_REQUIRED: '請求內容無效：需要 { list: string[] }',
+  SERVER_FORMDATA_NO_FILES_IN_FILES_FIELD: 'form-data 的 files 欄位未找到檔案',
+  SERVER_FORMDATA_FILES_MUST_BE_FILES: 'form-data 無效：files 必須是檔案',
+  SERVER_AUTH_ENABLED: '[PicGo Server] 認證已啟用。',
+  SERVER_AUTH_DISABLED_WARNING: '[PicGo Server] 警告：認證已關閉，任何人都可以上傳圖片。',
+  SERVER_AUTH_UNAUTHORIZED_REQUEST: '[PicGo Server] 未授權的請求，來源 ${ip}',
+  SERVER_AUTH_QUERY_SECRET_WARNING: '[PicGo Server] 警告：透過 URL 參數傳遞 secret 不安全，請使用 Authorization Header。',
+
   // url rewrite
   URL_REWRITE_EMPTY_RESULT: 'URL 重寫結果為空，請檢查你的規則設定',
 
@@ -113,5 +143,16 @@ export const ZH_TW: ILocales = {
   PLUGIN_HANDLER_PLUGIN_UPDATE_SUCCESS: '插件更新成功',
   PLUGIN_HANDLER_PLUGIN_UPDATE_FAILED: '插件更新失敗',
   PLUGIN_HANDLER_PLUGIN_UPDATE_FAILED_REASON: '插件更新失敗，失敗碼為${code}，錯誤紀錄為 \n ${data}',
-  PLUGIN_HANDLER_PLUGIN_UPDATE_FAILED_VALID: '插件更新失敗，請輸入正確的插件名稱'
+  PLUGIN_HANDLER_PLUGIN_UPDATE_FAILED_VALID: '插件更新失敗，請輸入正確的插件名稱',
+
+  // config sync
+  CONFIG_SYNC_INVALID_ENCRYPTION_METHOD: '設定無效：settings.picgoCloud.encryptionMethod 必須是「auto」、「sse」或「e2ee」之一，目前為：${value}',
+  CONFIG_SYNC_ENCRYPTION_METHOD_E2EE: '端對端加密',
+  CONFIG_SYNC_ENCRYPTION_METHOD_SSE: '伺服器端加密',
+  CONFIG_SYNC_ENCRYPTION_SWITCH_TITLE: '確認切換加密方式嗎？',
+  CONFIG_SYNC_ENCRYPTION_SWITCH_BODY: '您正在從「${from}」切換為「${to}」。\n\n注意：切換加密模式將清空您所有的雲端歷史版本記錄。\n這是因為舊的歷史版本無法在新模式下被解密或驗證。\n切換後，系統將立即為您建立一份新的備份作為起點。',
+  CONFIG_SYNC_ENCRYPTION_SWITCH_CONFIRM: '確認切換並清空歷史',
+  CONFIG_SYNC_ENCRYPTION_SWITCH_CANCEL: '取消',
+  CONFIG_SYNC_ENCRYPTION_SWITCH_CANCELLED: '已取消切換加密方式',
+  CONFIG_SYNC_ENCRYPTION_SWITCH_MISSING_HANDLER: '需要提供加密方式切換確認處理器'
 }

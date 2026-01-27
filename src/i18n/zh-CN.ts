@@ -7,6 +7,36 @@ export const ZH_CN = {
   SERVER_ERROR: '服务端出错，请重试',
   AUTH_FAILED: '认证失败',
 
+  // cloud login
+  CLOUD_LOGIN_CANCELLED: '登录已取消',
+  CLOUD_LOGIN_IN_PROGRESS: '登录正在进行中',
+  CLOUD_LOGIN_INVALID_TOKEN: '无效的 token',
+  CLOUD_LOGIN_SUCCESS: '登录成功！',
+  CLOUD_LOGOUT_SUCCESS: '退出登录成功！',
+  CLOUD_LOGIN_SERVER_START_FAILED: '启动登录服务失败',
+  CLOUD_LOGIN_OPEN_BROWSER_FAILED: '无法自动打开浏览器：${message}',
+  CLOUD_LOGIN_OPEN_BROWSER_TIP: '请在浏览器中打开该链接：${url}',
+  CLOUD_LOGIN_STATE_MISMATCH_WARN: 'State 校验失败或缺失，请求已拦截',
+  CLOUD_LOGIN_STATE_INVALID: 'State 无效，请重新登录。',
+  CLOUD_LOGIN_TOKEN_MISSING: '回调中缺少 token。',
+  CLOUD_LOGIN_CODE_MISSING: '回调中缺少 code。',
+  CLOUD_LOGIN_EXCHANGE_FAILED: '登录 code 交换失败。',
+  CLOUD_LOGIN_NOT_IN_PROGRESS: '当前没有进行中的登录流程。',
+  CLOUD_LOGIN_PAGE_TITLE: 'PicGo 登录',
+  CLOUD_LOGIN_RESULT_SUCCESS_TITLE: '授权成功！',
+  CLOUD_LOGIN_RESULT_FAILED_TITLE: '授权失败',
+  CLOUD_LOGIN_RESULT_SUCCESS_MESSAGE: '你可以关闭此窗口并返回 PicGo。',
+
+  // local server
+  SERVER_INVALID_JSON_BODY: 'JSON 请求体无效',
+  SERVER_INVALID_REQUEST_BODY_LIST_REQUIRED: '请求体无效：需要 { list: string[] }',
+  SERVER_FORMDATA_NO_FILES_IN_FILES_FIELD: 'form-data 的 files 字段未找到文件',
+  SERVER_FORMDATA_FILES_MUST_BE_FILES: 'form-data 无效：files 必须是文件',
+  SERVER_AUTH_ENABLED: '[PicGo Server] 认证已启用。',
+  SERVER_AUTH_DISABLED_WARNING: '[PicGo Server] 警告：认证已关闭，任何人都可以上传图片。',
+  SERVER_AUTH_UNAUTHORIZED_REQUEST: '[PicGo Server] 未授权的请求，来源 ${ip}',
+  SERVER_AUTH_QUERY_SECRET_WARNING: '[PicGo Server] 警告：通过 URL 参数传递 secret 不安全，请使用 Authorization Header。',
+
   // url rewrite
   URL_REWRITE_EMPTY_RESULT: 'URL 重写结果为空，请检查你的规则配置',
 
@@ -111,7 +141,18 @@ export const ZH_CN = {
   PLUGIN_HANDLER_PLUGIN_UPDATE_SUCCESS: '插件更新成功',
   PLUGIN_HANDLER_PLUGIN_UPDATE_FAILED: '插件更新失败',
   PLUGIN_HANDLER_PLUGIN_UPDATE_FAILED_REASON: '插件更新失败，失败码为${code}，错误日志为 \n ${data}',
-  PLUGIN_HANDLER_PLUGIN_UPDATE_FAILED_VALID: '插件更新失败，请输入合法插件名'
+  PLUGIN_HANDLER_PLUGIN_UPDATE_FAILED_VALID: '插件更新失败，请输入合法插件名',
+
+  // config sync
+  CONFIG_SYNC_INVALID_ENCRYPTION_METHOD: '配置无效：settings.picgoCloud.encryptionMethod 必须是 \"auto\"、\"sse\" 或 \"e2ee\" 之一，当前为：${value}',
+  CONFIG_SYNC_ENCRYPTION_METHOD_E2EE: '端到端加密',
+  CONFIG_SYNC_ENCRYPTION_METHOD_SSE: '服务端加密',
+  CONFIG_SYNC_ENCRYPTION_SWITCH_TITLE: '确认切换加密方式吗？',
+  CONFIG_SYNC_ENCRYPTION_SWITCH_BODY: '您正在从“${from}”切换为“${to}”。\n\n注意：切换加密模式将清空您所有的云端历史版本记录。\n这是因为旧的历史版本无法在新模式下被解密或验证。\n切换后，系统将立即为您创建一份新的备份作为起点。',
+  CONFIG_SYNC_ENCRYPTION_SWITCH_CONFIRM: '确认切换并清空历史',
+  CONFIG_SYNC_ENCRYPTION_SWITCH_CANCEL: '取消',
+  CONFIG_SYNC_ENCRYPTION_SWITCH_CANCELLED: '已取消切换加密方式',
+  CONFIG_SYNC_ENCRYPTION_SWITCH_MISSING_HANDLER: '需要提供加密方式切换确认处理器'
 }
 
 export type ILocalesKey = keyof typeof ZH_CN

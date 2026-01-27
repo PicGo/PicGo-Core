@@ -24,19 +24,19 @@ class I18nManager implements II18nManager {
   constructor (ctx: IPicGo) {
     this.ctx = ctx
     this.objectAdapter = new ObjectAdapter(languageList)
-    let language = this.ctx.getConfig<string>('settings.language') || 'zh-CN'
+    let language = this.ctx.getConfig<string>('settings.language') || 'en'
     if (!languageList[language]) {
-      language = 'zh-CN' // use default
+      language = 'en' // use default
     }
     this.i18n = new I18n({
       adapter: this.objectAdapter,
       defaultLanguage: language
     })
-    this.loadOutterI18n()
+    this.loadOutsideI18n()
   }
 
-  private loadOutterI18n (): void {
-    const i18nFolder = this.getOutterI18nFolder()
+  private loadOutsideI18n (): void {
+    const i18nFolder = this.getOutsideI18nFolder()
     const files = fs.readdirSync(i18nFolder, {
       withFileTypes: true
     })
@@ -54,7 +54,7 @@ class I18nManager implements II18nManager {
     })
   }
 
-  private getOutterI18nFolder (): string {
+  private getOutsideI18nFolder (): string {
     const i18nFolder = path.join(this.ctx.baseDir, 'i18n-cli')
     if (!fs.pathExistsSync(i18nFolder)) {
       fs.ensureDirSync(i18nFolder)

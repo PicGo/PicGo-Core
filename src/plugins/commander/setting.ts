@@ -1,4 +1,4 @@
-import { IPicGo, IPluginConfig, IStringKeyMap } from '../../types'
+import type { IPicGo, IPluginConfig, IStringKeyMap } from '../../types'
 
 const normalizeName = (name: string): string => name.trim()
 const toCompareName = (name: string): string => normalizeName(name).toLowerCase()
@@ -213,4 +213,4 @@ const setting = {
   }
 }
 
-export default setting
+export { setting }

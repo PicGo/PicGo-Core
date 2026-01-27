@@ -1,0 +1,27 @@
+import type { IPicGo, IPlugin } from '../../types'
+
+const server: IPlugin = {
+  handle: (ctx: IPicGo) => {
+    const cmd = ctx.cmd
+    cmd.program
+      .command('server')
+      .description('run PicGo as a standalone server')
+      // keep --help, free up -h for host
+      .helpOption('--help', 'display help for command')
+      .option('-p, --port <n>', 'server port')
+      .option('-h, --host <s>', 'server host')
+      .option('-i, --ignore-existing-external-server', 'ignore existing PicGo server instance')
+      .option('--secret <s>', 'server authentication secret')
+      .action(async (options: { port?: string; host?: string; secret?: string; ignoreExistingExternalServer?: boolean }) => {
+        try {
+          const port = options.port ? Number(options.port) : undefined
+          const host = options.host
+          await ctx.server.listen(port, host, options.ignoreExistingExternalServer, options.secret)
+        } catch (e) {
+          ctx.log.error(e as Error)
+        }
+      })
+  }
+}
+
+export { server }

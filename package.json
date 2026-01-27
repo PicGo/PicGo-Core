@@ -13,7 +13,7 @@
   },
   "scripts": {
     "start": "node ./bin/picgo",
-    "lint": "tsc --noEmit && eslint src --ext .ts",
+    "lint": "pnpm lint:dpdm && tsc --noEmit && eslint src --ext .ts",
     "test": "vitest run",
     "build": "cross-env NODE_ENV=production rimraf ./dist && rollup -c rollup.config.js",
     "dev": "cross-env NODE_ENV=development rollup -c rollup.config.js -w",
@@ -23,7 +23,8 @@
     "cz": "git-cz",
     "release": "bump-version",
     "prepare": "husky",
-    "commitlint": "commitlint --edit"
+    "commitlint": "commitlint --edit",
+    "lint:dpdm": "dpdm -T --tsconfig ./tsconfig.json --no-tree --no-warning --exit-code circular:1 src/index.ts"
   },
   "keywords": [
     "picture",
@@ -74,6 +75,7 @@
     "copyfiles": "^2.1.0",
     "cross-env": "^7.0.3",
     "cz-customizable": "^7.5.1",
+    "dpdm": "^3.14.0",
     "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",
@@ -89,6 +91,7 @@
     "vitest": "^4.0.16"
   },
   "dependencies": {
+    "@hono/node-server": "^1.19.7",
     "@picgo/i18n": "^1.0.0",
     "@picgo/store": "^2.0.2",
     "axios": "^1.13.2",
@@ -97,8 +100,13 @@
     "comment-json": "^4.5.1",
     "cross-spawn": "^6.0.5",
     "dayjs": "^1.7.4",
+    "dotenv": "^17.2.3",
+    "ejs": "^3.1.10",
     "form-data": "^4.0.5",
     "fs-extra": "^6.0.1",
+    "giget": "^2.0.0",
+    "globby": "^11.0.4",
+    "hono": "^4.11.3",
     "image-size": "^0.8.3",
     "inquirer": "^6.0.0",
     "is-wsl": "^2.2.0",
@@ -107,6 +115,7 @@
     "md5": "^2.2.1",
     "mime-types": "3.0.2",
     "minimist": "^1.2.5",
+    "open": "^11.0.0",
     "resolve": "^1.8.1",
     "tunnel": "^0.0.6"
   },
@@ -119,6 +128,6 @@
   },
   "plugins": {},
   "engines": {
-    "node": ">= 22.12.0"
+    "node": ">= 20.19.0"
   }
 }

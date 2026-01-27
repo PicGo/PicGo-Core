@@ -9,6 +9,36 @@ export const EN: ILocales = {
   SERVER_ERROR: 'Server error, please try again later',
   AUTH_FAILED: 'Authentication failed',
 
+  // cloud login
+  CLOUD_LOGIN_CANCELLED: 'Login cancelled',
+  CLOUD_LOGIN_IN_PROGRESS: 'Login is already in progress',
+  CLOUD_LOGIN_INVALID_TOKEN: 'Invalid token',
+  CLOUD_LOGIN_SUCCESS: 'Login success!',
+  CLOUD_LOGOUT_SUCCESS: 'Logout success!',
+  CLOUD_LOGIN_SERVER_START_FAILED: 'Failed to start PicGo server for login',
+  CLOUD_LOGIN_OPEN_BROWSER_FAILED: 'Failed to open browser automatically: ${message}',
+  CLOUD_LOGIN_OPEN_BROWSER_TIP: 'Please open this url in browser: ${url}',
+  CLOUD_LOGIN_STATE_MISMATCH_WARN: 'State mismatch or missing. Request blocked.',
+  CLOUD_LOGIN_STATE_INVALID: 'Invalid state. Please try logging in again.',
+  CLOUD_LOGIN_TOKEN_MISSING: 'Token missing in callback.',
+  CLOUD_LOGIN_CODE_MISSING: 'Code missing in callback.',
+  CLOUD_LOGIN_EXCHANGE_FAILED: 'Failed to exchange login code.',
+  CLOUD_LOGIN_NOT_IN_PROGRESS: 'Login flow is not in progress.',
+  CLOUD_LOGIN_PAGE_TITLE: 'PicGo Auth',
+  CLOUD_LOGIN_RESULT_SUCCESS_TITLE: 'Authorization Successful!',
+  CLOUD_LOGIN_RESULT_FAILED_TITLE: 'Authorization Failed',
+  CLOUD_LOGIN_RESULT_SUCCESS_MESSAGE: 'You can now close this window and return to PicGo.',
+
+  // local server
+  SERVER_INVALID_JSON_BODY: 'Invalid JSON body',
+  SERVER_INVALID_REQUEST_BODY_LIST_REQUIRED: 'Invalid request body: { list: string[] } required',
+  SERVER_FORMDATA_NO_FILES_IN_FILES_FIELD: 'No files found in form-data: files',
+  SERVER_FORMDATA_FILES_MUST_BE_FILES: 'Invalid form-data: files must be file(s)',
+  SERVER_AUTH_ENABLED: '[PicGo Server] Authentication enabled.',
+  SERVER_AUTH_DISABLED_WARNING: '[PicGo Server] Warning: Authentication disabled. Anyone can upload images.',
+  SERVER_AUTH_UNAUTHORIZED_REQUEST: '[PicGo Server] Unauthorized request from ${ip}',
+  SERVER_AUTH_QUERY_SECRET_WARNING: '[PicGo Server] Warning: Passing secret via URL query is insecure. Please use Authorization header.',
+
   // url rewrite
   URL_REWRITE_EMPTY_RESULT: 'URL rewrite produced an empty result, please check your rule config',
 
@@ -113,5 +143,16 @@ export const EN: ILocales = {
   PLUGIN_HANDLER_PLUGIN_UPDATE_SUCCESS: 'Plugin updated successfully',
   PLUGIN_HANDLER_PLUGIN_UPDATE_FAILED: 'Plugin update failed',
   PLUGIN_HANDLER_PLUGIN_UPDATE_FAILED_REASON: 'Plugin update failed, error code is ${code}, error log is \n ${data}',
-  PLUGIN_HANDLER_PLUGIN_UPDATE_FAILED_VALID: 'Plugin update failed, please enter a valid plugin name'
+  PLUGIN_HANDLER_PLUGIN_UPDATE_FAILED_VALID: 'Plugin update failed, please enter a valid plugin name',
+
+  // config sync
+  CONFIG_SYNC_INVALID_ENCRYPTION_METHOD: 'Invalid configuration: settings.picgoCloud.encryptionMethod must be one of \'auto\', \'sse\', \'e2ee\'. Found: ${value}',
+  CONFIG_SYNC_ENCRYPTION_METHOD_E2EE: 'End-to-end encryption',
+  CONFIG_SYNC_ENCRYPTION_METHOD_SSE: 'Server-side encryption',
+  CONFIG_SYNC_ENCRYPTION_SWITCH_TITLE: 'Confirm switch encryption method?',
+  CONFIG_SYNC_ENCRYPTION_SWITCH_BODY: 'You are switching from \"${from}\" to \"${to}\".\n\nNote: Switching encryption modes will clear all your cloud history versions.\nThis is because older history versions cannot be decrypted or verified under the new mode.\nAfter switching, the system will immediately create a new backup as the starting point.',
+  CONFIG_SYNC_ENCRYPTION_SWITCH_CONFIRM: 'Confirm switch and clear history',
+  CONFIG_SYNC_ENCRYPTION_SWITCH_CANCEL: 'Cancel',
+  CONFIG_SYNC_ENCRYPTION_SWITCH_CANCELLED: 'Encryption switch cancelled by user',
+  CONFIG_SYNC_ENCRYPTION_SWITCH_MISSING_HANDLER: 'Encryption switch confirmation handler is required'
 }

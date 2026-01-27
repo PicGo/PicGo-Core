@@ -10,7 +10,7 @@ import uploaders from '../plugins/uploader'
 import transformers from '../plugins/transformer'
 import PluginLoader from '../lib/PluginLoader'
 import { get, set, unset } from 'lodash'
-import { IHelper, IImgInfo, IConfig, IPicGo, IStringKeyMap, IPluginLoader, II18nManager, IPicGoPlugin, IPicGoPluginInterface, IRequest, IUploaderConfigManager } from '../types'
+import { IHelper, IImgInfo, IConfig, IPicGo, IStringKeyMap, IPluginLoader, II18nManager, IPicGoPlugin, IPicGoPluginInterface, IRequest, IUploaderConfigManager, IServerManager } from '../types'
 import getClipboardImage from '../utils/getClipboardImage'
 import Request from '../lib/Request'
 import DB from '../utils/db'
@@ -19,6 +19,8 @@ import { IBuildInEvent, IBusEvent } from '../utils/enum'
 import { eventBus } from '../utils/eventBus'
 import { isConfigKeyInBlackList, isInputConfigValid } from '../utils/common'
 import { I18nManager } from '../i18n'
+import { ServerManager } from '../lib/Server'
+import { CloudManager } from '../lib/Cloud'
 import { UploaderConfigManager } from '../lib/UploaderConfigManager'
 
 export class PicGo extends EventEmitter implements IPicGo {
@@ -34,6 +36,8 @@ export class PicGo extends EventEmitter implements IPicGo {
   output: IImgInfo[]
   input: any[]
   pluginHandler: PluginHandler
+  server!: IServerManager
+  cloud!: CloudManager
   uploaderConfig!: IUploaderConfigManager
   /**
    * @deprecated will be removed in v1.5.0+
@@ -94,6 +98,8 @@ export class PicGo extends EventEmitter implements IPicGo {
       // init 18n at first
       this.i18n = new I18nManager(this)
       this.Request = new Request(this)
+      this.server = new ServerManager(this)
+      this.cloud = new CloudManager(this)
       this._pluginLoader = new PluginLoader(this)
       // load self plugins
       setCurrentPluginName('picgo')
@@ -190,6 +196,12 @@ export class PicGo extends EventEmitter implements IPicGo {
 
   get request (): IRequest['request'] {
     return this.Request.request.bind(this.Request)
+  }
+
+  async openUrl (url: string): Promise<void> {
+    const open = (await import('open')).default
+    this.log.info('Opening browser with URL:', url)
+    await open(url)
   }
 
   async upload (input?: any[]): Promise<IImgInfo[] | Error> {

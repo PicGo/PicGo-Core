@@ -1,6 +1,65 @@
 import { Command } from 'commander'
 import { Inquirer } from 'inquirer'
 import { IRequestPromiseOptions } from './oldRequest'
+import type { Env, Handler, Hono, MiddlewareHandler } from 'hono'
+
+/**
+ * Type definition for the plugin router setup callback.
+ * The plugin receives a Hono instance created by the Host.
+ */
+export type PluginRouterSetup = (router: Hono<any, any, any>) => void
+
+export interface IServerManager<E extends Env = any> {
+  /**
+   *
+   * @param port
+   * @param host
+   * @param ignoreExistingExternalServer PicGo GUI may start a server instance already, if you want to start a new one, set this to true
+   * @param secret shared secret for server authentication
+   * @returns
+   */
+  listen: (port?: number, host?: string, ignoreExistingExternalServer?: boolean, secret?: string) => Promise<number | void>
+  shutdown: () => void
+  isListening: () => boolean
+
+  /**
+   * Get current server listening address if running.
+   * e.g. "http://127.0.0.1:36677/"
+   */
+  getServerInfo: () => string
+
+  // --- Route Registration (Type Safe) ---
+  registerGet<P extends string>(path: P, handler: Handler<E, P>): void
+  registerPost<P extends string>(path: P, handler: Handler<E, P>): void
+  registerPut<P extends string>(path: P, handler: Handler<E, P>): void
+  registerDelete<P extends string>(path: P, handler: Handler<E, P>): void
+
+  // --- Middleware & Static ---
+  registerMiddleware<P extends string>(path: P, handler: MiddlewareHandler<E, P>): void
+
+  /**
+   * Register a static file server route.
+   * @param path - The URL prefix (e.g. '/static')
+   * @param root - The local file system path
+   */
+  registerStatic: (path: string, root: string) => void
+
+  // --- Router Mounting (Safe Pattern) ---
+  /**
+   * Mount a sub-router for plugins.
+   *
+   * PicGo creates a new Hono instance (to ensure version consistency)
+   * and passes it to the setup callback for the plugin to configure.
+   */
+  mount: (path: string, setup: PluginRouterSetup) => void
+}
+
+export interface ICloudManager {
+  login: (token?: string) => Promise<void>
+  logout: () => void
+  disposeLoginFlow: () => void
+  getUserInfo: () => Promise<{ user: string } | null>
+}
 
 export interface IPicGo extends NodeJS.EventEmitter {
   /**
@@ -21,6 +80,14 @@ export interface IPicGo extends NodeJS.EventEmitter {
    * picgo commander, for cli
    */
   cmd: ICommander
+  /**
+   * picgo server manager
+   */
+  server: IServerManager
+  /**
+   * picgo cloud manager
+   */
+  cloud: ICloudManager
   /**
    * after transformer, the input will be output
    */
@@ -71,12 +138,20 @@ export interface IPicGo extends NodeJS.EventEmitter {
    */
   request: IRequest['request']
 
+  /**
+   * Opens a URL in the default browser.
+   *
+   * Default implementation uses the `open` package in Node.js.
+   * Consumers (Electron/VSCode extensions) can overwrite this method.
+   */
+  openUrl: (url: string) => Promise<void>
+
   i18n: II18nManager
 
   /**
    * get picgo config
    */
-  getConfig: <T>(name?: string) => T
+  getConfig: <T = unknown>(name?: string) => T
   /**
    * save picgo config to configPath
    */
@@ -439,6 +514,17 @@ export interface IConfig {
     npmRegistry?: string
     /** for npm */
     npmProxy?: string
+    picgoCloud?: {
+      token?: string
+      [others: string]: any
+    }
+    server?: {
+      port?: number
+      host?: string
+      enable?: boolean
+      secret?: string
+      [others: string]: any
+    }
     [others: string]: any
   }
   [configOptions: string]: any
@@ -576,7 +662,7 @@ export interface IProcessEnv {
 
 export type ILogArgvType = string | number
 
-export type ILogArgvTypeWithError = ILogArgvType | Error
+export type ILogArgvTypeWithError = ILogArgvType | Error | unknown
 
 export type Nullable<T> = T | null
 export type Undefinable<T> = T | undefined
