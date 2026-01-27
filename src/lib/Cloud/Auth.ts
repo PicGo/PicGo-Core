@@ -95,6 +95,11 @@ class AuthHandler {
     this.authState = crypto.randomUUID()
     this.pkceVerifier = generatePkceVerifier()
     const challenge = encodeURIComponent(await pkceChallengeFromVerifier(this.pkceVerifier))
+    // PKCE security model:
+    // - Only the derived code challenge and the opaque state value are sent in the URL.
+    // - The raw PKCE verifier (this.pkceVerifier) is kept local and must NEVER be logged
+    //   or transmitted to the authorization endpoint; it is only sent later to the token
+    //   endpoint over HTTPS so the server can validate code_verifier against code_challenge.
     const authUrl = `${CLOUD_BASE_URL}?callback=${callback}&state=${encodeURIComponent(this.authState)}&challenge=${challenge}`
 
     if (abortController.signal.aborted) {

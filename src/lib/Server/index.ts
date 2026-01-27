@@ -285,7 +285,7 @@ class ServerManager implements IServerManager {
       ?? normalizeSecret(configSecret)
     this.warnedQuerySecret = false
 
-    this.app = rebuildApp(this.app)
+    this.app = rebuildApp(this.app, this.ctx)
 
     const tryListen = async (portToTry: number): Promise<number | void> => {
       try {

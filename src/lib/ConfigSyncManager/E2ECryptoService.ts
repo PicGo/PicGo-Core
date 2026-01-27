@@ -9,6 +9,7 @@ const KEK_BYTES = 32
 const DEK_BYTES = 32
 const IV_BYTES = 12
 const TAG_BYTES = 16
+const ENCRYPTION_ALGORITHM = 'aes-256-gcm'
 
 class E2ECryptoService {
   generateE2EPayload (config: string, pin: string): { payload: IE2EPayload, dek: Buffer } {
@@ -60,7 +61,7 @@ class E2ECryptoService {
 
   private encryptWithKey (data: Buffer, key: Buffer): string {
     const iv = crypto.randomBytes(IV_BYTES)
-    const cipher = crypto.createCipheriv('aes-256-gcm', key, iv)
+    const cipher = crypto.createCipheriv(ENCRYPTION_ALGORITHM, key, iv)
     const ciphertext = Buffer.concat([cipher.update(data), cipher.final()])
     const tag = cipher.getAuthTag()
     return Buffer.concat([iv, tag, ciphertext]).toString('base64')
@@ -76,7 +77,7 @@ class E2ECryptoService {
     const ciphertext = payload.subarray(IV_BYTES + TAG_BYTES)
 
     try {
-      const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv)
+      const decipher = crypto.createDecipheriv(ENCRYPTION_ALGORITHM, key, iv)
       decipher.setAuthTag(tag)
       return Buffer.concat([decipher.update(ciphertext), decipher.final()])
     } catch (error: unknown) {
