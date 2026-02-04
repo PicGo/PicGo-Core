@@ -1,4 +1,7 @@
 name: release
+permissions:
+  contents: read
+  id-token: write
 
 on:
   push:
@@ -44,17 +47,11 @@ jobs:
       - name: Publish (master)
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         run: pnpm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish (alpha)
         if: github.event_name == 'push' && github.ref == 'refs/heads/alpha'
         run: pnpm publish --tag alpha --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish (manual)
         if: github.event_name == 'workflow_dispatch'
         run: pnpm publish --tag "${{ inputs.publish_tag || 'latest' }}" --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
