@@ -54,4 +54,4 @@ jobs:
 
       - name: Publish (manual)
         if: github.event_name == 'workflow_dispatch'
-        run: pnpm publish --tag "${{ inputs.publish_tag || 'latest' }}" --access public
+        run: pnpm publish --tag "${{ inputs.publish_tag || 'latest' }}" --access public --publish-branch "${{ github.ref_name }}"
