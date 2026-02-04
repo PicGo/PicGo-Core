@@ -23,9 +23,11 @@
 
 ![picgo-core](https://cdn.jsdelivr.net/gh/Molunerfinn/test/picgo/picgo-core-fix.jpg)
 
-A tool for picture uploading. Both CLI & api supports. It also supports plugin system, please check [Awesome-PicGo](https://github.com/PicGo/Awesome-PicGo) to find powerful plugins.
+A tool for image uploading. Both CLI & api supports. It also supports plugin system, please check [Awesome-PicGo](https://github.com/PicGo/Awesome-PicGo) to find powerful plugins.
 
-**Typora supports PicGo-Core natively**. If you like PicGo-Core and have time, welcome to help me translate the documentation of PicGo-Core into English.
+More details please see the [Homepage](https://picgo.app/) of PicGo.
+
+**Typora supports PicGo-Core natively**.
 
 ## Installation
 
