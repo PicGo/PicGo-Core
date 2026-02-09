@@ -43,10 +43,10 @@ export const EN: ILocales = {
   URL_REWRITE_EMPTY_RESULT: 'URL rewrite produced an empty result, please check your rule config',
 
   // smms
-  PICBED_SMMS: 'SM.MS',
+  PICBED_SMMS: 'SM.MS(S.EE)',
   PICBED_SMMS_TOKEN: 'Set Token',
   PICBED_SMMS_BACKUP_DOMAIN: 'Set Backup Upload Domain',
-  PICBED_SMMS_MESSAGE_BACKUP_DOMAIN: 'Ex. smms.app',
+  PICBED_SMMS_MESSAGE_BACKUP_DOMAIN: 'Ex. sm.ms',
 
   // Ali-cloud
   PICBED_ALICLOUD: 'Ali Cloud',

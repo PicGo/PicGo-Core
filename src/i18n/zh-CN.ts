@@ -41,10 +41,10 @@ export const ZH_CN = {
   URL_REWRITE_EMPTY_RESULT: 'URL 重写结果为空，请检查你的规则配置',
 
   // smms
-  PICBED_SMMS: 'SM.MS',
+  PICBED_SMMS: 'SM.MS(S.EE)',
   PICBED_SMMS_TOKEN: '设定Token',
   PICBED_SMMS_BACKUP_DOMAIN: '备用上传域名',
-  PICBED_SMMS_MESSAGE_BACKUP_DOMAIN: '例如 smms.app',
+  PICBED_SMMS_MESSAGE_BACKUP_DOMAIN: '例如 sm.ms',
 
   // Ali-cloud
   PICBED_ALICLOUD: '阿里云OSS',

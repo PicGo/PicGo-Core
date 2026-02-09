@@ -43,10 +43,10 @@ export const ZH_TW: ILocales = {
   URL_REWRITE_EMPTY_RESULT: 'URL 重寫結果為空，請檢查你的規則設定',
 
   // smms
-  PICBED_SMMS: 'SM.MS',
+  PICBED_SMMS: 'SM.MS(S.EE)',
   PICBED_SMMS_TOKEN: '設定Token',
   PICBED_SMMS_BACKUP_DOMAIN: '備用上傳網址',
-  PICBED_SMMS_MESSAGE_BACKUP_DOMAIN: '例如 smms.app',
+  PICBED_SMMS_MESSAGE_BACKUP_DOMAIN: '例如 sm.ms',
 
   // Ali-cloud
   PICBED_ALICLOUD: '阿里云OSS',
