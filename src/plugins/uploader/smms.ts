@@ -40,14 +40,10 @@ const handle = async (ctx: IPicGo): Promise<IPicGo> => {
       try {
         const res: string = await ctx.request(postConfig)
         const body = JSON.parse(res)
-        if (body.code === 'success') {
+        if (body.code === 200 || body.message === 'success') {
           delete img.base64Image
           delete img.buffer
           img.imgUrl = body.data.url
-        } else if (body.code === 'image_repeated' && typeof body.images === 'string') { // do extra check since this error return is not documented at https://doc.sm.ms/#api-Image-Upload
-          delete img.base64Image
-          delete img.buffer
-          img.imgUrl = body.images
         } else {
           ctx.emit(IBuildInEvent.NOTIFICATION, {
             title: ctx.i18n.translate<ILocalesKey>('UPLOAD_FAILED'),
