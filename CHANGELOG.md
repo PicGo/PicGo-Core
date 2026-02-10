@@ -1,3 +1,13 @@
+## :tada: 2.0.2 (2026-02-10)
+
+
+### :bug: Bug Fixes
+
+* **plugin-handler:** add optional `env` param for `uninstall` method ([#194](https://github.com/PicGo/PicGo-Core/issues/194)) ([352a885](https://github.com/PicGo/PicGo-Core/commit/352a885))
+* s.ee compatibility issues ([00b3f66](https://github.com/PicGo/PicGo-Core/commit/00b3f66))
+
+
+
 ## :tada: 2.0.1 (2026-02-10)
 
 
