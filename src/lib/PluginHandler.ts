@@ -101,13 +101,13 @@ export class PluginHandler implements IPluginHandler {
     }
   }
 
-  async uninstall (plugins: string[]): Promise<IPluginHandlerResult<boolean>> {
+  async uninstall (plugins: string[], env?: IProcessEnv): Promise<IPluginHandlerResult<boolean>> {
     const processPlugins = plugins.map((item: string) => handlePluginNameProcess(this.ctx, item)).filter(item => item.success)
     const pkgNameList = processPlugins.map(item => item.pkgName)
     if (pkgNameList.length > 0) {
       // uninstall plugins must use pkgNameList:
       // npm uninstall will use the package.json's name
-      const result = await this.execCommand('uninstall', pkgNameList, this.ctx.baseDir)
+      const result = await this.execCommand('uninstall', pkgNameList, this.ctx.baseDir, undefined, env)
       if (!result.code) {
         pkgNameList.forEach((pluginName: string) => {
           this.ctx.pluginLoader.unregisterPlugin(pluginName)

@@ -559,7 +559,7 @@ export interface IPluginProcessResult {
 export interface IPluginHandler {
   install: (plugins: string[], options: IPluginHandlerOptions, env?: IProcessEnv) => Promise<IPluginHandlerResult<boolean>>
   update: (plugins: string[], options: IPluginHandlerOptions, env?: IProcessEnv) => Promise<IPluginHandlerResult<boolean>>
-  uninstall: (plugins: string[]) => Promise<IPluginHandlerResult<boolean>>
+  uninstall: (plugins: string[], env?: IProcessEnv) => Promise<IPluginHandlerResult<boolean>>
 }
 
 export interface IPluginHandlerResult<T> {
