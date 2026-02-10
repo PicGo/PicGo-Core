@@ -3,10 +3,11 @@ import { IBuildInEvent } from '../../utils/enum'
 import { ILocalesKey } from '../../i18n/zh-CN'
 
 const postOptions = (fileName: string, image: Buffer, apiToken: string, backupDomain = ''): IOldReqOptions => {
-  const domain = backupDomain || 'sm.ms'
+  const domain = backupDomain || 's.ee'
+  const apiPath = domain === 's.ee' ? '/api/v1/file/upload' : '/api/v2/upload'
   return {
     method: 'POST',
-    url: `https://${domain}/api/v2/upload`,
+    url: `https://${domain}${apiPath}`,
     headers: {
       contentType: 'multipart/form-data',
       'User-Agent': 'PicGo',
@@ -18,8 +19,7 @@ const postOptions = (fileName: string, image: Buffer, apiToken: string, backupDo
         options: {
           filename: fileName
         }
-      },
-      ssl: 'true'
+      }
     }
   }
 }
