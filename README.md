@@ -57,7 +57,7 @@ yarn add picgo -D
 
 ### Use in CLI
 
-> PicGo uses `SM.MS(S.EE)` as the default upload pic-bed.
+> PicGo uses `SM.MS(S.EE)` as the default upload image host.
 
 Show help:
 
