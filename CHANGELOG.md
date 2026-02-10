@@ -1,3 +1,17 @@
+## :tada: 2.0.1 (2026-02-10)
+
+
+### :pencil: Documentation
+
+* update docs ([1efff56](https://github.com/PicGo/PicGo-Core/commit/1efff56))
+
+
+### :package: Chore
+
+* update actions ([f33db68](https://github.com/PicGo/PicGo-Core/commit/f33db68))
+
+
+
 # :tada: 2.0.0 (2026-01-27)
 
 
