@@ -4,7 +4,7 @@ import axios from 'axios'
 import * as crypto from 'node:crypto'
 import { BuiltinRoutePath } from '../Routes/routePath'
 import { IInternalServerManager } from '../../types/internal'
-import { CLOUD_BASE_URL } from '../utils'
+import { API_BASE_URL, CLOUD_BASE_URL } from '../utils'
 import { exchangeToken, generatePkceVerifier, isErrorResponse, pkceChallengeFromVerifier } from './utils'
 import type { ILocalesKey } from '../../i18n/zh-CN'
 
@@ -228,14 +228,17 @@ class AuthHandler {
 
     const verifier = this.pkceVerifier
     if (!verifier) {
+      this.ctx.log.error('PKCE verifier is missing during callback handling')
       const message = this.ctx.i18n.translate<ILocalesKey>('CLOUD_LOGIN_EXCHANGE_FAILED')
       this.abortPendingLogin(pending, message)
       return c.html(this.renderResultPage(false, message), 500)
     }
 
     try {
+      this.ctx.log.info('API_BASE_URL', API_BASE_URL, 'Exchanging login code for token...')
       const exchange = await exchangeToken(code, verifier)
       if (!exchange.token) {
+        this.ctx.log.error('Token exchange failed without throwing an error')
         const message = exchange.message ?? this.ctx.i18n.translate<ILocalesKey>('CLOUD_LOGIN_EXCHANGE_FAILED')
         this.abortPendingLogin(pending, message)
         return c.html(this.renderResultPage(false, message), 500)
@@ -272,6 +275,7 @@ class AuthHandler {
       const finalMessage = message ?? fallback
       const finalStatus = status === 400 ? 400 : 500
       this.abortPendingLogin(pending, finalMessage)
+      this.ctx.log.error(`Token exchange failed: ${finalMessage} (status: ${finalStatus})`, error)
       return c.html(this.renderResultPage(false, finalMessage), finalStatus)
     }
   }

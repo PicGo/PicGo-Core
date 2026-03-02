@@ -221,6 +221,7 @@ class ServerManager implements IServerManager {
     }
 
     if (!token || token !== this.authSecret) {
+      this.ctx.log.warn(`[PicGo Server] Unauthorized request to ${method} ${path} with token from ${source}`)
       this.logUnauthorized(c)
       return c.json({ success: false, message: 'Unauthorized' }, 401)
     }
