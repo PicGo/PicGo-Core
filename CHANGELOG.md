@@ -1,3 +1,12 @@
+## :tada: 2.0.3 (2026-03-02)
+
+
+### :package: Chore
+
+* add logs for login ([1b076ae](https://github.com/PicGo/PicGo-Core/commit/1b076ae))
+
+
+
 ## :tada: 2.0.2 (2026-02-10)
 
 
