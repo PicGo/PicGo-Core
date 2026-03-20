@@ -19,7 +19,8 @@ export class Logger implements ILogger {
     [ILogType.success]: 'green',
     [ILogType.info]: 'blue',
     [ILogType.warn]: 'yellow',
-    [ILogType.error]: 'red'
+    [ILogType.error]: 'red',
+    [ILogType.debug]: 'magenta'
   }
 
   private readonly ctx: IPicGo
@@ -131,7 +132,7 @@ export class Logger implements ILogger {
 
   debug (...msg: ILogArgvType[]): void {
     if (isDev()) {
-      this.handleLog(ILogType.info, ...msg)
+      this.handleLog(ILogType.debug, ...msg)
     }
   }
 }

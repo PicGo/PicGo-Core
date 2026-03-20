@@ -28,6 +28,12 @@ export const ZH_TW: ILocales = {
   CLOUD_LOGIN_RESULT_SUCCESS_TITLE: '授權成功！',
   CLOUD_LOGIN_RESULT_FAILED_TITLE: '授權失敗',
   CLOUD_LOGIN_RESULT_SUCCESS_MESSAGE: '你可以關閉此視窗並返回 PicGo。',
+  PICGO_CLOUD_UPLOAD_LOGIN_REQUIRED: '請先登入 PicGo Cloud 後再使用此圖床。',
+  PICGO_CLOUD_UPLOAD_RELOGIN_REQUIRED: 'PicGo Cloud 登入狀態已失效，請重新登入後再試。',
+  PICGO_CLOUD_UPLOAD_INVALID_PRESIGN_RESPONSE: 'PicGo Cloud 回傳的上傳憑證無效。',
+  PICGO_CLOUD_UPLOAD_INVALID_COMPLETE_RESPONSE: 'PicGo Cloud 回傳的完成上傳回應無效。',
+  PICGO_CLOUD_UPLOAD_MISSING_FILE_NAME: '缺少檔名，無法上傳到 PicGo Cloud。',
+  PICGO_CLOUD_UPLOAD_MISSING_FILE_DATA: '缺少圖片資料，無法上傳到 PicGo Cloud。',
 
   // local server
   SERVER_INVALID_JSON_BODY: 'JSON 請求內容無效',

@@ -26,6 +26,12 @@ export const ZH_CN = {
   CLOUD_LOGIN_RESULT_SUCCESS_TITLE: '授权成功！',
   CLOUD_LOGIN_RESULT_FAILED_TITLE: '授权失败',
   CLOUD_LOGIN_RESULT_SUCCESS_MESSAGE: '你可以关闭此窗口并返回 PicGo。',
+  PICGO_CLOUD_UPLOAD_LOGIN_REQUIRED: '请先登录 PicGo Cloud 后再使用该图床。',
+  PICGO_CLOUD_UPLOAD_RELOGIN_REQUIRED: 'PicGo Cloud 登录状态已失效，请重新登录后再试。',
+  PICGO_CLOUD_UPLOAD_INVALID_PRESIGN_RESPONSE: 'PicGo Cloud 返回的上传凭证无效。',
+  PICGO_CLOUD_UPLOAD_INVALID_COMPLETE_RESPONSE: 'PicGo Cloud 返回的完成上传响应无效。',
+  PICGO_CLOUD_UPLOAD_MISSING_FILE_NAME: '缺少文件名，无法上传到 PicGo Cloud。',
+  PICGO_CLOUD_UPLOAD_MISSING_FILE_DATA: '缺少图片数据，无法上传到 PicGo Cloud。',
 
   // local server
   SERVER_INVALID_JSON_BODY: 'JSON 请求体无效',

@@ -28,6 +28,12 @@ export const EN: ILocales = {
   CLOUD_LOGIN_RESULT_SUCCESS_TITLE: 'Authorization Successful!',
   CLOUD_LOGIN_RESULT_FAILED_TITLE: 'Authorization Failed',
   CLOUD_LOGIN_RESULT_SUCCESS_MESSAGE: 'You can now close this window and return to PicGo.',
+  PICGO_CLOUD_UPLOAD_LOGIN_REQUIRED: 'Please log in to PicGo Cloud before using this uploader.',
+  PICGO_CLOUD_UPLOAD_RELOGIN_REQUIRED: 'Your PicGo Cloud session has expired. Please log in again and retry.',
+  PICGO_CLOUD_UPLOAD_INVALID_PRESIGN_RESPONSE: 'PicGo Cloud returned an invalid upload presign response.',
+  PICGO_CLOUD_UPLOAD_INVALID_COMPLETE_RESPONSE: 'PicGo Cloud returned an invalid upload completion response.',
+  PICGO_CLOUD_UPLOAD_MISSING_FILE_NAME: 'Missing file name. Unable to upload to PicGo Cloud.',
+  PICGO_CLOUD_UPLOAD_MISSING_FILE_DATA: 'Missing image data. Unable to upload to PicGo Cloud.',
 
   // local server
   SERVER_INVALID_JSON_BODY: 'Invalid JSON body',
