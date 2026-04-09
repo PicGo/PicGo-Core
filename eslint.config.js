@@ -16,6 +16,10 @@ module.exports = [
       '**/dist/**',
       '**/node_modules/**',
       '**/*.d.ts',
+      '**/__tests__/**',
+      '**/*.spec.ts',
+      'src/**/__tests__/**',
+      'src/**/*.spec.ts',
       '.eslintrc.js',
       'bin',
       'scripts/**/*.js'
@@ -90,6 +94,7 @@ module.exports = [
       ...tsPlugin.configs['recommended-requiring-type-checking'].rules,
       ...promisePlugin.configs.recommended.rules,
       ...eslintConfigPrettier.rules,
+      '@typescript-eslint/naming-convention': 'off',
       '@typescript-eslint/strict-boolean-expressions': 'off',
       '@typescript-eslint/prefer-nullish-coalescing': 'off',
       '@typescript-eslint/return-await': 'off',

@@ -23,18 +23,24 @@ export interface IHelper {
   beforeTransformPlugins: LifecyclePlugins
   beforeUploadPlugins: LifecyclePlugins
   afterUploadPlugins: LifecyclePlugins
+  afterFinishPlugins: LifecyclePlugins
 }
 
 /**
  * for uploading image info
  */
 export interface IImgInfo {
+  id?: string
   buffer?: Buffer
   base64Image?: string
   fileName?: string
   width?: number
   height?: number
   extname?: string
+  contentType?: string
+  mimeType?: string
+  createdAt?: number | string | Date
+  updatedAt?: number | string | Date
   [propName: string]: any
 }
 

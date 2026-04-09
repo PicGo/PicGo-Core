@@ -99,10 +99,24 @@ export class Lifecycle extends EventEmitter {
     applyUrlRewriteToOutput(ctx)
 
     await this.handlePlugins(ctx.helper.afterUploadPlugins, ctx)
+
+    const msg = this.buildSuccessMessage(ctx)
+    for (const outputImg of ctx.output) {
+      delete outputImg.base64Image
+      delete outputImg.buffer
+    }
+
+    ctx.emit(IBuildInEvent.FINISHED, ctx)
+    ctx.log.success(`\n${msg}`)
+    await this.handlePlugins(ctx.helper.afterFinishPlugins, ctx)
+    return ctx
+  }
+
+  private buildSuccessMessage (ctx: IPicGo): string {
     let msg = ''
     const length = ctx.output.length
-    // notice, now picgo builtin uploader will encodeOutputURL by default
     const isEncodeOutputURL = ctx.getConfig<Undefinable<boolean>>('settings.encodeOutputURL') === true
+
     for (let i = 0; i < length; i++) {
       if (typeof ctx.output[i].imgUrl !== 'undefined') {
         msg += isEncodeOutputURL ? handleUrlEncode(ctx.output[i].imgUrl!) : ctx.output[i].imgUrl!
@@ -110,12 +124,9 @@ export class Lifecycle extends EventEmitter {
           msg += '\n'
         }
       }
-      delete ctx.output[i].base64Image
-      delete ctx.output[i].buffer
     }
-    ctx.emit(IBuildInEvent.FINISHED, ctx)
-    ctx.log.success(`\n${msg}`)
-    return ctx
+
+    return msg
   }
 
   private async handlePlugins (lifeCyclePlugins: ILifecyclePlugins, ctx: IPicGo): Promise<IPicGo> {

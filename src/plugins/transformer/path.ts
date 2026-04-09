@@ -37,7 +37,7 @@ const handle = async (ctx: IPicGo): Promise<IPicGo> => {
         extname,
         // TODO: need optimized
         size: info.buffer?.length || 0,
-        mimeType: mime.lookup(extname) || 'application/octet-stream'
+        contentType: mime.lookup(extname) || 'application/octet-stream'
       }
     } else {
       ctx.log.error(info.reason)

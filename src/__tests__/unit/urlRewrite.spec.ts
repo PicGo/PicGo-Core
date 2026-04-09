@@ -143,6 +143,11 @@ describe('urlRewrite', () => {
           ],
           getIdList: () => ['testPlugin'],
           getName: () => 'afterUploadPlugins'
+        },
+        afterFinishPlugins: {
+          getList: () => [],
+          getIdList: () => [],
+          getName: () => 'afterFinishPlugins'
         }
       } as any,
       log: {

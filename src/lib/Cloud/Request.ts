@@ -1,6 +1,14 @@
 import type { AxiosRequestConfig } from 'axios'
 import type { IPicGo } from '../../types'
 import { API_BASE_URL } from '../utils'
+import { isRecord } from './utils'
+
+type ICloudErrorData = {
+  success?: boolean
+  code?: string
+  message?: string
+  [key: string]: unknown
+}
 
 type ICloudRequestErrorResponse = {
   status: number
@@ -10,16 +18,37 @@ type ICloudRequestErrorResponse = {
 type ICloudRequestError = Error & {
   isAxiosError: true
   code?: string
+  status?: number
   response?: ICloudRequestErrorResponse
+}
+
+type ICloudServiceError = Error & {
+  apiCode?: string
+  status?: number
 }
 
 type IRequestErrorShape = {
   message?: string
+  code?: string
   statusCode?: number
   response?: {
     status?: number
     body?: unknown
   }
+}
+
+type ICloudErrorLike = {
+  status?: number
+  code?: string
+  apiCode?: string
+  response?: {
+    status?: number
+    data?: unknown
+  }
+} | null | undefined
+
+const isCloudErrorData = (value: unknown): value is ICloudErrorData => {
+  return isRecord(value)
 }
 
 const isRequestErrorShape = (error: unknown): error is IRequestErrorShape => {
@@ -31,17 +60,59 @@ const isRequestErrorShape = (error: unknown): error is IRequestErrorShape => {
 }
 
 const normalizeRequestError = (error: IRequestErrorShape): ICloudRequestError => {
-  const normalized = new Error(error.message || 'Request failed') as ICloudRequestError
+  const responseData = error.response?.body
+  const normalizedMessage = isCloudErrorData(responseData) && typeof responseData.message === 'string'
+    ? responseData.message
+    : error.message || 'Request failed'
+  const normalized = new Error(normalizedMessage) as ICloudRequestError
   const status = error.response?.status ?? error.statusCode ?? 0
 
   normalized.name = 'AxiosError'
   normalized.isAxiosError = true
+  normalized.status = status
+  if (isCloudErrorData(responseData) && typeof responseData.code === 'string') {
+    normalized.code = responseData.code
+  } else if (typeof error.code === 'string') {
+    normalized.code = error.code
+  }
   normalized.response = {
     status,
-    data: error.response?.body
+    data: responseData
   }
 
   return normalized
+}
+
+const getCloudErrorData = (error: unknown): ICloudErrorData | undefined => {
+  const err = error as ICloudErrorLike
+  const data = err?.response?.data
+  return isCloudErrorData(data) ? data : undefined
+}
+
+const getCloudErrorStatus = (error: unknown): number | undefined => {
+  const err = error as ICloudErrorLike
+  const status = err?.response?.status ?? err?.status
+  return typeof status === 'number' ? status : undefined
+}
+
+const getCloudErrorCode = (error: unknown): string | undefined => {
+  const err = error as ICloudErrorLike
+  const code = err?.apiCode ?? getCloudErrorData(error)?.code ?? err?.code
+  return typeof code === 'string' ? code : undefined
+}
+
+const getCloudErrorMessage = (error: unknown, fallback: string = 'Request failed'): string => {
+  const message = getCloudErrorData(error)?.message ??
+    (error instanceof Error ? error.message : undefined) ??
+    (isRecord(error) && typeof error.message === 'string' ? error.message : undefined)
+  return typeof message === 'string' && message.trim() !== '' ? message : fallback
+}
+
+const createCloudServiceError = (message: string, cause?: unknown): ICloudServiceError => {
+  const serviceError = new Error(message, cause === undefined ? undefined : { cause }) as ICloudServiceError
+  serviceError.status = getCloudErrorStatus(cause)
+  serviceError.apiCode = getCloudErrorCode(cause)
+  return serviceError
 }
 
 /**
@@ -87,3 +158,16 @@ class AuthRequestClient {
 }
 
 export { AuthRequestClient }
+export {
+  createCloudServiceError,
+  getCloudErrorData,
+  getCloudErrorCode,
+  getCloudErrorMessage,
+  getCloudErrorStatus
+}
+
+export type {
+  ICloudErrorData,
+  ICloudRequestError,
+  ICloudServiceError
+}

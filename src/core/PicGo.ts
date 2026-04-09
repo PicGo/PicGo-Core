@@ -63,7 +63,8 @@ export class PicGo extends EventEmitter implements IPicGo {
       uploader: new LifecyclePlugins('uploader'),
       beforeTransformPlugins: new LifecyclePlugins('beforeTransformPlugins'),
       beforeUploadPlugins: new LifecyclePlugins('beforeUploadPlugins'),
-      afterUploadPlugins: new LifecyclePlugins('afterUploadPlugins')
+      afterUploadPlugins: new LifecyclePlugins('afterUploadPlugins'),
+      afterFinishPlugins: new LifecyclePlugins('afterFinishPlugins')
     }
     this.initConfigPath()
     this.log = new Logger(this)

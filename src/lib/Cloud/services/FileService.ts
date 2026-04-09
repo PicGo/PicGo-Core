@@ -2,7 +2,7 @@ import axios from 'axios'
 import mime from 'mime-types'
 import type { IImgInfo, IPicGo, IReqOptions } from '../../../types'
 import type { ILocalesKey } from '../../../i18n/zh-CN'
-import { AuthRequestClient } from '../Request'
+import { AuthRequestClient, createCloudServiceError, getCloudErrorMessage, getCloudErrorStatus } from '../Request'
 
 interface IPresignResponse {
   success: boolean
@@ -124,7 +124,7 @@ export class FileService {
   }
 
   private getContentType (img: IImgInfo, fileName: string): string | undefined {
-    const explicitMimeType = img.mimeType?.trim()
+    const explicitMimeType = img.contentType?.trim() || img.mimeType?.trim()
     if (explicitMimeType) {
       return explicitMimeType
     }
@@ -152,15 +152,18 @@ export class FileService {
       return await handler()
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
-        const status = error.response?.status
-        if (status === 401 || status === 403) {
+        const status = getCloudErrorStatus(error)
+        if (status === 401) {
           this.ctx.removeConfig('settings.picgoCloud', 'token')
-          throw new Error(this.ctx.i18n.translate<ILocalesKey>('PICGO_CLOUD_UPLOAD_RELOGIN_REQUIRED'))
+          throw createCloudServiceError(
+            this.ctx.i18n.translate<ILocalesKey>('PICGO_CLOUD_UPLOAD_RELOGIN_REQUIRED'),
+            error
+          )
         }
 
-        const message = (error.response?.data as { message?: string } | undefined)?.message
-        if (message) {
-          throw new Error(message)
+        const message = getCloudErrorMessage(error)
+        if (message.trim() !== '') {
+          throw createCloudServiceError(message, error)
         }
       }
 

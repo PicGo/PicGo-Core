@@ -32,6 +32,8 @@ Always ask questions before create proposal files if unsure about anything in th
 - Don't write `as any` in TypeScript code unless absolutely necessary. Always prefer explicit types.
 - **i18n / user-facing text**: do not hard-code user-facing strings (logs, errors, HTML result pages). Add i18n keys under `src/i18n/zh-CN.ts` and provide corresponding entries in `src/i18n/en.ts` and `src/i18n/zh-TW.ts`, then use `ctx.i18n.translate<ILocalesKey>(...)` (supports `${var}` placeholders via args). CLI option descriptions are exempt unless explicitly requested.
 - **Commander actions**: prefer `.action(async (...) => { ... })` and avoid wrapping an IIFE like `.action(() => { (async () => { ... })().catch(...) })`.
+- **No `void` fire-and-forget calls**: do not write `void someAsyncCall()` / `void somePromise.then(...)`. If a task is intentionally not awaited, keep the returned promise in a variable and attach explicit handling without using the `void` operator.
+- **Cloud service error handling**: in service-layer code, never branch on `error.message` to decide behavior. Use HTTP status and backend error `code` instead, using specific `ApiErrorCode` values actually needed by PicGo-Core.
 - **Commander prompts**: avoid `prompt<any>` / `prompt<IStringKeyMap<any>>`; declare a concrete answer type (e.g. `prompt<{ operation: 'list' | 'rename' }>(...)`).
 - **Commander option descriptions**: for CLI options, use plain strings without i18n keys unless explicitly requested.
 - **TypeScript enums**: when representing a fixed set of values, prefer `enum` over union string literal types unless explicitly requested otherwise.

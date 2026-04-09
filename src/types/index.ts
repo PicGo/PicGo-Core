@@ -58,7 +58,85 @@ export interface ICloudManager {
   login: (token?: string) => Promise<void>
   logout: () => void
   disposeLoginFlow: () => void
-  getUserInfo: () => Promise<{ user: string } | null>
+  album: ICloudAlbumManager
+  getUserInfo: () => Promise<ICloudUserInfo | null>
+  refreshUserInfo: () => Promise<ICloudUserInfo | null>
+}
+
+export interface ICloudUserInfo {
+  user: string | null
+  avatar?: string | null
+  plan?: number
+  autoImport?: boolean
+}
+
+export type ImportResult = {
+  total: number
+  created: number
+  skipped: number
+  invalid: number
+  failed: number
+  pending: number
+  items: IImgInfo[]
+}
+
+export type CloudImportProgress = {
+  total: number
+  current: number
+  batchIndex: number
+  batchTotal: number
+  created: number
+  skipped: number
+  failed: number
+}
+
+export enum AlbumListOrder {
+  ASC = 'asc',
+  DESC = 'desc'
+}
+
+export enum AlbumListSort {
+  NEWEST = 'newest',
+  OLDEST = 'oldest',
+  FILE_NAME = 'fileName'
+}
+
+export type AlbumListQuery = {
+  contentType?: string
+  type?: string
+  ext?: string
+  search?: string
+  fileName?: string
+  limit?: number
+  offset?: number
+  sort?: AlbumListSort | string
+  order?: AlbumListOrder
+}
+
+export type AlbumListResponse<T = IImgInfo> = {
+  success: boolean
+  items: T[]
+  total: number
+  limit: number
+  offset: number
+}
+
+export type AlbumFiltersResponse = {
+  success: boolean
+  contentTypes: string[]
+  exts: string[]
+}
+
+export interface ICloudAlbumManager {
+  import: (items: IImgInfo[]) => Promise<ImportResult>
+  list: (query?: AlbumListQuery) => Promise<AlbumListResponse>
+  get: (id: string) => Promise<IImgInfo>
+  update: (id: string, data: Partial<IImgInfo>) => Promise<IImgInfo>
+  delete: (id: string | string[]) => Promise<void>
+  getFilters: () => Promise<AlbumFiltersResponse>
+  getPending: () => Promise<IImgInfo[]>
+  addToPending: (items: IImgInfo[]) => Promise<IImgInfo[]>
+  retryPending: () => Promise<ImportResult>
 }
 
 export interface IPicGo extends NodeJS.EventEmitter {
@@ -230,6 +308,7 @@ export interface IHelper {
   beforeTransformPlugins: ILifecyclePlugins
   beforeUploadPlugins: ILifecyclePlugins
   afterUploadPlugins: ILifecyclePlugins
+  afterFinishPlugins: ILifecyclePlugins
 }
 
 export interface ICommander extends ILifecyclePlugins {
@@ -359,6 +438,7 @@ export type ILogColor = 'blue' | 'green' | 'yellow' | 'red'
  * for uploading image info
  */
 export interface IImgInfo {
+  id?: string
   buffer?: Buffer
   base64Image?: string
   fileName?: string
@@ -367,9 +447,14 @@ export interface IImgInfo {
   extname?: string
   imgUrl?: string
   originImgUrl?: string
+  /** @deprecated use `contentType` */
   mimeType?: string
+  _importToPicGoCloud?: boolean
+  contentType?: string
   filePath?: string
   size?: number
+  createdAt?: number | string | Date
+  updatedAt?: number | string | Date
   [propName: string]: any
 }
 
@@ -673,6 +758,11 @@ export interface ILogger {
   error: (...msg: ILogArgvTypeWithError[]) => void
   warn: (...msg: ILogArgvType[]) => void
   debug: (...msg: ILogArgvType[]) => void
+  createLogger?: (options?: {
+    logPath?: string
+    consoleOutput?: boolean
+    respectSilent?: boolean
+  }) => ILogger
 }
 
 export interface IConfigChangePayload<T> {
