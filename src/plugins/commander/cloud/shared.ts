@@ -1,6 +1,12 @@
+import ora from 'ora'
+import type { Ora } from 'ora'
 import type { CloudImportProgress, ImportResult, IPicGo, IStringKeyMap } from '../../../types'
 import type { ILocalesKey } from '../../../i18n/zh-CN'
 import { IBuildInEvent } from '../../../utils/enum'
+
+const createSpinner = (text: string): Ora => {
+  return ora({ text }).start()
+}
 
 const ensureCloudLogin = (ctx: IPicGo): void => {
   const token = ctx.getConfig<string | undefined>('settings.picgoCloud.token')?.trim()
@@ -36,8 +42,24 @@ const parseInteger = (value?: string): number | undefined => {
   return Number.isFinite(parsed) ? parsed : undefined
 }
 
-const createImportProgressRenderer = (ctx: IPicGo, verbose: boolean): { dispose: () => void } => {
-  let hasInlineOutput = false
+const PROGRESS_BAR_WIDTH = 20
+const PROGRESS_FILLED = '█'
+const PROGRESS_EMPTY = '░'
+
+const renderProgressBar = (current: number, total: number): string => {
+  const ratio = total > 0 ? current / total : 0
+  const filled = Math.round(ratio * PROGRESS_BAR_WIDTH)
+  const empty = PROGRESS_BAR_WIDTH - filled
+  return PROGRESS_FILLED.repeat(filled) + PROGRESS_EMPTY.repeat(empty)
+}
+
+interface IImportProgressRenderer {
+  spinner: Ora
+  dispose: () => void
+}
+
+const createImportProgressRenderer = (ctx: IPicGo, verbose: boolean): IImportProgressRenderer => {
+  const spinner = ora({ text: '' })
 
   const listener = (progress: CloudImportProgress): void => {
     const args: IStringKeyMap<string> = {
@@ -49,31 +71,33 @@ const createImportProgressRenderer = (ctx: IPicGo, verbose: boolean): { dispose:
       skipped: String(progress.skipped),
       failed: String(progress.failed)
     }
-    const line = verbose
-      ? ctx.i18n.translate<ILocalesKey>('CLOUD_ALBUM_IMPORT_VERBOSE_BATCH', args)
-      : ctx.i18n.translate<ILocalesKey>('CLOUD_ALBUM_IMPORT_PROGRESS_BAR', args)
 
     if (verbose || !process.stdout.isTTY) {
+      const line = ctx.i18n.translate<ILocalesKey>('CLOUD_ALBUM_IMPORT_VERBOSE_BATCH', args)
+      if (spinner.isSpinning) {
+        spinner.stop()
+      }
       console.log(line)
       return
     }
 
-    hasInlineOutput = true
-    process.stdout.write(`\r${line}`)
+    const label = ctx.i18n.translate<ILocalesKey>('CLOUD_ALBUM_IMPORT_PROGRESS_BAR', args)
+    const bar = renderProgressBar(progress.current, progress.total)
+    spinner.text = `${bar} ${label}`
 
-    if (progress.current >= progress.total) {
-      process.stdout.write('\n')
-      hasInlineOutput = false
+    if (!spinner.isSpinning) {
+      spinner.start()
     }
   }
 
   ctx.on(IBuildInEvent.CLOUD_IMPORT_PROGRESS, listener)
 
   return {
+    spinner,
     dispose: () => {
       ctx.off(IBuildInEvent.CLOUD_IMPORT_PROGRESS, listener)
-      if (hasInlineOutput) {
-        process.stdout.write('\n')
+      if (spinner.isSpinning) {
+        spinner.stop()
       }
     }
   }
@@ -106,6 +130,7 @@ const printJson = (value: unknown): void => {
 export {
   compactObject,
   createImportProgressRenderer,
+  createSpinner,
   ensureCloudLogin,
   parseInteger,
   printImportSummary,

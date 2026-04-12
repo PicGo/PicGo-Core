@@ -113,14 +113,6 @@ module.exports = [
       '@typescript-eslint/no-require-imports': 'off',
       '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/prefer-promise-reject-errors': 'off',
-      '@typescript-eslint/naming-convention': [
-        'error',
-        {
-          selector: 'interface',
-          format: ['PascalCase'],
-          custom: { regex: '^I[A-Z]', match: true }
-        }
-      ],
       'import/no-unresolved': 'off',
       'import/namespace': 'off',
       'import/no-duplicates': 'off',

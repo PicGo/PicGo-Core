@@ -25,10 +25,8 @@ const SORT_MAP: Record<'newest' | 'oldest' | 'fileName', AlbumListSort> = {
   fileName: AlbumListSort.FILE_NAME
 }
 
-const registerCloudListCommand = (ctx: IPicGo, cloudCommand: Command): void => {
-  cloudCommand
-    .command('list')
-    .description('list cloud album items')
+const applyCloudListOptions = (cmd: Command): Command => {
+  return cmd
     .option('--content-type <contentType>', 'filter by content type')
     .option('--type <type>', 'filter by type')
     .option('--ext <ext>', 'filter by extension')
@@ -38,31 +36,42 @@ const registerCloudListCommand = (ctx: IPicGo, cloudCommand: Command): void => {
     .option('--offset <offset>', 'set the page offset')
     .option('--sort <field>', 'sort by newest, oldest, or fileName')
     .option('--order <order>', 'sort order: asc or desc')
-    .action(async (options: ICloudListOptions) => {
-      await runCloudCommand(ctx, async () => {
-        const query: AlbumListQuery = compactObject({
-          contentType: options.contentType,
-          type: options.type,
-          ext: options.ext,
-          search: options.search,
-          fileName: options.fileName,
-          limit: parseInteger(options.limit),
-          offset: parseInteger(options.offset),
-          sort: normalizeSort(options.sort),
-          order: normalizeOrder(options.order)
-        })
+}
 
-        const response = await ctx.cloud.album.list(query)
-        for (const item of response.items) {
-          console.log([item.id ?? '', item.fileName ?? '', item.imgUrl ?? ''].join('\t'))
-        }
-        printJson({
-          total: response.total,
-          limit: response.limit,
-          offset: response.offset
-        })
+const createCloudListAction = (ctx: IPicGo) => {
+  return async (options: ICloudListOptions): Promise<void> => {
+    await runCloudCommand(ctx, async () => {
+      const query: AlbumListQuery = compactObject({
+        contentType: options.contentType,
+        type: options.type,
+        ext: options.ext,
+        search: options.search,
+        fileName: options.fileName,
+        limit: parseInteger(options.limit),
+        offset: parseInteger(options.offset),
+        sort: normalizeSort(options.sort),
+        order: normalizeOrder(options.order)
+      })
+
+      const response = await ctx.cloud.album.list(query)
+      for (const item of response.items) {
+        console.log([item.id ?? '', item.fileName ?? '', item.imgUrl ?? ''].join('\t'))
+      }
+      printJson({
+        total: response.total,
+        limit: response.limit,
+        offset: response.offset
       })
     })
+  }
+}
+
+const registerCloudListCommand = (ctx: IPicGo, parentCommand: Command): void => {
+  applyCloudListOptions(
+    parentCommand
+      .command('list')
+      .description('list cloud album items')
+  ).action(createCloudListAction(ctx))
 }
 
 const normalizeOrder = (value?: 'asc' | 'desc'): AlbumListOrder | undefined => {
@@ -73,4 +82,4 @@ const normalizeSort = (value?: 'newest' | 'oldest' | 'fileName'): AlbumListSort 
   return value ? SORT_MAP[value] : undefined
 }
 
-export { registerCloudListCommand }
+export { applyCloudListOptions, createCloudListAction, registerCloudListCommand }

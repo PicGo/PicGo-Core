@@ -1,3 +1,4 @@
+import mime from 'mime-types'
 import axios from 'axios'
 import { randomUUID } from 'node:crypto'
 import { readFile } from 'node:fs/promises'
@@ -329,6 +330,7 @@ export class AlbumService {
       const { mimeType, createdAt, updatedAt, ...rest } = item
       const createdAtTimestamp = toUnixMilliseconds(createdAt)
       const updatedAtTimestamp = toUnixMilliseconds(updatedAt)
+      const extra = this.buildExtra(item)
 
       return [{
         ...rest,
@@ -336,7 +338,8 @@ export class AlbumService {
         imgUrl,
         ...(contentType ? { contentType } : {}),
         ...(createdAtTimestamp !== undefined ? { createdAt: createdAtTimestamp } : {}),
-        ...(updatedAtTimestamp !== undefined ? { updatedAt: updatedAtTimestamp } : {})
+        ...(updatedAtTimestamp !== undefined ? { updatedAt: updatedAtTimestamp } : {}),
+        ...(extra ? { extra } : {})
       }]
     })
   }
@@ -436,7 +439,27 @@ export class AlbumService {
 
   private resolveContentType (item: IImgInfo): string | undefined {
     const contentType = item.contentType?.trim() || item.mimeType?.trim()
-    return contentType !== '' ? contentType : undefined
+    if (contentType && contentType !== '') {
+      return contentType
+    }
+    // Fallback: infer from extname for historical data that lacks contentType/mimeType
+    const extname = item.extname?.trim()
+    if (extname) {
+      return mime.lookup(extname) || undefined
+    }
+    return undefined
+  }
+
+  private buildExtra (item: IImgInfo): Record<string, unknown> | undefined {
+    const existing = typeof item.extra === 'object' && item.extra !== null
+      ? item.extra as Record<string, unknown>
+      : {}
+    const origin = typeof item.origin === 'string' && item.origin.trim() !== '' ? item.origin.trim() : undefined
+    const extra: Record<string, unknown> = {
+      ...existing,
+      ...(origin ? { origin } : {})
+    }
+    return Object.keys(extra).length > 0 ? extra : undefined
   }
 
   private emitImportProgress (progress: CloudImportProgress): void {

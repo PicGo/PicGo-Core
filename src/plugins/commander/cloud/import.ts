@@ -4,9 +4,10 @@ import { readFile } from 'node:fs/promises'
 import type { Command } from 'commander'
 import { DBStore } from '@picgo/store'
 import { UserService } from '../../../lib/Cloud/services/UserService'
+import type { Ora } from 'ora'
 import type { IImgInfo, IPicGo } from '../../../types'
 import type { ILocalesKey } from '../../../i18n/zh-CN'
-import { createImportProgressRenderer, printImportSummary, runCloudCommand } from './shared'
+import { createImportProgressRenderer, createSpinner, printImportSummary, runCloudCommand } from './shared'
 
 interface ICloudImportOptions {
   jsonFile?: string
@@ -24,32 +25,67 @@ interface IImportSource {
   galleryStore?: DBStore
 }
 
-const registerCloudImportCommand = (ctx: IPicGo, cloudCommand: Command): void => {
-  cloudCommand
-    .command('import')
-    .description('import local album data into PicGo Cloud')
+const applyCloudImportOptions = (cmd: Command): Command => {
+  return cmd
     .argument('[dbPath]', 'path to the local PicGo gallery database, usually called picgo.db')
     .option('--json-file <path>', 'read import data from a JSON file')
     .option('--data <json>', 'read import data from an inline JSON string')
     .option('--verbose', 'print batch details instead of the progress bar')
     .option('--enable-auto-import', 'enable auto import before importing when needed')
-    .action(async (dbPath: string | undefined, options: ICloudImportOptions) => {
-      await runCloudCommand(ctx, async () => {
-        const source = await loadImportSource(ctx, dbPath, options)
-        await ensureAutoImportEnabled(ctx, options.enableAutoImport === true)
+}
 
-        const progressRenderer = createImportProgressRenderer(ctx, options.verbose === true)
-        try {
-          const result = await ctx.cloud.album.import(source.items)
-          if (source.galleryStore) {
-            await markImportedItems(source.galleryStore, result.items)
-          }
-          printImportSummary(ctx, result)
-        } finally {
-          progressRenderer.dispose()
+const createCloudImportAction = (ctx: IPicGo) => {
+  return async (dbPath: string | undefined, options: ICloudImportOptions): Promise<void> => {
+    await runCloudCommand(ctx, async () => {
+      const loadingSpinner = createSpinner(
+        ctx.i18n.translate<ILocalesKey>('CLOUD_ALBUM_IMPORT_LOADING_SOURCE')
+      )
+      let source: IImportSource
+      try {
+        source = await loadImportSource(ctx, dbPath, options)
+        loadingSpinner.succeed(
+          ctx.i18n.translate<ILocalesKey>('CLOUD_ALBUM_IMPORT_LOADING_SOURCE_DONE', {
+            count: String(source.items.length)
+          })
+        )
+      } catch (error) {
+        loadingSpinner.fail(error instanceof Error ? error.message : String(error))
+        throw error
+      }
+
+      const checkSpinner = createSpinner(
+        ctx.i18n.translate<ILocalesKey>('CLOUD_ALBUM_IMPORT_CHECKING_AUTO_IMPORT')
+      )
+      await ensureAutoImportEnabled(ctx, options.enableAutoImport === true, checkSpinner)
+
+      const progressRenderer = createImportProgressRenderer(ctx, options.verbose === true)
+      progressRenderer.spinner.text = ctx.i18n.translate<ILocalesKey>('CLOUD_ALBUM_IMPORT_UPLOADING')
+      progressRenderer.spinner.start()
+      try {
+        const result = await ctx.cloud.album.import(source.items)
+        progressRenderer.spinner.succeed(
+          ctx.i18n.translate<ILocalesKey>('CLOUD_ALBUM_IMPORT_UPLOADING_DONE')
+        )
+        if (source.galleryStore) {
+          await markImportedItems(source.galleryStore, result.items)
         }
-      })
+        printImportSummary(ctx, result)
+      } catch (error) {
+        progressRenderer.spinner.fail(error instanceof Error ? error.message : String(error))
+        throw error
+      } finally {
+        progressRenderer.dispose()
+      }
     })
+  }
+}
+
+const registerCloudImportCommand = (ctx: IPicGo, parentCommand: Command): void => {
+  applyCloudImportOptions(
+    parentCommand
+      .command('import')
+      .description('import local album data into PicGo Cloud')
+  ).action(createCloudImportAction(ctx))
 }
 
 const loadImportSource = async (ctx: IPicGo, dbPath: string | undefined, options: ICloudImportOptions): Promise<IImportSource> => {
@@ -139,16 +175,25 @@ const markImportedItems = async (galleryStore: DBStore, items: IImgInfo[]): Prom
   })))
 }
 
-const ensureAutoImportEnabled = async (ctx: IPicGo, enableWithoutPrompt: boolean): Promise<void> => {
+const ensureAutoImportEnabled = async (ctx: IPicGo, enableWithoutPrompt: boolean, spinner: Ora): Promise<void> => {
   const userInfo = await ctx.cloud.getUserInfo()
   if (userInfo?.autoImport) {
+    spinner.succeed(
+      ctx.i18n.translate<ILocalesKey>('CLOUD_ALBUM_IMPORT_CHECKING_AUTO_IMPORT_DONE')
+    )
     return
   }
 
   if (enableWithoutPrompt) {
     await enableAutoImport(ctx)
+    spinner.succeed(
+      ctx.i18n.translate<ILocalesKey>('CLOUD_ALBUM_IMPORT_AUTO_IMPORT_ENABLED')
+    )
     return
   }
+
+  // Stop spinner before interactive prompt
+  spinner.stop()
 
   const answer = await ctx.cmd.inquirer.prompt<IAutoImportAnswer>([{
     type: 'confirm',
@@ -171,4 +216,4 @@ const enableAutoImport = async (ctx: IPicGo): Promise<void> => {
   console.log(ctx.i18n.translate<ILocalesKey>('CLOUD_ALBUM_IMPORT_AUTO_IMPORT_ENABLED'))
 }
 
-export { registerCloudImportCommand }
+export { applyCloudImportOptions, createCloudImportAction, registerCloudImportCommand }

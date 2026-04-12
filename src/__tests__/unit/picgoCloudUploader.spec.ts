@@ -6,7 +6,7 @@ import type { IPicGo } from '../../types'
 import { AuthRequestClient } from '../../lib/Cloud/Request'
 import { registerPicGoCloudUploader } from '../../plugins/uploader/picgoCloud'
 import { IBuildInEvent } from '../../utils/enum'
-import { PICGO_CLOUD_IMPORT_LOG_FILE } from '../../utils/static'
+import { PICGO_CLOUD, PICGO_CLOUD_IMPORT_LOG_FILE } from '../../utils/static'
 
 type II18nMock = {
   translate: ReturnType<typeof vi.fn>
@@ -233,7 +233,7 @@ describe('picgoCloud uploader', () => {
 
     const uploader = getRegisteredUploader(ctx, uploaderRegister)
 
-    expect(uploaderRegister).toHaveBeenCalledWith('picgoCloud', expect.objectContaining({
+    expect(uploaderRegister).toHaveBeenCalledWith(PICGO_CLOUD, expect.objectContaining({
       name: 'PicGo Cloud'
     }))
     expect(afterFinishRegister).toHaveBeenCalledWith('picgoCloudAutoImport', expect.objectContaining({
@@ -597,7 +597,7 @@ describe('picgoCloud uploader', () => {
 
     const afterFinishPlugin = afterFinishRegister.mock.calls[0][1] as { handle: (ctx: IPicGo) => Promise<void> }
     ctx.output = [{
-      type: 'picgoCloud',
+      type: PICGO_CLOUD,
       imgUrl: 'https://img.example.com/1.png'
     }]
     ;(ctx.cloud.getUserInfo as ReturnType<typeof vi.fn>).mockResolvedValue({

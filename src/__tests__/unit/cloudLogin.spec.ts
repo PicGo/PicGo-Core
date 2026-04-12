@@ -466,7 +466,7 @@ describe('logout command', () => {
     logoutCommand.handle(ctx)
 
     expect(program.command).toHaveBeenCalledWith('logout')
-    expect(commandBuilder.description).toHaveBeenCalledWith('logout from cloud.picgo.app')
+    expect(commandBuilder.description).toHaveBeenCalledWith('logout from cloud.picgo.app (shortcut for cloud logout)')
     expect(actionHandler).toBeDefined()
 
     await actionHandler?.()

@@ -1,7 +1,7 @@
 import type { Command } from 'commander'
 import type { IPicGo } from '../../../types'
 import type { ILocalesKey } from '../../../i18n/zh-CN'
-import { createImportProgressRenderer, printImportSummary, runCloudCommand } from './shared'
+import { createImportProgressRenderer, createSpinner, printImportSummary, runCloudCommand } from './shared'
 
 interface ICloudRetryOptions {
   verbose?: boolean
@@ -14,16 +14,34 @@ const registerCloudRetryCommand = (ctx: IPicGo, cloudCommand: Command): void => 
     .option('--verbose', 'print batch details instead of the progress bar')
     .action(async (options: ICloudRetryOptions) => {
       await runCloudCommand(ctx, async () => {
+        const loadingSpinner = createSpinner(
+          ctx.i18n.translate<ILocalesKey>('CLOUD_ALBUM_RETRY_LOADING_PENDING')
+        )
         const pendingItems = await ctx.cloud.album.getPending()
         if (pendingItems.length === 0) {
-          console.log(ctx.i18n.translate<ILocalesKey>('CLOUD_ALBUM_IMPORT_NO_PENDING'))
+          loadingSpinner.succeed(
+            ctx.i18n.translate<ILocalesKey>('CLOUD_ALBUM_IMPORT_NO_PENDING')
+          )
           return
         }
+        loadingSpinner.succeed(
+          ctx.i18n.translate<ILocalesKey>('CLOUD_ALBUM_RETRY_LOADING_PENDING_DONE', {
+            count: String(pendingItems.length)
+          })
+        )
 
         const progressRenderer = createImportProgressRenderer(ctx, options.verbose === true)
+        progressRenderer.spinner.text = ctx.i18n.translate<ILocalesKey>('CLOUD_ALBUM_RETRY_UPLOADING')
+        progressRenderer.spinner.start()
         try {
           const result = await ctx.cloud.album.retryPending()
+          progressRenderer.spinner.succeed(
+            ctx.i18n.translate<ILocalesKey>('CLOUD_ALBUM_RETRY_UPLOADING_DONE')
+          )
           printImportSummary(ctx, result)
+        } catch (error) {
+          progressRenderer.spinner.fail(error instanceof Error ? error.message : String(error))
+          throw error
         } finally {
           progressRenderer.dispose()
         }

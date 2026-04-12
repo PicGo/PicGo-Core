@@ -1,19 +1,13 @@
 import type { IPicGo, IPlugin } from '../../types'
+import { createLoginAction } from './cloud/actions'
 
 const login: IPlugin = {
   handle: (ctx: IPicGo) => {
-    const cmd = ctx.cmd
-    cmd.program
+    ctx.cmd.program
       .command('login')
-      .description('login to cloud.picgo.app')
+      .description('login to cloud.picgo.app (shortcut for cloud login)')
       .arguments('[token]')
-      .action(async (token?: string) => {
-        try {
-          await ctx.cloud.login(token)
-        } catch (e) {
-          ctx.log.error(e as Error)
-        }
-      })
+      .action(createLoginAction(ctx))
   }
 }
 
