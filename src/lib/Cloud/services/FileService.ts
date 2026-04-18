@@ -17,7 +17,13 @@ interface IPresignResponse {
 
 interface ICompleteResponse {
   success: boolean
-  result?: string[]
+  data?: {
+    item: {
+      id: string
+      imgUrl: string
+      [key: string]: unknown
+    }
+  }
   message?: string
 }
 
@@ -72,7 +78,7 @@ export class FileService {
     const complete = await this.callAuthenticatedStep(async () => {
       return await this.client.request<ICompleteResponse>({
         method: 'POST',
-        url: '/api/upload/complete',
+        url: '/api/album-items/complete',
         data: {
           objectKey: presign.objectKey,
           publicId: presign.publicId,
@@ -84,7 +90,7 @@ export class FileService {
     this.ctx.log.debug('Complete duration', completeTime - finalizeStartTime, 'ms')
     this.ctx.log.debug('All duration', completeTime - presignTime, 'ms')
 
-    const finalUrl = Array.isArray(complete.result) ? complete.result[0] : undefined
+    const finalUrl = complete.data?.item?.imgUrl
     if (!complete.success || typeof finalUrl !== 'string' || finalUrl.length === 0) {
       throw new Error(
         complete.message ||
