@@ -275,7 +275,12 @@ describe('picgoCloud uploader', () => {
       })
       .mockResolvedValueOnce({
         success: true,
-        result: ['https://cdn.picgo.test/m/test.png']
+        data: {
+          item: {
+            id: '550e8400-e29b-41d4-a716-446655440000',
+            imgUrl: 'https://cdn.picgo.test/m/test.png'
+          }
+        }
       })
 
     await uploader.handle(ctx)
@@ -304,7 +309,7 @@ describe('picgoCloud uploader', () => {
     }))
     expect(request).toHaveBeenNthCalledWith(3, expect.objectContaining({
       method: 'POST',
-      url: 'https://api.picgo.app/api/upload/complete',
+      url: 'https://api.picgo.app/api/album-items/complete',
       data: {
         objectKey: 'u/demo/2026/03/test.png',
         publicId: '550e8400-e29b-41d4-a716-446655440000',
