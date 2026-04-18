@@ -1,14 +1,16 @@
 import type { Command } from 'commander'
 import type { IImgInfo, IPicGo } from '../../../types'
-import { compactObject, parseInteger, printJson, runCloudCommand } from './shared'
+import type { ILocalesKey } from '../../../i18n/zh-CN'
+import { compactObject, createSpinner, parseInteger, printCompactJson, printJson, runCloudCommand } from './shared'
 
-interface ICloudUpdateOptions {
+interface CloudUpdateOptions {
   fileName?: string
   imgUrl?: string
   originImgUrl?: string
   contentType?: string
   width?: string
   height?: string
+  format?: string
 }
 
 const registerCloudUpdateCommand = (ctx: IPicGo, cloudCommand: Command): void => {
@@ -22,7 +24,8 @@ const registerCloudUpdateCommand = (ctx: IPicGo, cloudCommand: Command): void =>
     .option('--contentType <contentType>', 'update the content type')
     .option('--width <width>', 'update the width')
     .option('--height <height>', 'update the height')
-    .action(async (id: string, options: ICloudUpdateOptions) => {
+    .option('--format <format>', 'output format: pretty | json', 'pretty')
+    .action(async (id: string, options: CloudUpdateOptions) => {
       await runCloudCommand(ctx, async () => {
         const payload: Partial<IImgInfo> = compactObject({
           fileName: options.fileName,
@@ -33,8 +36,14 @@ const registerCloudUpdateCommand = (ctx: IPicGo, cloudCommand: Command): void =>
           height: parseInteger(options.height)
         })
 
+        const spinner = createSpinner(ctx.i18n.translate<ILocalesKey>('CLOUD_ALBUM_UPDATE_LOADING'))
         const updatedItem = await ctx.cloud.album.update(id, payload)
-        printJson(updatedItem)
+        spinner.succeed(ctx.i18n.translate<ILocalesKey>('CLOUD_ALBUM_UPDATE_DONE'))
+        if (options.format === 'json') {
+          printCompactJson(updatedItem)
+        } else {
+          printJson(updatedItem)
+        }
       })
     })
 }
