@@ -127,12 +127,17 @@ const printJson = (value: unknown): void => {
   console.log(JSON.stringify(value, null, 2))
 }
 
+const printCompactJson = (value: unknown): void => {
+  console.log(JSON.stringify(value))
+}
+
 export {
   compactObject,
   createImportProgressRenderer,
   createSpinner,
   ensureCloudLogin,
   parseInteger,
+  printCompactJson,
   printImportSummary,
   printJson,
   runCloudCommand

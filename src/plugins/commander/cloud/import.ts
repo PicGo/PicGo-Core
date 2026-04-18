@@ -7,13 +7,14 @@ import { UserService } from '../../../lib/Cloud/services/UserService'
 import type { Ora } from 'ora'
 import type { IImgInfo, IPicGo } from '../../../types'
 import type { ILocalesKey } from '../../../i18n/zh-CN'
-import { createImportProgressRenderer, createSpinner, printImportSummary, runCloudCommand } from './shared'
+import { createImportProgressRenderer, createSpinner, printCompactJson, printImportSummary, runCloudCommand } from './shared'
 
 interface ICloudImportOptions {
   jsonFile?: string
   data?: string
   verbose?: boolean
   enableAutoImport?: boolean
+  format?: string
 }
 
 interface IAutoImportAnswer {
@@ -32,6 +33,7 @@ const applyCloudImportOptions = (cmd: Command): Command => {
     .option('--data <json>', 'read import data from an inline JSON string')
     .option('--verbose', 'print batch details instead of the progress bar')
     .option('--enable-auto-import', 'enable auto import before importing when needed')
+    .option('--format <format>', 'output format: pretty | json', 'pretty')
 }
 
 const createCloudImportAction = (ctx: IPicGo) => {
@@ -69,7 +71,11 @@ const createCloudImportAction = (ctx: IPicGo) => {
         if (source.galleryStore) {
           await markImportedItems(source.galleryStore, result.items)
         }
-        printImportSummary(ctx, result)
+        if (options.format === 'json') {
+          printCompactJson(result)
+        } else {
+          printImportSummary(ctx, result)
+        }
       } catch (error) {
         progressRenderer.spinner.fail(error instanceof Error ? error.message : String(error))
         throw error
@@ -185,6 +191,7 @@ const ensureAutoImportEnabled = async (ctx: IPicGo, enableWithoutPrompt: boolean
   }
 
   if (enableWithoutPrompt) {
+    spinner.text = ctx.i18n.translate<ILocalesKey>('CLOUD_ALBUM_IMPORT_ENABLING_AUTO_IMPORT')
     await enableAutoImport(ctx)
     spinner.succeed(
       ctx.i18n.translate<ILocalesKey>('CLOUD_ALBUM_IMPORT_AUTO_IMPORT_ENABLED')
@@ -206,14 +213,24 @@ const ensureAutoImportEnabled = async (ctx: IPicGo, enableWithoutPrompt: boolean
     throw new Error(ctx.i18n.translate<ILocalesKey>('CLOUD_ALBUM_IMPORT_AUTO_IMPORT_DISABLED'))
   }
 
-  await enableAutoImport(ctx)
+  const enablingSpinner = createSpinner(
+    ctx.i18n.translate<ILocalesKey>('CLOUD_ALBUM_IMPORT_ENABLING_AUTO_IMPORT')
+  )
+  try {
+    await enableAutoImport(ctx)
+    enablingSpinner.succeed(
+      ctx.i18n.translate<ILocalesKey>('CLOUD_ALBUM_IMPORT_AUTO_IMPORT_ENABLED')
+    )
+  } catch (error) {
+    enablingSpinner.fail(error instanceof Error ? error.message : String(error))
+    throw error
+  }
 }
 
 const enableAutoImport = async (ctx: IPicGo): Promise<void> => {
   const userService = new UserService(ctx)
   await userService.setAutoImport(true)
   await ctx.cloud.refreshUserInfo()
-  console.log(ctx.i18n.translate<ILocalesKey>('CLOUD_ALBUM_IMPORT_AUTO_IMPORT_ENABLED'))
 }
 
 export { applyCloudImportOptions, createCloudImportAction, registerCloudImportCommand }

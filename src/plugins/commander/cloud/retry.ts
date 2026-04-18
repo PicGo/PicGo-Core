@@ -1,10 +1,11 @@
 import type { Command } from 'commander'
 import type { IPicGo } from '../../../types'
 import type { ILocalesKey } from '../../../i18n/zh-CN'
-import { createImportProgressRenderer, createSpinner, printImportSummary, runCloudCommand } from './shared'
+import { createImportProgressRenderer, createSpinner, printCompactJson, printImportSummary, runCloudCommand } from './shared'
 
 interface ICloudRetryOptions {
   verbose?: boolean
+  format?: string
 }
 
 const registerCloudRetryCommand = (ctx: IPicGo, cloudCommand: Command): void => {
@@ -12,6 +13,7 @@ const registerCloudRetryCommand = (ctx: IPicGo, cloudCommand: Command): void => 
     .command('retry')
     .description('retry pending cloud album imports')
     .option('--verbose', 'print batch details instead of the progress bar')
+    .option('--format <format>', 'output format: pretty | json', 'pretty')
     .action(async (options: ICloudRetryOptions) => {
       await runCloudCommand(ctx, async () => {
         const loadingSpinner = createSpinner(
@@ -38,7 +40,11 @@ const registerCloudRetryCommand = (ctx: IPicGo, cloudCommand: Command): void => 
           progressRenderer.spinner.succeed(
             ctx.i18n.translate<ILocalesKey>('CLOUD_ALBUM_RETRY_UPLOADING_DONE')
           )
-          printImportSummary(ctx, result)
+          if (options.format === 'json') {
+            printCompactJson(result)
+          } else {
+            printImportSummary(ctx, result)
+          }
         } catch (error) {
           progressRenderer.spinner.fail(error instanceof Error ? error.message : String(error))
           throw error
