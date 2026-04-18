@@ -29,15 +29,15 @@ const handle = async (ctx: IPicGo): Promise<IPicGo> => {
       const extname = info.extname || imgSize.extname || '.png'
       results[index] = {
         buffer: info.buffer,
-        fileName: info.fileName || `${dayjs().format('YYYYMMDDHHmmssSSS')}${extname}}`,
+        fileName: info.fileName || `${dayjs().format('YYYYMMDDHHmmssSSS')}${extname}`,
         width: imgSize.width,
         height: imgSize.height,
-        // maybe undefined
         filePath: info.filePath,
         extname,
-        // TODO: need optimized
         size: info.buffer?.length || 0,
-        contentType: mime.lookup(extname) || 'application/octet-stream'
+        contentType: mime.lookup(extname) || 'application/octet-stream',
+        // Record the original input source (URL or file path) for plugins like pic-migrater
+        origin: typeof item === 'string' ? item : undefined
       }
     } else {
       ctx.log.error(info.reason)
