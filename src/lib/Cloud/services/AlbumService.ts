@@ -327,7 +327,12 @@ export class AlbumService {
         ? item.id.trim()
         : randomUUID()
       const contentType = this.resolveContentType(item)
-      const { mimeType, createdAt, updatedAt, ...rest } = item
+      const {
+        mimeType, createdAt, updatedAt,
+        // Strip internal/local-only fields that should not be sent to the cloud
+        origin, filePath, buffer, base64Image, _importToPicGoCloud,
+        ...rest
+      } = item
       const createdAtTimestamp = toUnixMilliseconds(createdAt)
       const updatedAtTimestamp = toUnixMilliseconds(updatedAt)
       const extra = this.buildExtra(item)
