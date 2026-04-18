@@ -2,7 +2,7 @@ import fs from 'fs-extra'
 import { randomUUID } from 'node:crypto'
 import path from 'path'
 import type { Hono } from 'hono'
-import type { IPicGo } from '../../types'
+import type { IImgInfo, IPicGo } from '../../types'
 import { BuiltinRoutePath } from '../Routes/routePath'
 import type { ILocalesKey } from '../../i18n/zh-CN'
 
@@ -76,6 +76,53 @@ const getFormDataFileName = (value: FormDataFileLike): string => {
   return `${randomUUID()}.png`
 }
 
+interface UploadResultItem {
+  origin?: string
+  imgUrl?: string
+  fileName?: string
+  type?: string
+  contentType?: string
+  size?: number
+  width?: number
+  height?: number
+  extname?: string
+}
+
+interface UploadResponse {
+  success: boolean
+  result: string[]
+  items: UploadResultItem[]
+  message?: string
+}
+
+const buildUploadResponse = (output: IImgInfo[] | Error): UploadResponse => {
+  if (output instanceof Error) {
+    return { success: false, result: [], items: [], message: output.message }
+  }
+
+  const result = output
+    .map(item => item.imgUrl)
+    .filter((url): url is string => typeof url === 'string' && url !== '')
+
+  const items: UploadResultItem[] = output.map(item => ({
+    origin: item.origin,
+    imgUrl: item.imgUrl,
+    fileName: item.fileName,
+    type: item.type,
+    contentType: item.contentType,
+    size: item.size,
+    width: item.width,
+    height: item.height,
+    extname: item.extname
+  }))
+
+  if (result.length === 0) {
+    return { success: false, result, items, message: 'All uploads failed' }
+  }
+
+  return { success: true, result, items }
+}
+
 const registerCoreRoutes = (app: Hono<any, any, any>, ctx: IPicGo): void => {
   app.post(BuiltinRoutePath.UPLOAD, async (c) => {
     try {
@@ -92,12 +139,12 @@ const registerCoreRoutes = (app: Hono<any, any, any>, ctx: IPicGo): void => {
           const formData = await c.req.formData()
           const files = formData.getAll('files') as unknown[]
           if (files.length === 0) {
-            return c.json({ success: false, result: [], message: t('SERVER_FORMDATA_NO_FILES_IN_FILES_FIELD') }, 400)
+            return c.json({ success: false, result: [], items: [], message: t('SERVER_FORMDATA_NO_FILES_IN_FILES_FIELD') }, 400)
           }
 
           for (const file of files) {
             if (!isFormDataFileLike(file)) {
-              return c.json({ success: false, result: [], message: t('SERVER_FORMDATA_FILES_MUST_BE_FILES') }, 400)
+              return c.json({ success: false, result: [], items: [], message: t('SERVER_FORMDATA_FILES_MUST_BE_FILES') }, 400)
             }
 
             const fileName = getFormDataFileName(file)
@@ -108,17 +155,12 @@ const registerCoreRoutes = (app: Hono<any, any, any>, ctx: IPicGo): void => {
             tempFiles.push(filePath)
           }
 
-          const result = await ctx.upload(tempFiles)
-          if (result instanceof Error) {
-            return c.json({ success: false, result: [], message: result.message }, 500)
-          }
-          const urls = result
-            .map(item => item.imgUrl)
-            .filter((url): url is string => typeof url === 'string' && url !== '')
-          return c.json({ success: true, result: urls })
+          const output = await ctx.upload(tempFiles)
+          const response = buildUploadResponse(output)
+          return c.json(response, response.success ? 200 : 500)
         } catch (e: unknown) {
           ctx.log.error(e)
-          return c.json({ success: false, result: [], message: getErrorMessage(e) }, 500)
+          return c.json({ success: false, result: [], items: [], message: getErrorMessage(e) }, 500)
         } finally {
           await Promise.allSettled(tempFiles.map(file => fs.remove(file)))
         }
@@ -128,50 +170,35 @@ const registerCoreRoutes = (app: Hono<any, any, any>, ctx: IPicGo): void => {
 
       // No request body -> upload from clipboard.
       if (bodyText.trim() === '') {
-        const result = await ctx.upload()
-        if (result instanceof Error) {
-          return c.json({ success: false, result: [], message: result.message }, 500)
-        }
-        const urls = result
-          .map(item => item.imgUrl)
-          .filter((url): url is string => typeof url === 'string' && url !== '')
-        return c.json({ success: true, result: urls })
+        const output = await ctx.upload()
+        const response = buildUploadResponse(output)
+        return c.json(response, response.success ? 200 : 500)
       }
 
       let body: unknown
       try {
         body = JSON.parse(bodyText)
       } catch {
-        return c.json({ success: false, result: [], message: t('SERVER_INVALID_JSON_BODY') }, 400)
+        return c.json({ success: false, result: [], items: [], message: t('SERVER_INVALID_JSON_BODY') }, 400)
       }
 
       const parsedBody = parseUploadRequestBody(body)
       if (parsedBody.kind === ParsedUploadRequestBodyKind.Invalid) {
-        return c.json({ success: false, result: [], message: t(parsedBody.messageKey) }, 400)
+        return c.json({ success: false, result: [], items: [], message: t(parsedBody.messageKey) }, 400)
       }
 
       if (parsedBody.kind === ParsedUploadRequestBodyKind.Clipboard) {
-        const result = await ctx.upload()
-        if (result instanceof Error) {
-          return c.json({ success: false, result: [], message: result.message }, 500)
-        }
-        const urls = result
-          .map(item => item.imgUrl)
-          .filter((url): url is string => typeof url === 'string' && url !== '')
-        return c.json({ success: true, result: urls })
+        const output = await ctx.upload()
+        const response = buildUploadResponse(output)
+        return c.json(response, response.success ? 200 : 500)
       }
 
-      const result = await ctx.upload(parsedBody.list)
-      if (result instanceof Error) {
-        return c.json({ success: false, result: [], message: result.message }, 500)
-      }
-      const urls = result
-        .map(item => item.imgUrl)
-        .filter((url): url is string => typeof url === 'string' && url !== '')
-      return c.json({ success: true, result: urls })
+      const output = await ctx.upload(parsedBody.list)
+      const response = buildUploadResponse(output)
+      return c.json(response, response.success ? 200 : 500)
     } catch (e: unknown) {
       ctx.log.error(e)
-      return c.json({ success: false, result: [], message: getErrorMessage(e) }, 500)
+      return c.json({ success: false, result: [], items: [], message: getErrorMessage(e) }, 500)
     }
   })
 
