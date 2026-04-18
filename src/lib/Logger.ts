@@ -33,8 +33,16 @@ export class Logger implements ILogger {
   constructor (
     ctx: IPicGo,
     options: {
+      /** Whether to output to console. Defaults to true. */
       consoleOutput?: boolean
+      /**
+       * Whether to obey the global `silent` config.
+       * - true (default): when `silent` is enabled, both console output and file writes are suppressed.
+       * - false: file writes always happen regardless of `silent`, useful for audit/diagnostic logs
+       *   that must not be lost even in silent mode.
+       */
       respectSilent?: boolean
+      /** Override the log file path. Defaults to `settings.logPath` or `ctx.baseDir/picgo.log`. */
       logPath?: string
     } = {}
   ) {
@@ -156,8 +164,15 @@ export class Logger implements ILogger {
   }
 
   createLogger (options: {
+    /** Override the log file path. */
     logPath?: string
+    /** Whether to output to console. Defaults to true. */
     consoleOutput?: boolean
+    /**
+     * Whether to obey the global `silent` config.
+     * - true (default): silent mode suppresses both console and file output.
+     * - false: file writes always happen, useful for audit/diagnostic logs.
+     */
     respectSilent?: boolean
   } = {}): Logger {
     return new Logger(this.ctx, options)
