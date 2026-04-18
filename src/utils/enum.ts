@@ -23,6 +23,15 @@ export enum IBuildInEvent {
   NOTIFICATION = 'notification'
 }
 
+export enum LifecycleStep {
+  IDLE = 'idle',
+  BEFORE_TRANSFORM = 'beforeTransform',
+  TRANSFORM = 'transform',
+  BEFORE_UPLOAD = 'beforeUpload',
+  UPLOAD = 'upload',
+  AFTER_UPLOAD = 'afterUpload'
+}
+
 /**
  * these events will be caught only by picgo
  */
