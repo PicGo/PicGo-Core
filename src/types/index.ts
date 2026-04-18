@@ -249,7 +249,17 @@ export interface IPicGo extends NodeJS.EventEmitter {
   /**
    * upload gogogo
    */
-  upload: (input?: any[]) => Promise<IImgInfo[] | Error>
+  upload: (input?: any[], options?: UploadOptions) => Promise<IImgInfo[] | Error>
+}
+
+export enum OutputFormat {
+  PRETTY = 'pretty',
+  JSON = 'json'
+}
+
+export interface UploadOptions {
+  /** Output format for the success message. Defaults to 'pretty'. */
+  outputFormat?: OutputFormat
 }
 
 export interface IUploaderConfigItem {
@@ -446,6 +456,9 @@ export interface IImgInfo {
   height?: number
   extname?: string
   imgUrl?: string
+  /**
+   * if the imgUrl has been overwrite by url rewrite rule, then originImgUrl is the original url before rewrite
+   */
   originImgUrl?: string
   /** @deprecated use `contentType` */
   mimeType?: string
@@ -455,6 +468,8 @@ export interface IImgInfo {
   size?: number
   createdAt?: number | string | Date
   updatedAt?: number | string | Date
+  /** the origin input of the image, before any processing or uploading */
+  origin?: string
   [propName: string]: any
 }
 

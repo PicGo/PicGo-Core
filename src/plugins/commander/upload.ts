@@ -1,7 +1,11 @@
 import path from 'path'
 import fs from 'fs-extra'
 import { isUrl } from '../../utils/common'
-import { IPicGo, IPlugin } from '../../types'
+import { IPicGo, IPlugin, OutputFormat } from '../../types'
+
+interface UploadCommandOptions {
+  format?: string
+}
 
 const upload: IPlugin = {
   handle: (ctx: IPicGo) => {
@@ -11,7 +15,8 @@ const upload: IPlugin = {
       .description('upload, go go go')
       .arguments('[input...]')
       .alias('u')
-      .action(async (input: string[]) => {
+      .option('--format <format>', 'output format: pretty | json', 'pretty')
+      .action(async (input: string[], options: UploadCommandOptions) => {
         try {
           const inputList = input
             .map((item: string) => {
@@ -24,7 +29,9 @@ const upload: IPlugin = {
               }
               return exist
             })
-          await ctx.upload(inputList)
+          await ctx.upload(inputList, {
+            outputFormat: options.format === 'json' ? OutputFormat.JSON : OutputFormat.PRETTY
+          })
         } catch (e: any) {
           ctx.log.error(e)
           if (process.argv.includes('--debug')) {

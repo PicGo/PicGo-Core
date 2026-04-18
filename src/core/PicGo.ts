@@ -10,7 +10,7 @@ import uploaders from '../plugins/uploader'
 import transformers from '../plugins/transformer'
 import PluginLoader from '../lib/PluginLoader'
 import { get, set, unset } from 'lodash'
-import { IHelper, IImgInfo, IConfig, IPicGo, IStringKeyMap, IPluginLoader, II18nManager, IPicGoPlugin, IPicGoPluginInterface, IRequest, IUploaderConfigManager, IServerManager } from '../types'
+import { IHelper, IImgInfo, IConfig, IPicGo, IStringKeyMap, IPluginLoader, II18nManager, IPicGoPlugin, IPicGoPluginInterface, IRequest, IUploaderConfigManager, IServerManager, UploadOptions } from '../types'
 import getClipboardImage from '../utils/getClipboardImage'
 import Request from '../lib/Request'
 import DB from '../utils/db'
@@ -205,7 +205,7 @@ export class PicGo extends EventEmitter implements IPicGo {
     await open(url)
   }
 
-  async upload (input?: any[]): Promise<IImgInfo[] | Error> {
+  async upload (input?: any[], options?: UploadOptions): Promise<IImgInfo[] | Error> {
     if (this.configPath === '') {
       this.log.error('The configuration file only supports JSON format.')
       return []
@@ -228,7 +228,7 @@ export class PicGo extends EventEmitter implements IPicGo {
               fs.remove(imgPath).catch((e) => { this.log.error(e) })
             }
           })
-          const { output } = await this.lifecycle.start([imgPath])
+          const { output } = await this.lifecycle.start([imgPath], options)
           return output
         }
       } catch (e) {
@@ -237,7 +237,7 @@ export class PicGo extends EventEmitter implements IPicGo {
       }
     } else {
       // upload from path
-      const { output } = await this.lifecycle.start(input)
+      const { output } = await this.lifecycle.start(input, options)
       return output
     }
   }
