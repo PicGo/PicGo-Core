@@ -1,6 +1,7 @@
 import { IConfig, IPicGo } from '../types'
 import { JSONStore } from '@picgo/store'
 import { IJSON } from '@picgo/store/dist/types'
+import { PICGO_CLOUD } from './static'
 
 class DB {
   private readonly ctx: IPicGo
@@ -12,8 +13,8 @@ class DB {
     if (!this.db.has('picBed')) {
       try {
         this.db.set('picBed', {
-          uploader: 'smms',
-          current: 'smms'
+          uploader: PICGO_CLOUD,
+          current: PICGO_CLOUD
         })
       } catch (e: any) {
         this.ctx.log.error(e)

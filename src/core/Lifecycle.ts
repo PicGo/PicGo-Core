@@ -4,6 +4,14 @@ import { handleUrlEncode } from '../utils/common'
 import { applyUrlRewriteToOutput } from '../utils/urlRewrite'
 import { IBuildInEvent, LifecycleStep } from '../utils/enum'
 import { createContext } from '../utils/createContext'
+import { PICGO_CLOUD, PICGO_CLOUD_AUTO_IMPORT_PLUGIN } from '../utils/static'
+
+/**
+ * Built-in lifecycle plugin IDs that should be excluded from running logs.
+ */
+const BUILTIN_LIFECYCLE_PLUGINS: ReadonlySet<string> = new Set([
+  PICGO_CLOUD_AUTO_IMPORT_PLUGIN
+])
 
 export class Lifecycle extends EventEmitter {
   private readonly ctx: IPicGo
@@ -93,14 +101,14 @@ export class Lifecycle extends EventEmitter {
   }
 
   private async doUpload (ctx: IPicGo): Promise<IPicGo> {
-    let type = ctx.getConfig<Undefinable<string>>('picBed.uploader') || ctx.getConfig<Undefinable<string>>('picBed.current') || 'smms'
+    let type = ctx.getConfig<Undefinable<string>>('picBed.uploader') || ctx.getConfig<Undefinable<string>>('picBed.current') || PICGO_CLOUD
     let uploader = ctx.helper.uploader.get(type)
     let currentTransformer = type
     if (!uploader) {
-      type = 'smms'
-      currentTransformer = 'smms'
-      uploader = ctx.helper.uploader.get('smms')
-      ctx.log.warn(`Can't find uploader - ${type}, switch to default uploader - smms`)
+      type = PICGO_CLOUD
+      currentTransformer = PICGO_CLOUD
+      uploader = ctx.helper.uploader.get(PICGO_CLOUD)
+      ctx.log.warn(`Can't find uploader - ${type}, switch to default uploader - ${PICGO_CLOUD}`)
     }
     ctx.log.info(`Uploading... Current uploader is [${currentTransformer}]`)
     await uploader?.handle(ctx)
@@ -173,7 +181,9 @@ export class Lifecycle extends EventEmitter {
     }
     await Promise.all(plugins.map(async (plugin: IPlugin, index: number) => {
       try {
-        ctx.log.info(`${lifeCycleName}: ${pluginNames[index]} running`)
+        if (!BUILTIN_LIFECYCLE_PLUGINS.has(pluginNames[index])) {
+          ctx.log.info(`${lifeCycleName}: ${pluginNames[index]} running`)
+        }
         await plugin.handle(ctx)
       } catch (e) {
         ctx.log.error(`${lifeCycleName}: ${pluginNames[index]} error`)

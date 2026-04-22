@@ -6,9 +6,7 @@ import type { IImgInfo, IPluginConfig, IPicGo } from '../../types'
 import { ApiErrorCode } from '../../lib/Cloud/ApiErrorCode'
 import { getCloudErrorCode, getCloudErrorMessage, getCloudErrorStatus } from '../../lib/Cloud/Request'
 import { FileService } from '../../lib/Cloud/services/FileService'
-import { PICGO_CLOUD, PICGO_CLOUD_IMPORT_LOG_FILE } from '../../utils/static'
-
-const AUTO_IMPORT_PLUGIN = 'picgoCloudAutoImport'
+import { PICGO_CLOUD, PICGO_CLOUD_AUTO_IMPORT_PLUGIN, PICGO_CLOUD_IMPORT_LOG_FILE } from '../../utils/static'
 
 interface IAutoImportLogEntry {
   source: 'upload'
@@ -232,7 +230,7 @@ function registerPicGoCloudUploader (ctx: IPicGo): void {
   })
   ctx.on(IBuildInEvent.BEFORE_UPLOAD, handleBeforeUploadEvent)
   ctx.on(IBuildInEvent.AFTER_UPLOAD, handleAfterUploadEvent)
-  ctx.helper.afterFinishPlugins.register(AUTO_IMPORT_PLUGIN, {
+  ctx.helper.afterFinishPlugins.register(PICGO_CLOUD_AUTO_IMPORT_PLUGIN, {
     handle: handleAutoImportForCli
   })
 }
