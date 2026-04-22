@@ -161,6 +161,7 @@ const handleAutoImport = async (ctx: IPicGo): Promise<void> => {
         itemCount: importItems.length,
         result: summarizeImportResult(importResult)
       })
+      ctx.emit(IBuildInEvent.CLOUD_ALBUM_UPDATED)
       return
     }
 
@@ -171,6 +172,7 @@ const handleAutoImport = async (ctx: IPicGo): Promise<void> => {
       result: summarizeImportResult(importResult),
       retryPending: summarizeImportResult(retryPendingResult)
     })
+    ctx.emit(IBuildInEvent.CLOUD_ALBUM_UPDATED)
   } catch (error: unknown) {
     const errorMessage = getCloudErrorMessage(error)
     const status = getCloudErrorStatus(error)

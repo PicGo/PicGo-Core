@@ -8,6 +8,7 @@ import type {
   AlbumFiltersResponse,
   AlbumListQuery,
   AlbumListResponse,
+  BatchUpdateResult,
   CloudImportProgress,
   IImgInfo,
   ImportResult,
@@ -53,6 +54,15 @@ interface IAlbumItemDeleteResponse {
   data: {
     message?: string
     deleted?: number
+  }
+}
+
+interface IAlbumItemBatchUpdateResponse {
+  success: boolean
+  data: {
+    updated: number
+    skipped: number
+    items: IImgInfo[]
   }
 }
 
@@ -112,15 +122,12 @@ export class AlbumService {
   }
 
   async list (query: AlbumListQuery = {}): Promise<AlbumListResponse> {
-    const { type, ...rest } = {
+    const merged = {
       limit: AlbumService.DEFAULT_LIMIT,
       offset: AlbumService.DEFAULT_OFFSET,
       ...query
     }
-    const params = compactDefinedRecord({
-      ...rest,
-      contentType: rest.contentType ?? type
-    })
+    const params = compactDefinedRecord(merged)
 
     const response = await this.client.request<IAlbumListApiResponse>({
       method: 'GET',
@@ -152,6 +159,25 @@ export class AlbumService {
     })
 
     return response.data.item
+  }
+
+  async batchUpdate (items: { id: string, data: Partial<IImgInfo> }[]): Promise<BatchUpdateResult> {
+    if (items.length === 0) {
+      return { updated: 0, skipped: 0, items: [] }
+    }
+
+    const requestItems = items.map(({ id, data }) => {
+      const { extname, size, ...safeData } = data
+      return { id, ...safeData }
+    })
+
+    const response = await this.client.request<IAlbumItemBatchUpdateResponse>({
+      method: 'PATCH',
+      url: '/api/album-items',
+      data: { items: requestItems }
+    })
+
+    return response.data
   }
 
   async delete (id: string | string[]): Promise<void> {

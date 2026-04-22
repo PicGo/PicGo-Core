@@ -122,6 +122,7 @@ const createCtx = (token = 'token-123'): {
     removeConfig,
     cloud,
     on,
+    emit: vi.fn(),
     off: vi.fn(),
     server: {
       isListening: vi.fn(() => false)

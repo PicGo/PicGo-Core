@@ -16,6 +16,7 @@ export enum IBuildInEvent {
   BEFORE_UPLOAD = 'beforeUpload',
   AFTER_UPLOAD = 'afterUpload',
   CLOUD_IMPORT_PROGRESS = 'cloudImportProgress',
+  CLOUD_ALBUM_UPDATED = 'cloudAlbumUpdated',
   FINISHED = 'finished',
   INSTALL = 'install',
   UNINSTALL = 'uninstall',

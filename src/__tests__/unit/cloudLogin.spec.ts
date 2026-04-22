@@ -507,6 +507,7 @@ describe('logout command', () => {
         }),
         get: async () => ({}),
         update: async () => ({}),
+        batchUpdate: async () => ({ updated: 0, skipped: 0, items: [] }),
         delete: async () => {},
         getFilters: async () => ({
           success: true,
@@ -531,7 +532,8 @@ describe('logout command', () => {
       },
       disposeLoginFlow: () => {},
       getUserInfo: async () => null,
-      refreshUserInfo: async () => null
+      refreshUserInfo: async () => null,
+      setAutoImport: async () => ({ user: null })
     }
     const logError = vi.fn()
     const ctx = {

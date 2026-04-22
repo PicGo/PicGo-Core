@@ -61,6 +61,7 @@ export interface ICloudManager {
   album: ICloudAlbumManager
   getUserInfo: () => Promise<ICloudUserInfo | null>
   refreshUserInfo: () => Promise<ICloudUserInfo | null>
+  setAutoImport: (autoImport: boolean) => Promise<ICloudUserInfo>
 }
 
 export interface ICloudUserInfo {
@@ -127,11 +128,18 @@ export type AlbumFiltersResponse = {
   exts: string[]
 }
 
+export type BatchUpdateResult = {
+  updated: number
+  skipped: number
+  items: IImgInfo[]
+}
+
 export interface ICloudAlbumManager {
   import: (items: IImgInfo[]) => Promise<ImportResult>
   list: (query?: AlbumListQuery) => Promise<AlbumListResponse>
   get: (id: string) => Promise<IImgInfo>
   update: (id: string, data: Partial<IImgInfo>) => Promise<IImgInfo>
+  batchUpdate: (items: { id: string, data: Partial<IImgInfo> }[]) => Promise<BatchUpdateResult>
   delete: (id: string | string[]) => Promise<void>
   getFilters: () => Promise<AlbumFiltersResponse>
   getPending: () => Promise<IImgInfo[]>

@@ -93,6 +93,17 @@ class CloudManager implements ICloudManager {
     return await this.getUserInfo()
   }
 
+  async setAutoImport (autoImport: boolean): Promise<ICloudUserInfo> {
+    const token = this.ctx.getConfig<string | undefined>('settings.picgoCloud.token')?.trim()
+    if (!token) {
+      throw new Error(this.ctx.i18n.translate<ILocalesKey>('CLOUD_COMMAND_LOGIN_REQUIRED'))
+    }
+
+    const userInfo = await this.user.setAutoImport(autoImport, token)
+    this.userInfoCache = userInfo
+    return userInfo
+  }
+
   private async fetchUserInfo (token: string): Promise<ICloudUserInfo | null> {
     try {
       const userInfo = await this.user.whoami(token)
