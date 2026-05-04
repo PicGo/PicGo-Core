@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises'
 import type { Command } from 'commander'
 import { DBStore } from '@picgo/store'
 import { UserService } from '../../../lib/Cloud/services/UserService'
+import { isPaidCloudUser } from '../../../lib/Cloud/utils'
 import type { Ora } from 'ora'
 import type { IImgInfo, IPicGo } from '../../../types'
 import type { ILocalesKey } from '../../../i18n/zh-CN'
@@ -183,6 +184,10 @@ const markImportedItems = async (galleryStore: DBStore, items: IImgInfo[]): Prom
 
 const ensureAutoImportEnabled = async (ctx: IPicGo, enableWithoutPrompt: boolean, spinner: Ora): Promise<void> => {
   const userInfo = await ctx.cloud.getUserInfo()
+  if (!isPaidCloudUser(userInfo)) {
+    throw new Error(ctx.i18n.translate<ILocalesKey>('CLOUD_ALBUM_IMPORT_PLAN_REQUIRED'))
+  }
+
   if (userInfo?.autoImport) {
     spinner.succeed(
       ctx.i18n.translate<ILocalesKey>('CLOUD_ALBUM_IMPORT_CHECKING_AUTO_IMPORT_DONE')

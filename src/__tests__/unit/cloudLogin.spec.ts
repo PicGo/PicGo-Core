@@ -57,6 +57,7 @@ const createI18n = (): II18nMock => {
       if (key === 'CLOUD_LOGIN_RESULT_SUCCESS_TITLE') return 'Authorization Successful!'
       if (key === 'CLOUD_LOGIN_RESULT_FAILED_TITLE') return 'Authorization Failed'
       if (key === 'CLOUD_LOGIN_RESULT_SUCCESS_MESSAGE') return 'You can now close this window and return to PicGo.'
+      if (key === 'CLOUD_ALBUM_IMPORT_PLAN_REQUIRED') return 'plan required'
       return key
     })
   }
@@ -367,6 +368,21 @@ describe('CloudManager getUserInfo', () => {
     })
 
     expect(whoamiSpy).toHaveBeenCalledTimes(2)
+  })
+
+  it('rejects enabling auto import for free users', async () => {
+    const { cloud, ctx } = createCloud(false)
+    ;(ctx.getConfig as unknown as ReturnType<typeof vi.fn>).mockReturnValue('token')
+
+    vi.spyOn(cloud.user, 'whoami').mockResolvedValue({
+      user: 'molunerfinn',
+      plan: 0,
+      autoImport: true
+    })
+    const setAutoImportSpy = vi.spyOn(cloud.user, 'setAutoImport')
+
+    await expect(cloud.setAutoImport(true)).rejects.toThrow('plan required')
+    expect(setAutoImportSpy).not.toHaveBeenCalled()
   })
 
   it('clears token and returns null when whoami returns 401', async () => {

@@ -36,6 +36,7 @@ export const EN: ILocales = {
   PICGO_CLOUD_UPLOAD_MISSING_FILE_DATA: 'Missing image data. Unable to upload to PicGo Cloud.',
   CLOUD_ALBUM_PENDING_INVALID_FILE: 'Pending import queue file is invalid and has been treated as empty: ${path}',
   CLOUD_ALBUM_IMPORT_AUTO_IMPORT_DISABLED: 'Cloud album auto import is disabled. Please enable auto import first.',
+  CLOUD_ALBUM_IMPORT_PLAN_REQUIRED: 'Cloud album import requires a paid PicGo Cloud plan.',
   CLOUD_ALBUM_AUTO_IMPORT_PENDING_WARNING: 'Automatic import did not finish completely. The pending queue now contains ${count} item(s).',
   CLOUD_COMMAND_LOGIN_REQUIRED: 'Please log in to PicGo Cloud first.',
   CLOUD_COMMAND_LOGIN_HINT: 'Run `picgo login` (or `picgo cloud login`) and try again.',

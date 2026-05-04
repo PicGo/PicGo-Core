@@ -34,6 +34,7 @@ export const ZH_CN = {
   PICGO_CLOUD_UPLOAD_MISSING_FILE_DATA: '缺少图片数据，无法上传到 PicGo Cloud。',
   CLOUD_ALBUM_PENDING_INVALID_FILE: '待重试队列文件无效，已按空队列处理：${path}',
   CLOUD_ALBUM_IMPORT_AUTO_IMPORT_DISABLED: '云端相册导入功能未开启，请先启用自动导入。',
+  CLOUD_ALBUM_IMPORT_PLAN_REQUIRED: '云端相册导入需要 PicGo Cloud 付费套餐。',
   CLOUD_ALBUM_AUTO_IMPORT_PENDING_WARNING: '自动导入未完全完成，当前待重试队列共有 ${count} 条记录。',
   CLOUD_COMMAND_LOGIN_REQUIRED: '请先登录 PicGo Cloud。',
   CLOUD_COMMAND_LOGIN_HINT: '请先执行 `picgo login`（或 `picgo cloud login`）后再重试。',

@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { webcrypto } from 'node:crypto'
+import type { ICloudUserInfo } from '../../types'
 import { API_BASE_URL } from '../utils'
 
 type ITokenExchangeResponse = {
@@ -49,6 +50,10 @@ const toUnixMilliseconds = (value: number | string | Date | null | undefined): n
   return undefined
 }
 
+const isPaidCloudUser = (userInfo: ICloudUserInfo | null | undefined): boolean => {
+  return (userInfo?.plan ?? 0) > 0
+}
+
 const toBase64Url = (bytes: Uint8Array): string => {
   let binary = ''
   for (const byte of bytes) {
@@ -89,6 +94,7 @@ export {
   exchangeToken,
   generatePkceVerifier,
   isErrorResponse,
+  isPaidCloudUser,
   isRecord,
   pkceChallengeFromVerifier,
   toNonNegativeInteger,

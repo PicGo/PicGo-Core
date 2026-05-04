@@ -5,6 +5,8 @@ import { UserService } from './services/UserService'
 import { AlbumService } from './services/AlbumService'
 import type { ILocalesKey } from '../../i18n/zh-CN'
 import { createCloudServiceError, getCloudErrorMessage, getCloudErrorStatus } from './Request'
+import { ApiErrorCode } from './ApiErrorCode'
+import { isPaidCloudUser } from './utils'
 
 class CloudManager implements ICloudManager {
   private readonly ctx: IPicGo
@@ -97,6 +99,19 @@ class CloudManager implements ICloudManager {
     const token = this.ctx.getConfig<string | undefined>('settings.picgoCloud.token')?.trim()
     if (!token) {
       throw new Error(this.ctx.i18n.translate<ILocalesKey>('CLOUD_COMMAND_LOGIN_REQUIRED'))
+    }
+
+    if (autoImport) {
+      const userInfo = await this.refreshUserInfo()
+      if (!isPaidCloudUser(userInfo)) {
+        throw createCloudServiceError(
+          this.ctx.i18n.translate<ILocalesKey>('CLOUD_ALBUM_IMPORT_PLAN_REQUIRED'),
+          {
+            status: 403,
+            apiCode: ApiErrorCode.PlanRequired
+          }
+        )
+      }
     }
 
     const partial = await this.user.setAutoImport(autoImport, token)

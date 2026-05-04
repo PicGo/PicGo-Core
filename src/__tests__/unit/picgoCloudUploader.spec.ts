@@ -431,6 +431,7 @@ describe('picgoCloud uploader', () => {
     }]
     ;(ctx.cloud.getUserInfo as ReturnType<typeof vi.fn>).mockResolvedValue({
       user: 'molunerfinn',
+      plan: 1,
       autoImport: true
     })
     ;(ctx.cloud.album.import as ReturnType<typeof vi.fn>).mockResolvedValue({
@@ -460,6 +461,36 @@ describe('picgoCloud uploader', () => {
     })
   })
 
+  it('skips auto import for free users even when autoImport is true', async () => {
+    const { ctx, uploaderRegister, on } = createCtx()
+    ctx.GUI_VERSION = '2.0.0'
+    getRegisteredUploader(ctx, uploaderRegister)
+
+    const afterUploadHandler = on.mock.calls.find(([eventName]) => eventName === IBuildInEvent.AFTER_UPLOAD)?.[1] as ((ctx: IPicGo) => void) | undefined
+    expect(afterUploadHandler).toBeDefined()
+
+    ctx.output = [{
+      imgUrl: 'https://img.example.com/1.png'
+    }]
+    ;(ctx.cloud.getUserInfo as ReturnType<typeof vi.fn>).mockResolvedValue({
+      user: 'molunerfinn',
+      plan: 0,
+      autoImport: true
+    })
+
+    afterUploadHandler?.(ctx)
+    await waitForImportLog(ctx)
+
+    expect(ctx.cloud.album.import).not.toHaveBeenCalled()
+    expect(ctx.cloud.album.retryPending).not.toHaveBeenCalled()
+    expect(ctx.cloud.album.addToPending).not.toHaveBeenCalled()
+    expect(readImportLogEntries(ctx).at(-1)).toMatchObject({
+      status: 'skipped',
+      itemCount: 1,
+      reason: 'plan_required'
+    })
+  })
+
   it('keeps the CLI fallback in afterFinishPlugins for one-shot runtimes', async () => {
     const { ctx, uploaderRegister, afterFinishRegister } = createCtx()
     getRegisteredUploader(ctx, uploaderRegister)
@@ -470,6 +501,7 @@ describe('picgoCloud uploader', () => {
     }]
     ;(ctx.cloud.getUserInfo as ReturnType<typeof vi.fn>).mockResolvedValue({
       user: 'molunerfinn',
+      plan: 1,
       autoImport: true
     })
     ;(ctx.cloud.album.import as ReturnType<typeof vi.fn>).mockResolvedValue({
@@ -505,6 +537,7 @@ describe('picgoCloud uploader', () => {
     }]
     ;(ctx.cloud.getUserInfo as ReturnType<typeof vi.fn>).mockResolvedValue({
       user: 'molunerfinn',
+      plan: 1,
       autoImport: true
     })
     ;(ctx.cloud.album.import as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('network error'))
@@ -536,6 +569,7 @@ describe('picgoCloud uploader', () => {
     }]
     ;(ctx.cloud.getUserInfo as ReturnType<typeof vi.fn>).mockResolvedValue({
       user: 'molunerfinn',
+      plan: 1,
       autoImport: true
     })
     ;(ctx.cloud.album.import as ReturnType<typeof vi.fn>).mockRejectedValue({
@@ -576,6 +610,7 @@ describe('picgoCloud uploader', () => {
     }]
     ;(ctx.cloud.getUserInfo as ReturnType<typeof vi.fn>).mockResolvedValue({
       user: 'molunerfinn',
+      plan: 1,
       autoImport: true
     })
     ;(ctx.cloud.album.import as ReturnType<typeof vi.fn>).mockRejectedValue({
@@ -609,6 +644,7 @@ describe('picgoCloud uploader', () => {
     }]
     ;(ctx.cloud.getUserInfo as ReturnType<typeof vi.fn>).mockResolvedValue({
       user: 'molunerfinn',
+      plan: 1,
       autoImport: true
     })
 

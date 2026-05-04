@@ -5,6 +5,7 @@ import { IBuildInEvent } from '../../utils/enum'
 import type { IImgInfo, IPluginConfig, IPicGo } from '../../types'
 import { ApiErrorCode } from '../../lib/Cloud/ApiErrorCode'
 import { getCloudErrorCode, getCloudErrorMessage, getCloudErrorStatus } from '../../lib/Cloud/Request'
+import { isPaidCloudUser } from '../../lib/Cloud/utils'
 import { FileService } from '../../lib/Cloud/services/FileService'
 import { PICGO_CLOUD, PICGO_CLOUD_AUTO_IMPORT_PLUGIN, PICGO_CLOUD_IMPORT_LOG_FILE } from '../../utils/static'
 
@@ -13,7 +14,7 @@ interface IAutoImportLogEntry {
   timestamp: string
   status: 'success' | 'partial' | 'failed' | 'skipped'
   itemCount: number
-  reason?: 'missing_token' | 'no_eligible_items' | 'auto_import_disabled'
+  reason?: 'missing_token' | 'no_eligible_items' | 'auto_import_disabled' | 'plan_required'
   result?: {
     total: number
     created: number
@@ -157,6 +158,15 @@ const handleAutoImport = async (ctx: IPicGo): Promise<void> => {
 
   try {
     const userInfo = await ctx.cloud.getUserInfo()
+    if (!isPaidCloudUser(userInfo)) {
+      await writeAutoImportLog(ctx, {
+        status: 'skipped',
+        itemCount: importItems.length,
+        reason: 'plan_required'
+      })
+      return
+    }
+
     if (!userInfo?.autoImport) {
       await writeAutoImportLog(ctx, {
         status: 'skipped',

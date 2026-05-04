@@ -36,6 +36,7 @@ export const ZH_TW: ILocales = {
   PICGO_CLOUD_UPLOAD_MISSING_FILE_DATA: '缺少圖片資料，無法上傳到 PicGo Cloud。',
   CLOUD_ALBUM_PENDING_INVALID_FILE: '待重試佇列檔案無效，已視為空佇列處理：${path}',
   CLOUD_ALBUM_IMPORT_AUTO_IMPORT_DISABLED: '雲端相簿匯入功能未開啟，請先啟用自動匯入。',
+  CLOUD_ALBUM_IMPORT_PLAN_REQUIRED: '雲端相簿匯入需要 PicGo Cloud 付費方案。',
   CLOUD_ALBUM_AUTO_IMPORT_PENDING_WARNING: '自動匯入未完全完成，目前待重試佇列共有 ${count} 筆記錄。',
   CLOUD_COMMAND_LOGIN_REQUIRED: '請先登入 PicGo Cloud。',
   CLOUD_COMMAND_LOGIN_HINT: '請先執行 `picgo login`（或 `picgo cloud login`）後再重試。',
