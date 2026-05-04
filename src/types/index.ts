@@ -134,6 +134,11 @@ export type BatchUpdateResult = {
   items: IImgInfo[]
 }
 
+export type AlbumStatsResponse = {
+  total: number
+  types: { type: string, count: number }[]
+}
+
 export interface ICloudAlbumManager {
   import: (items: IImgInfo[]) => Promise<ImportResult>
   list: (query?: AlbumListQuery) => Promise<AlbumListResponse>
@@ -141,6 +146,7 @@ export interface ICloudAlbumManager {
   update: (id: string, data: Partial<IImgInfo>) => Promise<IImgInfo>
   batchUpdate: (items: { id: string, data: Partial<IImgInfo> }[]) => Promise<BatchUpdateResult>
   delete: (id: string | string[]) => Promise<void>
+  getStats: () => Promise<AlbumStatsResponse>
   getFilters: () => Promise<AlbumFiltersResponse>
   getPending: () => Promise<IImgInfo[]>
   addToPending: (items: IImgInfo[]) => Promise<IImgInfo[]>

@@ -8,6 +8,7 @@ import type {
   AlbumFiltersResponse,
   AlbumListQuery,
   AlbumListResponse,
+  AlbumStatsResponse,
   BatchUpdateResult,
   CloudImportProgress,
   IImgInfo,
@@ -81,6 +82,14 @@ interface IAlbumFiltersApiResponse {
   data: {
     contentTypes: string[]
     exts: string[]
+  }
+}
+
+interface IAlbumStatsApiResponse {
+  success: boolean
+  data: {
+    total: number
+    types: { type: string, count: number }[]
   }
 }
 
@@ -201,6 +210,15 @@ export class AlbumService {
       method: 'DELETE',
       url: `/api/album-items/${id}`
     })
+  }
+
+  async getStats (): Promise<AlbumStatsResponse> {
+    const response = await this.client.request<IAlbumStatsApiResponse>({
+      method: 'GET',
+      url: '/api/album-items/stats'
+    })
+
+    return response.data
   }
 
   async getFilters (): Promise<AlbumFiltersResponse> {

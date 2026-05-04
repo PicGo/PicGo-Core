@@ -28,7 +28,7 @@ interface IImportSource {
 
 const applyCloudImportOptions = (cmd: Command): Command => {
   return cmd
-    .argument('[dbPath]', 'path to the local PicGo gallery database, usually called picgo.db')
+    .argument('[dbPath]', 'path to the local PicGo album database, usually called picgo.db')
     .option('--json-file <path>', 'read import data from a JSON file')
     .option('--data <json>', 'read import data from an inline JSON string')
     .option('--verbose', 'print batch details instead of the progress bar')

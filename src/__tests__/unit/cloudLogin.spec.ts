@@ -509,6 +509,7 @@ describe('logout command', () => {
         update: async () => ({}),
         batchUpdate: async () => ({ updated: 0, skipped: 0, items: [] }),
         delete: async () => {},
+        getStats: async () => ({ total: 0, types: [] }),
         getFilters: async () => ({
           success: true,
           contentTypes: [],

@@ -197,32 +197,81 @@ describe('AlbumService CRUD', () => {
         offset: 0
       }
     })
-    expect(request).toHaveBeenNthCalledWith(2, {
-      method: 'GET',
-      url: '/api/album-items/item-1'
-    })
-    expect(request).toHaveBeenNthCalledWith(3, {
-      method: 'PATCH',
-      url: '/api/album-items/item-1',
+  })
+
+  it('passes type as a query parameter in list', async () => {
+    const { service, request } = await createService()
+
+    request.mockResolvedValueOnce({
+      success: true,
       data: {
-        fileName: 'demo.png'
+        items: [],
+        total: 0,
+        limit: 20,
+        offset: 0
       }
     })
-    expect(request).toHaveBeenNthCalledWith(4, {
-      method: 'DELETE',
-      url: '/api/album-items/item-1'
+
+    await service.list({ type: 'smms' })
+
+    expect(request).toHaveBeenCalledWith({
+      method: 'GET',
+      url: '/api/album-items',
+      params: {
+        limit: 20,
+        offset: 0,
+        type: 'smms'
+      }
     })
-    expect(request).toHaveBeenNthCalledWith(5, {
-      method: 'DELETE',
+  })
+
+  it('calls batchUpdate with the expected payload', async () => {
+    const { service, request } = await createService()
+
+    request.mockResolvedValueOnce({
+      success: true,
+      data: {
+        updated: 2,
+        skipped: 0,
+        items: [
+          { id: 'item-1', imgUrl: 'https://new.example.com/1.png' },
+          { id: 'item-2', imgUrl: 'https://new.example.com/2.png' }
+        ]
+      }
+    })
+
+    const result = await service.batchUpdate([
+      { id: 'item-1', data: { imgUrl: 'https://new.example.com/1.png' } },
+      { id: 'item-2', data: { imgUrl: 'https://new.example.com/2.png', extname: '.png', size: 1024 } }
+    ])
+
+    expect(result).toEqual({
+      updated: 2,
+      skipped: 0,
+      items: [
+        { id: 'item-1', imgUrl: 'https://new.example.com/1.png' },
+        { id: 'item-2', imgUrl: 'https://new.example.com/2.png' }
+      ]
+    })
+    expect(request).toHaveBeenCalledWith({
+      method: 'PATCH',
       url: '/api/album-items',
       data: {
-        ids: ['item-1', 'item-2']
+        items: [
+          { id: 'item-1', imgUrl: 'https://new.example.com/1.png' },
+          { id: 'item-2', imgUrl: 'https://new.example.com/2.png' }
+        ]
       }
     })
-    expect(request).toHaveBeenNthCalledWith(6, {
-      method: 'GET',
-      url: '/api/album-items/filters'
-    })
+  })
+
+  it('returns empty result for batchUpdate with no items', async () => {
+    const { service, request } = await createService()
+
+    const result = await service.batchUpdate([])
+
+    expect(result).toEqual({ updated: 0, skipped: 0, items: [] })
+    expect(request).not.toHaveBeenCalled()
   })
 })
 

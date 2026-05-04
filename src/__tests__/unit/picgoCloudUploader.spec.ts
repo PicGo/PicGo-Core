@@ -450,6 +450,7 @@ describe('picgoCloud uploader', () => {
     expect(ctx.output[0].id).toBeDefined()
     expect(ctx.cloud.album.retryPending).toHaveBeenCalledTimes(1)
     expect(ctx.cloud.album.addToPending).not.toHaveBeenCalled()
+    expect(ctx.emit).toHaveBeenCalledWith(IBuildInEvent.CLOUD_ALBUM_UPDATED, expect.objectContaining({ items: expect.any(Array) }))
     expect(readImportLogEntries(ctx).at(-1)).toMatchObject({
       status: 'success',
       itemCount: 1,

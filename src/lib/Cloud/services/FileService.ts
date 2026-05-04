@@ -15,16 +15,30 @@ interface IPresignResponse {
   message?: string
 }
 
+interface ICompleteResponseItem {
+  id: string
+  imgUrl: string
+  width?: number
+  height?: number
+  size?: number
+  contentType?: string
+  [key: string]: unknown
+}
+
 interface ICompleteResponse {
   success: boolean
   data?: {
-    item: {
-      id: string
-      imgUrl: string
-      [key: string]: unknown
-    }
+    item: ICompleteResponseItem
   }
   message?: string
+}
+
+export type FileUploadResult = {
+  imgUrl: string
+  width?: number
+  height?: number
+  size?: number
+  contentType?: string
 }
 
 export class FileService {
@@ -36,7 +50,7 @@ export class FileService {
     this.client = new AuthRequestClient(ctx)
   }
 
-  async upload (img: IImgInfo): Promise<string> {
+  async upload (img: IImgInfo): Promise<FileUploadResult> {
     const token = this.getToken()
     const fileName = this.getFileName(img)
     const image = this.getImageBuffer(img)
@@ -82,7 +96,9 @@ export class FileService {
         data: {
           objectKey: presign.objectKey,
           publicId: presign.publicId,
-          filename: fileName
+          filename: fileName,
+          ...(typeof img.width === 'number' ? { width: img.width } : {}),
+          ...(typeof img.height === 'number' ? { height: img.height } : {})
         }
       }, token)
     })
@@ -90,7 +106,8 @@ export class FileService {
     this.ctx.log.debug('Complete duration', completeTime - finalizeStartTime, 'ms')
     this.ctx.log.debug('All duration', completeTime - presignTime, 'ms')
 
-    const finalUrl = complete.data?.item?.imgUrl
+    const completeItem = complete.data?.item
+    const finalUrl = completeItem?.imgUrl
     if (!complete.success || typeof finalUrl !== 'string' || finalUrl.length === 0) {
       throw new Error(
         complete.message ||
@@ -98,7 +115,13 @@ export class FileService {
       )
     }
 
-    return finalUrl
+    return {
+      imgUrl: finalUrl,
+      ...(typeof completeItem?.width === 'number' ? { width: completeItem.width } : {}),
+      ...(typeof completeItem?.height === 'number' ? { height: completeItem.height } : {}),
+      ...(typeof completeItem?.size === 'number' ? { size: completeItem.size } : {}),
+      ...(typeof completeItem?.contentType === 'string' ? { contentType: completeItem.contentType } : {})
+    }
   }
 
   private getToken (): string {

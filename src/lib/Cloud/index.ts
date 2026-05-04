@@ -99,9 +99,14 @@ class CloudManager implements ICloudManager {
       throw new Error(this.ctx.i18n.translate<ILocalesKey>('CLOUD_COMMAND_LOGIN_REQUIRED'))
     }
 
-    const userInfo = await this.user.setAutoImport(autoImport, token)
-    this.userInfoCache = userInfo
-    return userInfo
+    const partial = await this.user.setAutoImport(autoImport, token)
+    // Merge into existing cache so fields not returned by the API (e.g. plan) are preserved
+    const merged: ICloudUserInfo = {
+      ...this.userInfoCache,
+      ...partial
+    }
+    this.userInfoCache = merged
+    return merged
   }
 
   private async fetchUserInfo (token: string): Promise<ICloudUserInfo | null> {

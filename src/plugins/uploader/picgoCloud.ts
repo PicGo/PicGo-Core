@@ -88,10 +88,14 @@ const handle = async (ctx: IPicGo): Promise<IPicGo> => {
 
   for (const img of ctx.output) {
     try {
-      const imgUrl = await fileService.upload(img)
+      const result = await fileService.upload(img)
       delete img.base64Image
       delete img.buffer
-      img.imgUrl = imgUrl
+      img.imgUrl = result.imgUrl
+      if (result.width !== undefined) img.width = result.width
+      if (result.height !== undefined) img.height = result.height
+      if (result.size !== undefined) img.size = result.size
+      if (result.contentType !== undefined) img.contentType = result.contentType
     } catch (error: unknown) {
       if (error instanceof Error) {
         ctx.log.error(error)
@@ -130,10 +134,19 @@ const shouldRunAutoImportInBackground = (ctx: IPicGo): boolean => {
   return isGui || isServerMode
 }
 
+const hasPicGoCloudItems = (items: IImgInfo[]): boolean => {
+  return items.some(item => item.type === PICGO_CLOUD)
+}
+
 const handleAutoImport = async (ctx: IPicGo): Promise<void> => {
   const token = ctx.getConfig<string | undefined>('settings.picgoCloud.token')?.trim()
   const importItems = getAlbumImportItems(ctx.output)
   if (!token || importItems.length === 0) {
+    // PicGo Cloud uploads are already in the cloud album via the upload flow,
+    // so we still need to notify the GUI to refresh the cloud gallery.
+    if (hasPicGoCloudItems(ctx.output)) {
+      ctx.emit(IBuildInEvent.CLOUD_ALBUM_UPDATED, { items: [] })
+    }
     await writeAutoImportLog(ctx, {
       status: 'skipped',
       itemCount: importItems.length,
@@ -161,7 +174,7 @@ const handleAutoImport = async (ctx: IPicGo): Promise<void> => {
         itemCount: importItems.length,
         result: summarizeImportResult(importResult)
       })
-      ctx.emit(IBuildInEvent.CLOUD_ALBUM_UPDATED)
+      ctx.emit(IBuildInEvent.CLOUD_ALBUM_UPDATED, { items: importResult.items })
       return
     }
 
@@ -172,7 +185,8 @@ const handleAutoImport = async (ctx: IPicGo): Promise<void> => {
       result: summarizeImportResult(importResult),
       retryPending: summarizeImportResult(retryPendingResult)
     })
-    ctx.emit(IBuildInEvent.CLOUD_ALBUM_UPDATED)
+    const allImportedItems = [...importResult.items, ...retryPendingResult.items]
+    ctx.emit(IBuildInEvent.CLOUD_ALBUM_UPDATED, { items: allImportedItems })
   } catch (error: unknown) {
     const errorMessage = getCloudErrorMessage(error)
     const status = getCloudErrorStatus(error)
