@@ -11,6 +11,7 @@ import { logger } from 'hono/logger'
 import { cors } from 'hono/cors'
 import { BuiltinRoutePath, isBuiltinRoutePath } from '../Routes/routePath'
 import type { ILocalesKey } from '../../i18n/zh-CN'
+import type { IServerUploadAdapter } from '../../types/internal'
 
 type StartServerResult = {
   server: ServerType
@@ -56,6 +57,7 @@ class ServerManager implements IServerManager {
   private authSecret?: string
   private warnedQuerySecret = false
   private staticRoutePrefixes: string[] = []
+  private uploadAdapter?: IServerUploadAdapter
 
   constructor (ctx: IPicGo) {
     this.ctx = ctx
@@ -82,6 +84,10 @@ class ServerManager implements IServerManager {
 
   registerMiddleware<P extends string> (path: P, handler: MiddlewareHandler<any, P>): void {
     this.app.use(path, handler)
+  }
+
+  setUploadAdapter (adapter?: IServerUploadAdapter): void {
+    this.uploadAdapter = adapter
   }
 
   registerStatic (path: string, root: string): void {
@@ -130,7 +136,7 @@ class ServerManager implements IServerManager {
   }
 
   private initCoreRoutes (): void {
-    registerCoreRoutes(this.app, this.ctx)
+    registerCoreRoutes(this.app, this.ctx, () => this.uploadAdapter)
   }
 
   private t<T extends ILocalesKey> (key: T, args?: Record<string, string>): string {

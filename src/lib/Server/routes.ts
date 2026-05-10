@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto'
 import path from 'path'
 import type { Hono } from 'hono'
 import type { IImgInfo, IPicGo } from '../../types'
+import type { IServerUploadAdapter } from '../../types/internal'
 import { BuiltinRoutePath } from '../Routes/routePath'
 import type { ILocalesKey } from '../../i18n/zh-CN'
 
@@ -95,6 +96,14 @@ interface UploadResponse {
   message?: string
 }
 
+type GetUploadAdapter = () => IServerUploadAdapter | undefined
+
+const createDefaultUploadAdapter = (ctx: IPicGo): IServerUploadAdapter => ({
+  uploadClipboard: async () => await ctx.upload(),
+  uploadPaths: async (paths: string[]) => await ctx.upload(paths),
+  getTempDir: () => path.join(ctx.baseDir, 'picgo-form-images')
+})
+
 const buildUploadResponse = (output: IImgInfo[] | Error): UploadResponse => {
   if (output instanceof Error) {
     return { success: false, result: [], items: [], message: output.message }
@@ -123,16 +132,17 @@ const buildUploadResponse = (output: IImgInfo[] | Error): UploadResponse => {
   return { success: true, result, items }
 }
 
-const registerCoreRoutes = (app: Hono<any, any, any>, ctx: IPicGo): void => {
+const registerCoreRoutes = (app: Hono<any, any, any>, ctx: IPicGo, getUploadAdapter?: GetUploadAdapter): void => {
   app.post(BuiltinRoutePath.UPLOAD, async (c) => {
     try {
       const contentType = c.req.raw.headers.get('content-type') || ''
       const t = <T extends ILocalesKey>(key: T, args?: Record<string, string>): string => {
         return ctx.i18n?.translate<T>(key, args) ?? String(key)
       }
+      const uploadAdapter = getUploadAdapter?.() ?? createDefaultUploadAdapter(ctx)
 
       if (contentType.includes('multipart/form-data')) {
-        const tempDir = path.join(ctx.baseDir, 'picgo-form-images')
+        const tempDir = uploadAdapter.getTempDir?.() ?? path.join(ctx.baseDir, 'picgo-form-images')
         const tempFiles: string[] = []
         try {
           await fs.ensureDir(tempDir)
@@ -155,7 +165,7 @@ const registerCoreRoutes = (app: Hono<any, any, any>, ctx: IPicGo): void => {
             tempFiles.push(filePath)
           }
 
-          const output = await ctx.upload(tempFiles)
+          const output = await uploadAdapter.uploadPaths(tempFiles)
           const response = buildUploadResponse(output)
           return c.json(response, response.success ? 200 : 500)
         } catch (e: unknown) {
@@ -170,7 +180,7 @@ const registerCoreRoutes = (app: Hono<any, any, any>, ctx: IPicGo): void => {
 
       // No request body -> upload from clipboard.
       if (bodyText.trim() === '') {
-        const output = await ctx.upload()
+        const output = await uploadAdapter.uploadClipboard()
         const response = buildUploadResponse(output)
         return c.json(response, response.success ? 200 : 500)
       }
@@ -188,12 +198,12 @@ const registerCoreRoutes = (app: Hono<any, any, any>, ctx: IPicGo): void => {
       }
 
       if (parsedBody.kind === ParsedUploadRequestBodyKind.Clipboard) {
-        const output = await ctx.upload()
+        const output = await uploadAdapter.uploadClipboard()
         const response = buildUploadResponse(output)
         return c.json(response, response.success ? 200 : 500)
       }
 
-      const output = await ctx.upload(parsedBody.list)
+      const output = await uploadAdapter.uploadPaths(parsedBody.list)
       const response = buildUploadResponse(output)
       return c.json(response, response.success ? 200 : 500)
     } catch (e: unknown) {
