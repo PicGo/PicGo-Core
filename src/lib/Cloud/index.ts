@@ -1,8 +1,9 @@
-import type { ICloudManager, ICloudUserInfo, IPicGo } from '../../types'
+import type { CloudUsage, ICloudManager, ICloudUserInfo, IPicGo } from '../../types'
 import axios from 'axios'
 import { AuthHandler } from './Auth'
 import { UserService } from './services/UserService'
 import { AlbumService } from './services/AlbumService'
+import { BillingService } from './services/BillingService'
 import type { ILocalesKey } from '../../i18n/zh-CN'
 import { createCloudServiceError, getCloudErrorMessage, getCloudErrorStatus } from './Request'
 import { ApiErrorCode } from './ApiErrorCode'
@@ -11,6 +12,7 @@ import { isPaidCloudUser } from './utils'
 class CloudManager implements ICloudManager {
   private readonly ctx: IPicGo
   private readonly auth: AuthHandler
+  private readonly billingService: BillingService
   private albumService?: AlbumService
   private userInfoCache: ICloudUserInfo | null | undefined
   private userInfoPromise?: Promise<ICloudUserInfo | null>
@@ -21,6 +23,7 @@ class CloudManager implements ICloudManager {
     this.ctx = ctx
     this.user = new UserService(ctx)
     this.auth = new AuthHandler(ctx)
+    this.billingService = new BillingService(ctx)
   }
 
   get album (): AlbumService {
@@ -93,6 +96,31 @@ class CloudManager implements ICloudManager {
   async refreshUserInfo (): Promise<ICloudUserInfo | null> {
     this.clearUserInfoCache()
     return await this.getUserInfo()
+  }
+
+  async getUsage (): Promise<CloudUsage | null> {
+    const token = this.ctx.getConfig<string | undefined>('settings.picgoCloud.token')
+    if (!token) {
+      return null
+    }
+
+    try {
+      return await this.billingService.getUsage(token)
+    } catch (e: unknown) {
+      if (axios.isAxiosError(e)) {
+        const status = getCloudErrorStatus(e)
+        if (status === 401) {
+          this.clearUserInfoCache()
+          this.ctx.removeConfig('settings.picgoCloud', 'token')
+          return null
+        }
+        const message = getCloudErrorMessage(e)
+        if (message.trim() !== '') {
+          throw createCloudServiceError(message, e)
+        }
+      }
+      throw e
+    }
   }
 
   async setAutoImport (autoImport: boolean): Promise<ICloudUserInfo> {

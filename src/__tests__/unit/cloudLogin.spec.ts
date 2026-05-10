@@ -550,7 +550,8 @@ describe('logout command', () => {
       disposeLoginFlow: () => {},
       getUserInfo: async () => null,
       refreshUserInfo: async () => null,
-      setAutoImport: async () => ({ user: null })
+      setAutoImport: async () => ({ user: null }),
+      getUsage: async () => null
     }
     const logError = vi.fn()
     const ctx = {

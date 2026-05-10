@@ -62,6 +62,7 @@ export interface ICloudManager {
   getUserInfo: () => Promise<ICloudUserInfo | null>
   refreshUserInfo: () => Promise<ICloudUserInfo | null>
   setAutoImport: (autoImport: boolean) => Promise<ICloudUserInfo>
+  getUsage: () => Promise<CloudUsage | null>
 }
 
 export interface ICloudUserInfo {
@@ -69,6 +70,31 @@ export interface ICloudUserInfo {
   avatar?: string | null
   plan?: number
   autoImport?: boolean
+}
+
+export type CloudUsageDimension = {
+  used: number
+  limit: number | null
+}
+
+export type CloudUsagePeriodInfo = {
+  used: number
+  periodStart: string | null
+  periodEnd: string | null
+}
+
+export type CloudUsageConfigHistory = {
+  used: number
+  limit: number
+  appType: 'gui' | 'cli'
+}
+
+export type CloudUsage = {
+  plan: string
+  storage: CloudUsageDimension
+  mediaCount: CloudUsageDimension
+  monthlyServes: CloudUsagePeriodInfo
+  configHistory: CloudUsageConfigHistory
 }
 
 export type ImportResult = {
