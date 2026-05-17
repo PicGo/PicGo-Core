@@ -4,13 +4,25 @@ import { PicGo } from '../core/PicGo'
 import LifecyclePlugins from '../lib/LifecyclePlugins'
 
 /**
+ * Snapshot of the currently displayed values for all fields in a plugin config form.
+ * See `src/types/index.ts` for canonical documentation.
+ */
+export type PluginConfigAnswers = Record<string, unknown>
+
+export type IPluginConfigChoice =
+  | string
+  | { name?: string, value: unknown, checked?: boolean }
+
+/**
  * for plugin config
  */
 export interface IPluginConfig {
   name: string
   type: string
   required: boolean
-  default?: any
+  default?: any | ((answers: PluginConfigAnswers) => any)
+  choices?: IPluginConfigChoice[] | ((answers: PluginConfigAnswers) => IPluginConfigChoice[])
+  dependsOn?: string[]
   [propName: string]: any
 }
 

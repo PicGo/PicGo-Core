@@ -358,13 +358,64 @@ export interface IUploaderConfigManager {
 }
 
 /**
+ * Snapshot of the currently displayed values for all fields in a plugin config form.
+ *
+ * Passed to function-form `choices` / `default` so reactive fields can derive
+ * their value space from other fields. In the GUI this is the form's merged
+ * view (stored config + schema defaults + user edits); in the CLI this is
+ * inquirer's accumulated `answers`.
+ */
+export type PluginConfigAnswers = Record<string, unknown>
+
+/**
+ * One choice for a `list` / `checkbox` field. May be a bare string (used as
+ * both label and value) or an object form.
+ */
+export type IPluginConfigChoice =
+  | string
+  | { name?: string, value: unknown, checked?: boolean }
+
+/**
  * for plugin config
+ *
+ * @example Reactive cascading dropdown
+ * const config = (ctx) => [
+ *   { name: 'uploader', type: 'list', required: true, choices: ['github', 'gitee'] },
+ *   {
+ *     name: 'repo',
+ *     type: 'list',
+ *     required: true,
+ *     dependsOn: ['uploader'],
+ *     choices: (answers) => {
+ *       return answers.uploader === 'github'
+ *         ? ['my-org/repo-a', 'my-org/repo-b']
+ *         : ['gitee-org/repo-c']
+ *     }
+ *   }
+ * ]
  */
 export interface IPluginConfig {
   name: string
   type: string
   required: boolean
-  default?: any
+  /**
+   * Default value for the field. May be a plain value or a function that
+   * receives the current `answers` snapshot and returns the value.
+   */
+  default?: any | ((answers: PluginConfigAnswers) => any)
+  /**
+   * Available options for `list` / `checkbox` fields. May be a static array
+   * or a function that receives the current `answers` snapshot and returns
+   * the array.
+   */
+  choices?: IPluginConfigChoice[] | ((answers: PluginConfigAnswers) => IPluginConfigChoice[])
+  /**
+   * Names of other fields in the same schema this field's `choices` /
+   * `default` depends on. When any listed field's value changes, the GUI
+   * will re-evaluate this field. Has no effect in the CLI path (inquirer
+   * already passes the latest `answers` to every prompt).
+   */
+  dependsOn?: string[]
   alias?: string
   message?: string
   prefix?: string // for cli options
