@@ -63,6 +63,7 @@ export interface ICloudManager {
   refreshUserInfo: () => Promise<ICloudUserInfo | null>
   setAutoImport: (autoImport: boolean) => Promise<ICloudUserInfo>
   getUsage: () => Promise<CloudUsage | null>
+  getBillingOverview: () => Promise<CloudBillingOverview | null>
 }
 
 export interface ICloudUserInfo {
@@ -95,6 +96,36 @@ export type CloudUsage = {
   mediaCount: CloudUsageDimension
   monthlyServes: CloudUsagePeriodInfo
   configHistory: CloudUsageConfigHistory
+}
+
+export type CloudBillingPlanInfo = {
+  /** 来自 entitlement 的付费 plan code，用于展示 / billing portal。 */
+  paid: string
+  /** 用于 capability / 配额检查的 plan code（admin grant + entitlement 合并结果）。 */
+  capability: string
+  /** 订阅计费周期类型：'monthly' / 'yearly' / null（免费用户）。 */
+  billingPeriod: string | null
+  source: 'entitlement' | 'admin_grant' | 'both' | 'free'
+}
+
+export type CloudLifecyclePhase = 'active' | 'grace' | 'frozen' | 'pending_cleanup'
+
+export type CloudLifecycleInfo = {
+  phase: CloudLifecyclePhase
+  daysRemaining: number | null
+  graceEndsAt: string | null
+  freezeEndsAt: string | null
+}
+
+export type CloudSubscriptionInfo = {
+  status: string
+  currentPeriodEnd: string | null
+}
+
+export type CloudBillingOverview = {
+  plan: CloudBillingPlanInfo
+  lifecycle: CloudLifecycleInfo
+  subscription: CloudSubscriptionInfo | null
 }
 
 export type ImportResult = {

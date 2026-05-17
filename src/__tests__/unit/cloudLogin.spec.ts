@@ -551,7 +551,8 @@ describe('logout command', () => {
       getUserInfo: async () => null,
       refreshUserInfo: async () => null,
       setAutoImport: async () => ({ user: null }),
-      getUsage: async () => null
+      getUsage: async () => null,
+      getBillingOverview: async () => null
     }
     const logError = vi.fn()
     const ctx = {

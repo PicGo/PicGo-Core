@@ -1,4 +1,4 @@
-import type { CloudUsage, ICloudManager, ICloudUserInfo, IPicGo } from '../../types'
+import type { CloudBillingOverview, CloudUsage, ICloudManager, ICloudUserInfo, IPicGo } from '../../types'
 import axios from 'axios'
 import { AuthHandler } from './Auth'
 import { UserService } from './services/UserService'
@@ -106,6 +106,31 @@ class CloudManager implements ICloudManager {
 
     try {
       return await this.billingService.getUsage(token)
+    } catch (e: unknown) {
+      if (axios.isAxiosError(e)) {
+        const status = getCloudErrorStatus(e)
+        if (status === 401) {
+          this.clearUserInfoCache()
+          this.ctx.removeConfig('settings.picgoCloud', 'token')
+          return null
+        }
+        const message = getCloudErrorMessage(e)
+        if (message.trim() !== '') {
+          throw createCloudServiceError(message, e)
+        }
+      }
+      throw e
+    }
+  }
+
+  async getBillingOverview (): Promise<CloudBillingOverview | null> {
+    const token = this.ctx.getConfig<string | undefined>('settings.picgoCloud.token')
+    if (!token) {
+      return null
+    }
+
+    try {
+      return await this.billingService.getOverview(token)
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const status = getCloudErrorStatus(e)
