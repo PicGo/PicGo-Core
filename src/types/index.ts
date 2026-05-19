@@ -393,9 +393,41 @@ export type IPluginConfigChoice =
  *     }
  *   }
  * ]
+ *
+ * @example Multi-line text via `type: 'editor'` (3.0.0+)
+ * const config = (ctx) => [
+ *   {
+ *     name: 'script',
+ *     type: 'editor',
+ *     alias: 'Compression script',
+ *     required: true,
+ *     message: 'Enter your compression script (multi-line supported)'
+ *   }
+ * ]
  */
 export interface IPluginConfig {
   name: string
+  /**
+   * Field widget kind. The string is forwarded to inquirer in the CLI path and
+   * used by the GUI renderer to pick a control. Kept as `string` so plugin
+   * authors can pass through any inquirer-supported value PicGo has not
+   * documented. PicGo guarantees behavior for these known values:
+   *
+   * - `'input'`     single-line text. CLI: inquirer text prompt; GUI: text input.
+   * - `'password'`  single-line text rendered masked. CLI: inquirer password
+   *                 prompt; GUI: password input with show/hide toggle.
+   * - `'list'`      pick one from `choices`. CLI: inquirer list prompt; GUI:
+   *                 single-select dropdown.
+   * - `'checkbox'`  pick many from `choices`. CLI: inquirer checkbox prompt;
+   *                 GUI: multi-select combobox.
+   * - `'confirm'`   boolean. CLI: inquirer confirm prompt; GUI: switch.
+   * - `'editor'`    multi-line text (3.0.0+). Value is a `string` and MAY
+   *                 contain `\n`. CLI: inquirer editor prompt — spawns the
+   *                 user's external editor via `VISUAL` / `EDITOR` env vars
+   *                 (falls back to platform default: `vi` / `nano` on Unix,
+   *                 `notepad` on Windows); GUI: shadcn `<Textarea>` with
+   *                 user-resizable height.
+   */
   type: string
   required: boolean
   /**

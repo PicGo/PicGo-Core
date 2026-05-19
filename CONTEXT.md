@@ -12,6 +12,15 @@ _Avoid_: "form schema" (too generic), "prompts" (CLI-only flavor)
 One descriptor in the Plugin Config Schema (`IPluginConfig`), identified by its `name`. Has a `type`, optional `choices`, `default`, and `dependsOn`.
 _Avoid_: "prompt", "form field" (use the canonical term)
 
+Known `type` values (the `type` slot stays `string` to remain forward-compatible with unlisted inquirer-supported values, but PicGo guarantees behavior only for these):
+
+- `'input'`     — single-line text. CLI: inquirer text prompt; GUI: text input.
+- `'password'`  — single-line text rendered masked. CLI: inquirer password prompt; GUI: masked input with show/hide toggle.
+- `'list'`      — pick one from `choices`. CLI: inquirer list prompt; GUI: single-select dropdown.
+- `'checkbox'`  — pick many from `choices`. CLI: inquirer checkbox prompt; GUI: multi-select combobox.
+- `'confirm'`   — boolean. CLI: inquirer confirm prompt; GUI: switch.
+- `'editor'`    — multi-line text (3.0.0+). Value is `string`, MAY contain `\n`. CLI: inquirer editor prompt — spawns the user's external editor (`VISUAL` / `EDITOR` env vars; falls back to `vi` / `nano` on Unix, `notepad` on Windows); GUI: shadcn `<Textarea>` with `resize-y` handle.
+
 **dependsOn**:
 Optional `string[]` on a Plugin Config Field listing the `name`s of other fields whose value changes should cause this field's `choices`/`default` to be re-evaluated. Opt-in; absence means the field is static.
 _Avoid_: "refreshOn", "watch", "deps"

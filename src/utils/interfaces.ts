@@ -15,6 +15,10 @@ export type IPluginConfigChoice =
 
 /**
  * for plugin config
+ *
+ * See `src/types/index.ts` for canonical documentation including the list of
+ * known `type` values (`'input' | 'password' | 'list' | 'checkbox' |
+ * 'confirm' | 'editor'`) and reactive `choices` / `default` examples.
  */
 export interface IPluginConfig {
   name: string
