@@ -1,4 +1,5 @@
 import type { IPicGo, IPluginConfig, IStringKeyMap } from '../../types'
+import { wrapPluginConfigForCli } from '../../utils/pluginConfig'
 
 const normalizeName = (name: string): string => name.trim()
 const toCompareName = (name: string): string => normalizeName(name).toLowerCase()
@@ -30,7 +31,13 @@ const findConfigName = (configNameList: string[], target: string): string | unde
 
 // handle modules config -> save to picgo config file (non-uploader modules)
 const handleConfig = async (ctx: IPicGo, prompts: IPluginConfig[], module: string, name: string): Promise<void> => {
-  const answer = await ctx.cmd.inquirer.prompt<IStringKeyMap<unknown>>(prompts)
+  const safePrompts = wrapPluginConfigForCli(prompts, {
+    onError: (fieldName, kind, error) => {
+      const message = error instanceof Error ? error.message : String(error)
+      ctx.log.warn(`[plugin-config] ${fieldName}.${kind} threw during CLI prompt: ${message}`)
+    }
+  })
+  const answer = await ctx.cmd.inquirer.prompt<IStringKeyMap<unknown>>(safePrompts)
   const configName = module === 'transformer'
     ? `transformer.${name}` : name
   ctx.saveConfig({
@@ -139,7 +146,13 @@ const setting = {
                   }
                 }
 
-                const answer = await ctx.cmd.inquirer.prompt<IStringKeyMap<unknown>>(item.config(ctx))
+                const safePrompts = wrapPluginConfigForCli(item.config(ctx), {
+                  onError: (fieldName, kind, error) => {
+                    const message = error instanceof Error ? error.message : String(error)
+                    ctx.log.warn(`[plugin-config] ${fieldName}.${kind} threw during CLI prompt: ${message}`)
+                  }
+                })
+                const answer = await ctx.cmd.inquirer.prompt<IStringKeyMap<unknown>>(safePrompts)
                 ctx.uploaderConfig.createOrUpdate(uploaderType, finalConfigName, answer)
               }
               break
