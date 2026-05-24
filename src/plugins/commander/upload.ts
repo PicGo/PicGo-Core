@@ -37,7 +37,14 @@ const upload: IPlugin = {
       .arguments('[input...]')
       .alias('u')
       .option('--format <format>', 'output format: pretty | json', 'pretty')
-      .option('--verbose', 'print per-event progress lines instead of a spinner', false)
+      .option(
+        '--verbose',
+        'Force per-event progress lines (one console.log per progress tick) instead of an in-place spinner. ' +
+        'Non-TTY stdout (pipes, CI) automatically falls back to this mode regardless of the flag — ' +
+        '--verbose is for the niche case of wanting line-by-line history on an interactive TTY ' +
+        '(debugging multipart retries, AI agents tailing output, etc.).',
+        false
+      )
       .action(async (input: string[], options: UploadCommandOptions) => {
         const inputList = input
           .map((item: string) => {
