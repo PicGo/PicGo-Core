@@ -115,10 +115,10 @@ export function buildMockOverview (scenario: MockLifecycleScenario): CloudBillin
         plan: { paid: 'pro', capability: 'pro', billingPeriod: 'monthly', source: 'entitlement' },
         lifecycle: {
           phase: 'grace',
-          daysRemaining: 5,
-          graceEndsAt: isoIn(5),
-          freezeEndsAt: isoIn(35),
-          currentPhaseEndsAt: isoIn(5),
+          daysRemaining: 30,
+          graceEndsAt: isoIn(30),
+          freezeEndsAt: isoIn(90),
+          currentPhaseEndsAt: isoIn(30),
           flags: { customDomainDisabledByLifecycle: true, autoImportDisabledByLifecycle: true }
         },
         subscription: { status: 'past_due', currentPeriodEnd: isoIn(-3) }
@@ -129,7 +129,7 @@ export function buildMockOverview (scenario: MockLifecycleScenario): CloudBillin
         lifecycle: {
           phase: 'frozen',
           daysRemaining: 60,
-          graceEndsAt: isoIn(-3),
+          graceEndsAt: isoIn(-30),
           freezeEndsAt: isoIn(60),
           currentPhaseEndsAt: isoIn(60),
           flags: { customDomainDisabledByLifecycle: true, autoImportDisabledByLifecycle: true }
@@ -161,7 +161,7 @@ export function buildMockUsage (
   const PRO_STORAGE = 50 * 1024 * 1024 * 1024
   const FREE_STORAGE = 500 * 1024 * 1024
   const PRO_MEDIA = 50000
-  const FREE_MEDIA = 500
+  const FREE_MEDIA = 200
   return {
     plan: 'pro',
     effectiveQuotaPlan: isDowngraded ? 'free' : 'pro',
@@ -170,7 +170,7 @@ export function buildMockUsage (
       limit: isDowngraded ? FREE_STORAGE : PRO_STORAGE
     },
     mediaCount: {
-      used: isDowngraded ? 712 : 8120,
+      used: isDowngraded ? 5000 : 8120,
       limit: isDowngraded ? FREE_MEDIA : PRO_MEDIA
     },
     monthlyServes: {
@@ -178,7 +178,7 @@ export function buildMockUsage (
       periodStart: isoIn(-15),
       periodEnd: isoIn(15)
     },
-    configHistory: { used: 5, limit: 50, appType }
+    configHistory: { used: 5, limit: isDowngraded ? 3 : 50, appType }
   }
 }
 
