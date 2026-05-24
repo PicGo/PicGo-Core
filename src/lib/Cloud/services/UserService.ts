@@ -1,5 +1,6 @@
 import type { ICloudUserInfo, IConfig, IPicGo } from '../../../types'
 import { AuthRequestClient } from '../Request'
+import { buildMockWhoami, getMockScenario } from '../__mocks__/lifecycleScenarios'
 
 class UserService {
   private readonly client: AuthRequestClient
@@ -11,6 +12,11 @@ class UserService {
   }
 
   async whoami (token: string): Promise<ICloudUserInfo> {
+    const mockScenario = getMockScenario()
+    if (mockScenario) {
+      this.ctx.log.warn(`[MOCK] UserService.whoami scenario=${mockScenario}`)
+      return buildMockWhoami(mockScenario)
+    }
     return await this.client.request<ICloudUserInfo>({
       method: 'GET',
       url: '/api/whoami'

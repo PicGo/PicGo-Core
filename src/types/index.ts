@@ -91,7 +91,13 @@ export type CloudUsageConfigHistory = {
 }
 
 export type CloudUsage = {
+  /** Paid plan code（用于展示）。 */
   plan: string
+  /**
+   * 当前生效配额对应的 plan code（capabilityPlan）。grace/frozen/pending_cleanup
+   * 阶段会降级为 'free'，此时 effectiveQuotaPlan !== plan。
+   */
+  effectiveQuotaPlan: string
   storage: CloudUsageDimension
   mediaCount: CloudUsageDimension
   monthlyServes: CloudUsagePeriodInfo
@@ -110,11 +116,25 @@ export type CloudBillingPlanInfo = {
 
 export type CloudLifecyclePhase = 'active' | 'grace' | 'frozen' | 'pending_cleanup'
 
+export type CloudLifecycleFlags = {
+  customDomainDisabledByLifecycle: boolean
+  autoImportDisabledByLifecycle: boolean
+}
+
 export type CloudLifecycleInfo = {
   phase: CloudLifecyclePhase
   daysRemaining: number | null
   graceEndsAt: string | null
   freezeEndsAt: string | null
+  /**
+   * 当前 lifecycle phase 结束时间。客户端用此字段统一展示套餐到期：
+   * - active → max(activeEnt.validUntil, grant.validUntil)；永久 entitlement 为 null
+   * - grace → 等同 graceEndsAt
+   * - frozen → 等同 freezeEndsAt
+   * - pending_cleanup → null
+   */
+  currentPhaseEndsAt: string | null
+  flags: CloudLifecycleFlags
 }
 
 export type CloudSubscriptionInfo = {
