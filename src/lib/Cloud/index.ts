@@ -4,6 +4,7 @@ import { AuthHandler } from './Auth'
 import { UserService } from './services/UserService'
 import { AlbumService } from './services/AlbumService'
 import { BillingService } from './services/BillingService'
+import { MultipartUploadService } from './services/multipart/MultipartUploadService'
 import type { ILocalesKey } from '../../i18n/zh-CN'
 import { createCloudServiceError, getCloudErrorMessage, getCloudErrorStatus } from './Request'
 import { ApiErrorCode } from './ApiErrorCode'
@@ -14,6 +15,7 @@ class CloudManager implements ICloudManager {
   private readonly auth: AuthHandler
   private readonly billingService: BillingService
   private albumService?: AlbumService
+  private uploaderService?: MultipartUploadService
   private userInfoCache: ICloudUserInfo | null | undefined
   private userInfoPromise?: Promise<ICloudUserInfo | null>
 
@@ -32,6 +34,14 @@ class CloudManager implements ICloudManager {
     }
 
     return this.albumService
+  }
+
+  get uploader (): MultipartUploadService {
+    if (!this.uploaderService) {
+      this.uploaderService = new MultipartUploadService(this.ctx)
+    }
+
+    return this.uploaderService
   }
 
   async login (token?: string): Promise<void> {

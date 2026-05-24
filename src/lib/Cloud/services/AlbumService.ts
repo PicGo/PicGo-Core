@@ -511,8 +511,10 @@ export class AlbumService {
     return Object.keys(extra).length > 0 ? extra : undefined
   }
 
-  private emitImportProgress (progress: CloudImportProgress): void {
-    this.ctx.emit(IBuildInEvent.CLOUD_IMPORT_PROGRESS, progress)
+  private emitImportProgress (progress: Omit<CloudImportProgress, 'fraction'>): void {
+    const fraction = progress.total > 0 ? Math.min(progress.current / progress.total, 1) : 0
+    const payload: CloudImportProgress = { ...progress, fraction }
+    this.ctx.emit(IBuildInEvent.CLOUD_IMPORT_PROGRESS, payload)
   }
 
   private shouldRetry (error: unknown): boolean {

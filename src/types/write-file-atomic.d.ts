@@ -10,9 +10,17 @@ declare module 'write-file-atomic' {
     tmpfileCreated?: (tmpfile: string) => void
   }
 
-  export default function writeFileAtomic (
+  function writeFileAtomic (
     filename: string,
     data: string | Uint8Array,
     options?: IWriteFileAtomicOptions
   ): Promise<void>
+  namespace writeFileAtomic {
+    function sync (
+      filename: string,
+      data: string | Uint8Array,
+      options?: IWriteFileAtomicOptions
+    ): void
+  }
+  export default writeFileAtomic
 }

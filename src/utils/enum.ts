@@ -11,6 +11,7 @@ export enum ILogType {
  */
 export enum IBuildInEvent {
   UPLOAD_PROGRESS = 'uploadProgress',
+  FILE_UPLOAD_PROGRESS = 'fileUploadProgress',
   FAILED = 'failed',
   BEFORE_TRANSFORM = 'beforeTransform',
   BEFORE_UPLOAD = 'beforeUpload',

@@ -543,6 +543,11 @@ describe('logout command', () => {
           items: []
         })
       },
+      uploader: {
+        abort: async () => {},
+        listPending: () => [],
+        removePending: () => {}
+      },
       login: async () => {},
       logout: () => {
         throw error

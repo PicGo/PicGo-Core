@@ -59,11 +59,25 @@ export interface ICloudManager {
   logout: () => void
   disposeLoginFlow: () => void
   album: ICloudAlbumManager
+  uploader: ICloudUploaderManager
   getUserInfo: () => Promise<ICloudUserInfo | null>
   refreshUserInfo: () => Promise<ICloudUserInfo | null>
   setAutoImport: (autoImport: boolean) => Promise<ICloudUserInfo>
   getUsage: () => Promise<CloudUsage | null>
   getBillingOverview: () => Promise<CloudBillingOverview | null>
+}
+
+/**
+ * picgo-gui 与外部插件用来管理分片上传未完成会话的入口。
+ * 状态机本身（runMultipartUpload）不暴露在这里 —— 上传应走 FileService 的 size 派发。
+ */
+export interface ICloudUploaderManager {
+  /** 主动放弃远端 multipart upload；fire-and-forget，错误吞掉，靠 R2 lifecycle 兜底 */
+  abort: (uploadId: string, objectKey: string) => Promise<void>
+  /** 列出当前用户本地所有未完成的分片上传会话 */
+  listPending: () => MultipartSession[]
+  /** 仅删本地 entry（不通知远端） */
+  removePending: (fingerprint: string) => void
 }
 
 export interface ICloudUserInfo {
@@ -158,14 +172,89 @@ export type ImportResult = {
   items: IImgInfo[]
 }
 
-export type CloudImportProgress = {
-  total: number
+/**
+ * 通用进度基座 —— 所有进度类事件 payload 的最小公共字段。
+ * 消费方（CLI 进度条 / GUI 进度展示）只关心进度比例时，直接读这三个字段即可，
+ * 无需感知具体事件类型。
+ */
+export type IProgress = {
+  /**
+   * 当前进度计数。单位由具体事件决定：
+   * - `FILE_UPLOAD_PROGRESS` → 已上传字节数
+   * - `CLOUD_IMPORT_PROGRESS` → 已处理条目数
+   */
   current: number
+  /** 目标总量，单位同 current */
+  total: number
+  /** current / total，截到 [0, 1]。提供以避免消费方重复除法。total 为 0 时为 0 */
+  fraction: number
+}
+
+/**
+ * 单文件上传字节级进度，事件名 `FILE_UPLOAD_PROGRESS`。
+ * current / total 单位是字节；multipart 路径会同时填 partsCompleted / totalParts，
+ * 非 multipart 路径填 -1 表示 N/A。
+ */
+export type IFileUploadProgress = IProgress & {
+  /** 正在上传的文件名（即 IImgInfo.fileName，便于多文件场景区分） */
+  fileName: string
+  /** multipart 已完成 part 数；非 multipart 路径填 -1 */
+  partsCompleted: number
+  /** multipart 总 part 数；非 multipart 路径填 -1 */
+  totalParts: number
+  /** 本次是否是断点续传场景（仅 multipart 可能 true）；非续传统一 false */
+  resumed: boolean
+}
+
+export type CloudImportProgress = IProgress & {
   batchIndex: number
   batchTotal: number
   created: number
   skipped: number
   failed: number
+}
+
+/**
+ * 一次分片上传 part 的元数据。partNumber 从 1 开始，url 是服务端预签名好的 R2 直传地址。
+ */
+export type MultipartPartInfo = {
+  partNumber: number
+  url: string
+  method: 'PUT'
+  headers: Record<string, string>
+}
+
+/**
+ * 单个分片完成后由客户端记录的最小信息。partNumber 1-based，etag 来自 PUT 响应头。
+ */
+export type MultipartCompletedPart = {
+  partNumber: number
+  etag: string
+}
+
+/**
+ * 本地持久化的一条分片上传会话；用于支持跨进程崩溃后的断点续传。
+ * v 字段为 schema 版本，便于未来字段演进的兼容性处理。
+ */
+export type MultipartSession = {
+  /** schema 版本，初始为 1 */
+  v: 1
+  uploadId: string
+  objectKey: string
+  publicId: string
+  url: string
+  filename: string
+  /** 总字节数 */
+  size: number
+  contentType: string
+  /** 单 part 大小（最后一片可能更小） */
+  partSize: number
+  /** 总 part 数 = Math.ceil(size / partSize) */
+  partCount: number
+  /** 已完成的 part 列表；记录 partNumber 与 ETag，用于 complete 阶段提交 */
+  completedParts: MultipartCompletedPart[]
+  /** epoch ms，用于 7 天 TTL 过期判定 */
+  createdAt: number
 }
 
 export enum AlbumListOrder {
