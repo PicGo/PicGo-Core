@@ -59,9 +59,10 @@ export class FileService {
     const image = this.getImageBuffer(img)
     const contentType = this.getContentType(img, fileName)
 
-    // 文件 >= 10MB 走分片上传；< 10MB 维持原单 PUT 路径。
-    // 这里 dispatch 是有意的"FileService 内部决策"，外部调用方（picgoCloud.ts、picgo-gui）
-    // 不需要关心 size 走的是哪条路；都通过 `fileService.upload(img)` 一行进来。
+    // Files >= 10 MB take the multipart path; smaller files keep the original single-PUT flow.
+    // This dispatch is intentionally an internal FileService decision — callers (picgoCloud.ts,
+    // picgo-gui, external plugins) never have to know which branch ran. Everything goes through
+    // a single `fileService.upload(img)` call.
     if (image.length >= MULTIPART_THRESHOLD_BYTES) {
       return await runMultipartUpload(this.ctx, img)
     }

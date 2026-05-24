@@ -25,12 +25,13 @@ import {
 import { MultipartStorage } from './MultipartStorage'
 
 /**
- * 并发数。3 是从浏览器版本继承的实测值 —— 3 × 8MB = 24MB 额外内存峰值，对桌面机可控；
- * 单连接 PUT 在普通用户上行带宽下已能跑满，再加并发对吞吐提升有限但内存压力线性增长。
+ * Concurrency for part PUTs. 3 is inherited from the browser version's empirically tuned value ——
+ * 3 × 8MB = 24MB peak memory overhead, fine on desktop; a single PUT can already saturate typical
+ * upstream bandwidth so adding more parallelism gives diminishing returns while memory grows linearly.
  */
 const CONCURRENCY = 3
 
-/** 指数退避梯度：第 1/2/3 次重试前分别 sleep 1s / 2s / 4s。第 4 次直接抛错。 */
+/** Exponential backoff for transient part failures: sleep 1s / 2s / 4s before retries 1/2/3, then surface. */
 const BACKOFF_DELAYS_MS = [1000, 2000, 4000]
 
 interface InitiateResponse {
@@ -135,16 +136,18 @@ const indexParts = (parts: MultipartPartInfo[]): Map<number, MultipartPartInfo> 
 }
 
 /**
- * PicGo Cloud 分片上传服务。包含两部分：
+ * PicGo Cloud multipart upload service. Two responsibilities:
  *
- * 1. **状态机**（`runMultipartUpload` 函数，由 FileService 在 size dispatch 时调用）：
- *    initiate → 并发 PUT × N → complete，带本地 session 持久化以支持断点续传。
+ * 1. **State machine** (`runMultipartUpload` function, called by FileService's size dispatch):
+ *    initiate → concurrent part PUTs → complete, with local session persistence so a crashed /
+ *    interrupted upload can resume on the next attempt for the same file.
  *
- * 2. **管理 API**（class 上的 abort / listPending / removePending）：暴露给 picgo-gui，
- *    用于"清理未完成上传"类 UI。挂在 `ctx.cloud.uploader` 上。
+ * 2. **Management API** (this class's abort / listPending / removePending): exposed to picgo-gui
+ *    for a future "clean up pending uploads" UI. Mounted on `ctx.cloud.uploader`.
  *
- * 状态机失败 / 进程崩溃后的 session 由 R2 7 天 lifecycle 与本地 7 天 TTL 双向兜底，
- * 不主动 abort 远端（避免与"支持续传"目标矛盾）。
+ * Sessions left over by failure / crash are double-protected: server-side R2 lifecycle cleans
+ * orphan multipart uploads after 7 days, local TTL also sweeps after 7 days. We intentionally
+ * do NOT abort the remote session on state-machine failure, otherwise resume would be defeated.
  */
 export class MultipartUploadService implements ICloudUploaderManager {
   private readonly ctx: IPicGo
@@ -163,8 +166,8 @@ export class MultipartUploadService implements ICloudUploaderManager {
   }
 
   /**
-   * Best-effort 主动放弃远端 multipart upload。
-   * 任何错误吞掉（R2 lifecycle 7 天兜底），调用方不需要 try/catch。
+   * Best-effort abort of a remote multipart upload session.
+   * Swallows all errors (R2's 7-day lifecycle is the safety net); callers don't need try/catch.
    */
   async abort (uploadId: string, objectKey: string): Promise<void> {
     const token = this.ctx.getConfig<string | undefined>('settings.picgoCloud.token')?.trim()
@@ -180,7 +183,7 @@ export class MultipartUploadService implements ICloudUploaderManager {
     }
   }
 
-  /** 列出当前登录用户本地所有未完成的分片上传 session */
+  /** List all local pending multipart sessions belonging to the currently logged-in user. */
   listPending (): MultipartSession[] {
     const token = this.ctx.getConfig<string | undefined>('settings.picgoCloud.token')?.trim()
     if (!token) return []
@@ -188,7 +191,7 @@ export class MultipartUploadService implements ICloudUploaderManager {
     return this.storage.listForUser(userId).map(entry => entry.session)
   }
 
-  /** 仅删本地 entry，不通知远端（远端清理走 abort） */
+  /** Delete only the local entry; does not notify the remote (call abort for that). */
   removePending (fingerprint: string): void {
     const token = this.ctx.getConfig<string | undefined>('settings.picgoCloud.token')?.trim()
     if (!token) return
@@ -196,7 +199,7 @@ export class MultipartUploadService implements ICloudUploaderManager {
     this.storage.remove(userId, fingerprint)
   }
 
-  // 内部辅助暴露给同模块的 runMultipartUpload；用于复用 logger 与 storage 实例。
+  // Internal helper exposed to same-module runMultipartUpload so it can reuse the logger / storage instances.
   /** @internal */
   getInternals (): {
     ctx: IPicGo
@@ -214,11 +217,11 @@ export class MultipartUploadService implements ICloudUploaderManager {
 }
 
 /**
- * 跑一次完整的分片上传：fingerprint → 取/建 session → 并发上传 part → complete。
- * 由 FileService.upload 在 size ≥ MULTIPART_THRESHOLD_BYTES 时调用。
+ * Run a full multipart upload: fingerprint → get/create session → concurrent part uploads → complete.
+ * Called by FileService.upload when buffer size >= MULTIPART_THRESHOLD_BYTES.
  *
- * 不挂在 `ctx.cloud.uploader` 上 —— GUI 与外部插件应走 FileService 的 size dispatch，
- * 不该绕过去直接调 multipart。
+ * Deliberately not exposed on `ctx.cloud.uploader`: GUI / external plugins should go through
+ * FileService so the size dispatch (single-PUT vs multipart) stays in one place.
  */
 export async function runMultipartUpload (ctx: IPicGo, img: IImgInfo): Promise<FileUploadResult> {
   const token = ctx.getConfig<string | undefined>('settings.picgoCloud.token')?.trim()
@@ -254,7 +257,8 @@ export async function runMultipartUpload (ctx: IPicGo, img: IImgInfo): Promise<F
   if (resumed) {
     state = existing
     diagLogger?.info(`[multipart] resuming ${fileName}: ${state.completedParts.length}/${state.partCount} parts done`)
-    // 续传场景没有 initiate 返回的 part URLs，需要拉一次（presign 一般已过期，刷新一次拿新的）
+    // Resume path: no initiate response in hand, so fetch fresh presigned URLs for the remaining
+    // parts (the original presigns are 15-min lived and almost certainly expired by now).
     partUrls = await collectPartUrls(ctx, authClient, token, state, diagLogger)
   } else {
     const initiated = await initiate(ctx, authClient, token, buffer.length, fileName, contentType, diagLogger)
@@ -289,6 +293,31 @@ export async function runMultipartUpload (ctx: IPicGo, img: IImgInfo): Promise<F
 }
 
 const completedParts = (state: MultipartSession): MultipartCompletedPart[] => state.completedParts
+
+/**
+ * Compose the user-facing Error.message for a failed cloud round-trip.
+ *
+ * Preference order (highest first):
+ * 1. Server-provided `message` from the response body — most specific
+ *    ("File extension is not allowed: .dmg", "Storage quota exceeded for plan free", etc.);
+ *    users / AI agents can act on it immediately.
+ * 2. i18n key translation — fallback for cases where no server message is available
+ *    (e.g. local shape-validation failures, network errors with no response body).
+ *
+ * Without this step every cloud failure surfaces as the generic i18n string (e.g.
+ * "PicGo Cloud returned an invalid multipart upload initiate response"), forcing the caller
+ * to walk the `cause` chain just to find "File extension is not allowed: .dmg".
+ *
+ * The diagLogger line still records the full status / code / server msg triple separately,
+ * so debugging context is preserved either way.
+ */
+const buildUserMessage = (ctx: IPicGo, i18nKey: ILocalesKey, cause: unknown): string => {
+  const serverMessage = getCloudErrorMessage(cause, '').trim()
+  if (serverMessage !== '') {
+    return serverMessage
+  }
+  return ctx.i18n.translate<ILocalesKey>(i18nKey)
+}
 
 const emitProgress = (
   ctx: IPicGo,
@@ -358,7 +387,7 @@ const initiate = async (
     handleAuthError(ctx, error)
     diagLogger?.error(`[multipart-initiate] status=${getCloudErrorStatus(error) ?? '?'} code=${getCloudErrorCode(error) ?? '-'} server="${getCloudErrorMessage(error)}"`)
     throw createCloudServiceError(
-      ctx.i18n.translate<ILocalesKey>('PICGO_CLOUD_UPLOAD_INVALID_INITIATE_RESPONSE'),
+      buildUserMessage(ctx, 'PICGO_CLOUD_UPLOAD_INVALID_INITIATE_RESPONSE', error),
       error
     )
   }
@@ -406,7 +435,7 @@ const fetchPartUrls = async (
     handleAuthError(ctx, error)
     diagLogger?.error(`[multipart-part-urls] status=${getCloudErrorStatus(error) ?? '?'} code=${getCloudErrorCode(error) ?? '-'} server="${getCloudErrorMessage(error)}"`)
     throw createCloudServiceError(
-      ctx.i18n.translate<ILocalesKey>('PICGO_CLOUD_UPLOAD_MULTIPART_PART_FAILED'),
+      buildUserMessage(ctx, 'PICGO_CLOUD_UPLOAD_MULTIPART_PART_FAILED', error),
       error
     )
   }
@@ -441,7 +470,8 @@ const runPartWorkers = async (input: PartUploadInput): Promise<Map<number, Multi
     if (!completedNumbers.has(i)) queue.push(i)
   }
 
-  // 即使全部 part 都已完成（complete-only resume），也 emit 一次让 CLI 看到 100%
+  // Always emit an initial progress event — covers the complete-only resume case where every part
+  // is already done, so the CLI still sees 100% before we jump to the finalize call.
   emitProgress(ctx, input.fileName, state, [...completed.values()], resumed)
 
   if (queue.length === 0) return completed
@@ -460,7 +490,9 @@ const runPartWorkers = async (input: PartUploadInput): Promise<Map<number, Multi
     }
   }
 
-  // 用 array 而不是 `let`，绕开 TS "在 async closure 内部赋值后变量被 narrow 成 never" 的分析限制
+  // Use an object slot rather than a plain `let`: TS narrows a `let` assigned inside an async
+  // closure to `never` at the read site after Promise.all, even when typed `Error | null`.
+  // The slot indirection sidesteps that control-flow limitation cleanly.
   const fatalErrorSlot: { value: Error | null } = { value: null }
 
   const uploadOne = async (partNumber: number): Promise<void> => {
@@ -477,7 +509,8 @@ const runPartWorkers = async (input: PartUploadInput): Promise<Map<number, Multi
         completed.set(partNumber, part)
         completedNumbers.add(partNumber)
         input.diagLogger?.info(`[multipart] part ${partNumber} done etag=${etag}`)
-        // 写穿持久化；MultipartStorage 内部已经把写入失败吞掉，这里不需要再 try/catch
+        // Write-through to local storage; MultipartStorage already swallows write failures
+        // internally (resume is best-effort), so no try/catch needed here.
         const internals = (input.ctx.cloud.uploader as MultipartUploadService).getInternals()
         internals.storage.appendCompletedPart(userId, fingerprint, part)
         emitProgress(ctx, input.fileName, state, [...completed.values()], resumed)
@@ -493,6 +526,9 @@ const runPartWorkers = async (input: PartUploadInput): Promise<Map<number, Multi
           diagLogger?.warn(`[multipart] session ${state.uploadId} not found on server (404); clearing local entry`)
           const internals = (input.ctx.cloud.uploader as MultipartUploadService).getInternals()
           internals.storage.remove(userId, fingerprint)
+          // 404 keeps the dedicated i18n key — R2 typically returns an XML error body whose
+          // message isn't actionable; the i18n "session expired, please re-upload" is more
+          // directive than the raw server text.
           throw createCloudServiceError(
             ctx.i18n.translate<ILocalesKey>('PICGO_CLOUD_UPLOAD_MULTIPART_NOT_FOUND'),
             error
@@ -508,6 +544,9 @@ const runPartWorkers = async (input: PartUploadInput): Promise<Map<number, Multi
           continue
         }
         diagLogger?.error(`[multipart-part] part ${partNumber} failed after retries: status=${getCloudErrorStatus(error) ?? '?'} server="${getCloudErrorMessage(error)}"`)
+        // R2 returns XML on part PUT failures; the raw message is not actionable, so stick
+        // to the i18n key here. buildUserMessage is reserved for PicGo Cloud business API calls
+        // (initiate / part-urls / complete) where the JSON `message` field is user-grade.
         throw createCloudServiceError(
           ctx.i18n.translate<ILocalesKey>('PICGO_CLOUD_UPLOAD_MULTIPART_PART_FAILED'),
           error
@@ -616,12 +655,13 @@ const complete = async (
     handleAuthError(ctx, error)
     diagLogger?.error(`[multipart-complete] status=${getCloudErrorStatus(error) ?? '?'} code=${getCloudErrorCode(error) ?? '-'} server="${getCloudErrorMessage(error)}"`)
     throw createCloudServiceError(
-      ctx.i18n.translate<ILocalesKey>('PICGO_CLOUD_UPLOAD_MULTIPART_COMPLETE_FAILED'),
+      buildUserMessage(ctx, 'PICGO_CLOUD_UPLOAD_MULTIPART_COMPLETE_FAILED', error),
       error
     )
   }
 
-  // 与单 PUT 路径一致：分片完成后还要调 /api/album-items/complete 走 PicGo Cloud 业务侧 finalize
+  // Mirror the single-PUT path: after multipart finalize, also call /api/album-items/complete
+  // to finalize on the PicGo Cloud business side (album record creation, returning final imgUrl).
   try {
     const resp = await authClient.request<CompleteResponse>({
       method: 'POST',
@@ -651,13 +691,13 @@ const complete = async (
     handleAuthError(ctx, error)
     diagLogger?.error(`[album-items-complete] status=${getCloudErrorStatus(error) ?? '?'} code=${getCloudErrorCode(error) ?? '-'} server="${getCloudErrorMessage(error)}"`)
     throw createCloudServiceError(
-      ctx.i18n.translate<ILocalesKey>('PICGO_CLOUD_UPLOAD_INVALID_COMPLETE_RESPONSE'),
+      buildUserMessage(ctx, 'PICGO_CLOUD_UPLOAD_INVALID_COMPLETE_RESPONSE', error),
       error
     )
   }
 }
 
-/** 401 → 清 token 并抛 relogin 错。复用 FileService 的处理范式。 */
+/** 401 → clear token and throw relogin error. Mirrors FileService.callAuthenticatedStep behaviour. */
 const handleAuthError = (ctx: IPicGo, error: unknown): void => {
   if (!axios.isAxiosError(error)) return
   const status = getCloudErrorStatus(error)

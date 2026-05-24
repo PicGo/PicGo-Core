@@ -5,17 +5,18 @@ export const PICGO_CLOUD_IMPORT_PENDING_FILE = 'picgo-cloud-import-list-pending.
 export const PICGO_CLOUD_AUTO_IMPORT_PLUGIN = 'picgoCloudAutoImport'
 export const PICGO_CLOUD_MULTIPART_PENDING_FILE = 'picgo-cloud-multipart-pending.json'
 
-/**
- * 分片上传的尺寸阈值。文件 ≥ 该值走分片上传，小于走单 PUT。
- * 与 picgo-hub 服务端 MULTIPART_THRESHOLD_BYTES 保持一致。
- */
-export const MULTIPART_THRESHOLD_BYTES = 10 * 1024 * 1024 // 10 MB
-
-/**
- * 单个分片大小。R2/S3 part 下限 5 MB（末片可短）、上限 5 GB，单上传最多 10000 part。
- * 8 MB × 128 = 1024 MB，正好覆盖单文件 1 GB 上限。
- */
-export const MULTIPART_PART_SIZE_BYTES = 8 * 1024 * 1024 //  8 MB
-
-/** 1 MB 的字节数，便于体积计算与展示 */
+/** Bytes per megabyte. Reused by anything that formats / compares file sizes. */
 export const BYTES_PER_MB = 1024 * 1024
+
+/**
+ * Size threshold for multipart upload. Files >= this go through the multipart path; smaller
+ * files keep the single-PUT path. Must stay aligned with picgo-hub's MULTIPART_THRESHOLD_BYTES.
+ */
+export const MULTIPART_THRESHOLD_BYTES = 10 * BYTES_PER_MB // 10 MB
+
+/**
+ * Part size for multipart upload. R2/S3 require each part >= 5 MB (last part exempt),
+ * max 5 GB per part, max 10000 parts per upload. 8 MB × 128 = 1024 MB covers the 1 GB
+ * per-file ceiling with a comfortable retry granularity.
+ */
+export const MULTIPART_PART_SIZE_BYTES = 8 * BYTES_PER_MB //  8 MB

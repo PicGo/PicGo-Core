@@ -3,13 +3,14 @@ const PROGRESS_FILLED = '█'
 const PROGRESS_EMPTY = '░'
 
 /**
- * 渲染一个固定 20 字符宽的进度条（`█████░░░░░`）。
+ * Render a fixed 20-character progress bar (`█████░░░░░`).
  *
- * - `total <= 0` 时输出全空（`░ × 20`）；调用方需自己处理 N/A 文案。
- * - `current >= total` 时输出全实（`█ × 20`），不会越界。
- * - 中间状态按 `current / total` 比例四舍五入填充。
+ * - `total <= 0` returns all-empty (`░ × 20`); the caller is responsible for any N/A label.
+ * - `current >= total` returns all-filled (`█ × 20`); never overflows.
+ * - Intermediate states round to the nearest cell based on `current / total`.
  *
- * 纯函数、零外部状态，CLI 各处（import 进度、文件上传进度等）通用。
+ * Pure function with no external state — shared across the CLI (import progress, file
+ * upload progress, future progress events).
  */
 export const renderProgressBar = (current: number, total: number): string => {
   const ratio = total > 0 ? Math.min(Math.max(current / total, 0), 1) : 0

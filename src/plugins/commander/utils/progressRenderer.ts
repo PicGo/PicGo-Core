@@ -5,22 +5,26 @@ import type { IBuildInEvent } from '../../../utils/enum'
 import { renderProgressBar } from '../../../utils/progressBar'
 
 /**
- * 创建一个通用 CLI 进度 renderer 的参数。
+ * Options for a generic CLI progress renderer.
  *
- * 三种渲染模式按以下规则切换：
- * - **TTY 模式**：terminal 是交互式终端且 verbose=false → 用 ora spinner 滚动渲染进度条。
- * - **Verbose 模式**：verbose=true → 每次事件输出一行完整 verbose 文本，便于日志重定向时按行读。
- * - **非 TTY 模式**：stdout 不是 TTY（被管道接走 / CI 环境）→ 等同 verbose 模式，逐行输出。
+ * The renderer picks one of three modes:
+ * - **TTY mode** — stdout is an interactive terminal AND `verbose=false`: ora spinner draws the
+ *   progress bar in place (single line that updates).
+ * - **Verbose mode** — `verbose=true`: each event prints a full line, suitable for log redirection
+ *   or when the operator wants per-event history.
+ * - **Non-TTY mode** — stdout is piped / CI: same as verbose, lines printed one at a time so
+ *   downstream log capture isn't clobbered by spinner escape codes.
  *
- * 调用方只负责提供两个 formatter：进度条标签（TTY 模式拼在进度条右侧）和 verbose 行文本。
+ * The caller only provides two formatters: the inline label that follows the bar in TTY mode,
+ * and the full line text used in verbose / non-TTY modes.
  */
 export interface IProgressRendererOptions<TProgress extends IProgress> {
   ctx: IPicGo
   event: IBuildInEvent
   verbose: boolean
-  /** TTY 模式下进度条右侧拼接的标签 */
+  /** Label appended after the progress bar in TTY mode. */
   formatBarText: (payload: TProgress) => string
-  /** verbose / 非 TTY 模式下逐行输出的完整文本 */
+  /** Full line text printed in verbose / non-TTY modes. */
   formatVerboseText: (payload: TProgress) => string
 }
 
