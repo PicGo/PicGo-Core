@@ -16,3 +16,6 @@ export const MULTIPART_THRESHOLD_BYTES = 10 * 1024 * 1024 // 10 MB
  * 8 MB × 128 = 1024 MB，正好覆盖单文件 1 GB 上限。
  */
 export const MULTIPART_PART_SIZE_BYTES = 8 * 1024 * 1024 //  8 MB
+
+/** 1 MB 的字节数，便于体积计算与展示 */
+export const BYTES_PER_MB = 1024 * 1024

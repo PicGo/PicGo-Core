@@ -3,6 +3,9 @@ import mime from 'mime-types'
 import type { IImgInfo, IPicGo, IReqOptions } from '../../../types'
 import type { ILocalesKey } from '../../../i18n/zh-CN'
 import { AuthRequestClient, createCloudServiceError, getCloudErrorMessage, getCloudErrorStatus } from '../Request'
+import { MULTIPART_THRESHOLD_BYTES } from '../../../utils/static'
+import { runMultipartUpload } from './multipart/MultipartUploadService'
+import { uploadWithProgress } from '../../../utils/uploadWithProgress'
 
 interface IPresignResponse {
   success: boolean
@@ -55,6 +58,14 @@ export class FileService {
     const fileName = this.getFileName(img)
     const image = this.getImageBuffer(img)
     const contentType = this.getContentType(img, fileName)
+
+    // 文件 >= 10MB 走分片上传；< 10MB 维持原单 PUT 路径。
+    // 这里 dispatch 是有意的"FileService 内部决策"，外部调用方（picgoCloud.ts、picgo-gui）
+    // 不需要关心 size 走的是哪条路；都通过 `fileService.upload(img)` 一行进来。
+    if (image.length >= MULTIPART_THRESHOLD_BYTES) {
+      return await runMultipartUpload(this.ctx, img)
+    }
+
     const presignTime = Date.now()
     const presign = await this.callAuthenticatedStep(async () => {
       return await this.client.request<IPresignResponse>({
@@ -78,12 +89,15 @@ export class FileService {
 
     const uploadHeaders = this.buildUploadHeaders(presign.headers, contentType)
     const uploadStartTime = Date.now()
-    await this.ctx.request<void, IReqOptions<Buffer>>({
+    await uploadWithProgress<void>(this.ctx, {
       method: 'PUT',
       url: presign.uploadUrl,
       data: image,
       headers: uploadHeaders,
       resolveWithFullResponse: true
+    } as IReqOptions<Buffer>, {
+      fileName,
+      totalBytes: image.length
     })
 
     this.ctx.log.debug('Upload duration', Date.now() - uploadStartTime, 'ms')

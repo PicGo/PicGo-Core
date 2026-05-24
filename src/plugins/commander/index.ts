@@ -1,6 +1,6 @@
 import pluginHandler from './pluginHandler'
 import { configPath } from './configPath'
-import upload from './upload'
+import { upload } from './upload'
 import { config } from './config'
 import { setting } from './setting'
 import use from './use'
