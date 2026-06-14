@@ -81,11 +81,13 @@ $ picgo -h
     set <module> [name] [configName]         configure config of picgo modules (uploader/transformer/plugin)
     upload|u [input...]                      upload, go go go
     use [module] [name] [configName]         use module (uploader/transformer/plugin) of picgo
+    get                                       get current picgo module config (uploader/transformer/plugins)
     i18n [lang]                              change picgo language
     uploader                                 manage uploader configurations
     server [options]                         run PicGo as a standalone server
     login [token]                            login to cloud.picgo.app
     logout                                   logout from cloud.picgo.app
+    cloud                                     manage PicGo Cloud
     help [command]                           display help for command
 ```
 
@@ -123,6 +125,59 @@ picgo login <token>
 
 ```bash
 picgo logout
+```
+
+#### Check PicGo Cloud login status
+
+Use `picgo cloud auth status` to inspect the current PicGo Cloud login state without triggering an interactive login. The check is non-blocking: when there is no local token it returns immediately without any network request.
+
+```bash
+picgo cloud auth status
+
+# machine-readable output
+picgo cloud auth status --format json
+```
+
+The command sets a process exit code so it can be used in scripts:
+
+| Status        | Meaning                                          | Exit code |
+| ------------- | ------------------------------------------------ | --------- |
+| `logged_in`   | Token is valid                                   | `0`       |
+| `logged_out`  | No local token                                   | `1`       |
+| `invalid`     | Token exists but is rejected by the server (401) | `2`       |
+| `error`       | Probe failed (network / server error)            | `3`       |
+
+The `--format json` output is a single line, e.g.:
+
+```json
+{"status":"logged_in","loggedIn":true,"user":"someone","plan":1}
+```
+
+#### Inspect current module config
+
+Use `picgo get` to read the currently selected picgo modules. Each subcommand supports `--format pretty|json` (defaults to `pretty`).
+
+```bash
+# current uploader type (resolved as picBed.uploader -> picBed.current -> picgo-cloud)
+picgo get uploader
+
+# current transformer (defaults to path)
+picgo get transformer
+
+# installed plugins with enabled/disabled state
+picgo get plugins
+
+# machine-readable output
+picgo get uploader --format json
+picgo get plugins --format json
+```
+
+In `json` mode each command prints a single parseable line, e.g.:
+
+```json
+{"uploader":"github"}
+{"transformer":"path"}
+{"plugins":[{"name":"picgo-plugin-xxx","enabled":true}]}
 ```
 
 #### Manage uploader configs
