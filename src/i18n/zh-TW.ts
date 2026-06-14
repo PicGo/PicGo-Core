@@ -51,6 +51,9 @@ export const ZH_TW: ILocales = {
   CLOUD_AUTH_STATUS_LOGGED_OUT: '未登入 PicGo Cloud。',
   CLOUD_AUTH_STATUS_INVALID: 'PicGo Cloud 登入狀態已失效，請重新登入。',
   CLOUD_AUTH_STATUS_ERROR: '無法檢測 PicGo Cloud 登入狀態：${message}',
+
+  // get command
+  GET_PLUGINS_EMPTY: '沒有已安裝的外掛。',
   CLOUD_ALBUM_IMPORT_PROMPT_ENABLE_AUTO_IMPORT: '雲端相簿匯入功能未開啟，是否立即開啟？',
   CLOUD_ALBUM_IMPORT_ENABLING_AUTO_IMPORT: '正在開啟雲端相簿自動匯入...',
   CLOUD_ALBUM_IMPORT_AUTO_IMPORT_ENABLED: '已開啟雲端相簿自動匯入。',

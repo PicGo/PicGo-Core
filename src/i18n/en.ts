@@ -51,6 +51,9 @@ export const EN: ILocales = {
   CLOUD_AUTH_STATUS_LOGGED_OUT: 'Not logged in to PicGo Cloud.',
   CLOUD_AUTH_STATUS_INVALID: 'PicGo Cloud session is invalid. Please log in again.',
   CLOUD_AUTH_STATUS_ERROR: 'Failed to check PicGo Cloud status: ${message}',
+
+  // get command
+  GET_PLUGINS_EMPTY: 'No installed plugins.',
   CLOUD_ALBUM_IMPORT_PROMPT_ENABLE_AUTO_IMPORT: 'Cloud album auto import is disabled. Enable it now?',
   CLOUD_ALBUM_IMPORT_ENABLING_AUTO_IMPORT: 'Enabling cloud album auto import...',
   CLOUD_ALBUM_IMPORT_AUTO_IMPORT_ENABLED: 'Cloud album auto import has been enabled.',

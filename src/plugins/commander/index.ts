@@ -11,6 +11,7 @@ import { login } from './login'
 import { logout } from './logout'
 import { uploader } from './uploader'
 import { cloud } from './cloud'
+import { get } from './get'
 import { IPicGo } from '../../types'
 
 const commanders = (ctx: IPicGo): void => {
@@ -27,6 +28,7 @@ const commanders = (ctx: IPicGo): void => {
   ctx.cmd.register('logout', logout)
   ctx.cmd.register('cloud', cloud)
   ctx.cmd.register('uploader', uploader)
+  ctx.cmd.register('get', get)
 }
 
 export { commanders }

@@ -49,6 +49,9 @@ export const ZH_CN = {
   CLOUD_AUTH_STATUS_LOGGED_OUT: '未登录 PicGo Cloud。',
   CLOUD_AUTH_STATUS_INVALID: 'PicGo Cloud 登录状态已失效，请重新登录。',
   CLOUD_AUTH_STATUS_ERROR: '无法检测 PicGo Cloud 登录状态：${message}',
+
+  // get command
+  GET_PLUGINS_EMPTY: '没有已安装的插件。',
   CLOUD_ALBUM_IMPORT_PROMPT_ENABLE_AUTO_IMPORT: '云端相册导入功能未开启，是否立即开启？',
   CLOUD_ALBUM_IMPORT_ENABLING_AUTO_IMPORT: '正在开启云端相册自动导入...',
   CLOUD_ALBUM_IMPORT_AUTO_IMPORT_ENABLED: '已开启云端相册自动导入。',
