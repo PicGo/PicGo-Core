@@ -5,6 +5,7 @@ import { registerCloudGetCommand } from './get'
 import { applyCloudImportOptions, createCloudImportAction, registerCloudImportCommand } from './import'
 import { applyCloudListOptions, createCloudListAction, registerCloudListCommand } from './list'
 import { registerCloudRetryCommand } from './retry'
+import { registerCloudAuthStatusCommand } from './status'
 import { registerCloudUpdateCommand } from './update'
 
 const cloud: IPlugin = {
@@ -36,6 +37,13 @@ const cloud: IPlugin = {
     registerCloudUpdateCommand(ctx, albumCommand)
     registerCloudDeleteCommand(ctx, albumCommand)
     registerCloudRetryCommand(ctx, albumCommand)
+
+    // cloud auth (auth status)
+    const authCommand = cloudCommand
+      .command('auth')
+      .description('manage PicGo Cloud auth')
+
+    registerCloudAuthStatusCommand(ctx, authCommand)
 
     // cloud config sync
     const cloudConfigCommand = cloudCommand
