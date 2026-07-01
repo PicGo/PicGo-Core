@@ -4,13 +4,29 @@ import { PicGo } from '../core/PicGo'
 import LifecyclePlugins from '../lib/LifecyclePlugins'
 
 /**
+ * Snapshot of the currently displayed values for all fields in a plugin config form.
+ * See `src/types/index.ts` for canonical documentation.
+ */
+export type PluginConfigAnswers = Record<string, unknown>
+
+export type IPluginConfigChoice =
+  | string
+  | { name?: string, value: unknown, checked?: boolean }
+
+/**
  * for plugin config
+ *
+ * See `src/types/index.ts` for canonical documentation including the list of
+ * known `type` values (`'input' | 'password' | 'list' | 'checkbox' |
+ * 'confirm' | 'editor'`) and reactive `choices` / `default` examples.
  */
 export interface IPluginConfig {
   name: string
   type: string
   required: boolean
-  default?: any
+  default?: any | ((answers: PluginConfigAnswers) => any)
+  choices?: IPluginConfigChoice[] | ((answers: PluginConfigAnswers) => IPluginConfigChoice[])
+  dependsOn?: string[]
   [propName: string]: any
 }
 
@@ -23,18 +39,24 @@ export interface IHelper {
   beforeTransformPlugins: LifecyclePlugins
   beforeUploadPlugins: LifecyclePlugins
   afterUploadPlugins: LifecyclePlugins
+  afterFinishPlugins: LifecyclePlugins
 }
 
 /**
  * for uploading image info
  */
 export interface IImgInfo {
+  id?: string
   buffer?: Buffer
   base64Image?: string
   fileName?: string
   width?: number
   height?: number
   extname?: string
+  contentType?: string
+  mimeType?: string
+  createdAt?: number | string | Date
+  updatedAt?: number | string | Date
   [propName: string]: any
 }
 

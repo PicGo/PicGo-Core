@@ -1,6 +1,8 @@
 import 'dotenv/config'
 import { applyUrlRewriteToImgInfo } from './utils/urlRewrite'
 
+export { evaluatePluginConfig } from './utils/pluginConfig'
+
 export { PicGo } from './core/PicGo'
 export { Lifecycle } from './core/Lifecycle'
 

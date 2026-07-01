@@ -6,6 +6,7 @@ import qiniuUploader from './qiniu'
 import imgurUploader from './imgur'
 import aliYunUploader from './aliyun'
 import upYunUploader from './upyun'
+import { registerPicGoCloudUploader } from './picgoCloud'
 
 const buildInUploaders: IPicGoPlugin = () => {
   return {
@@ -17,6 +18,7 @@ const buildInUploaders: IPicGoPlugin = () => {
       qiniuUploader(ctx)
       imgurUploader(ctx)
       upYunUploader(ctx)
+      registerPicGoCloudUploader(ctx)
     }
   }
 }

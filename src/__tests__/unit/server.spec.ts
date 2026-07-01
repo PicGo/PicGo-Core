@@ -8,6 +8,7 @@ import { get, set } from 'lodash'
 import { ServerManager } from '../../lib/Server'
 import { EN } from '../../i18n/en'
 import type { II18nManager, IPicGo, IImgInfo } from '../../types'
+import type { IServerUploadAdapter } from '../../types/internal'
 
 type ILogSpy = {
   warn: ReturnType<typeof vi.fn>
@@ -157,15 +158,15 @@ describe('ServerManager (local server)', () => {
 
     const resEmpty = await fetch(`${baseUrl}/upload`, { method: 'POST' })
     expect(resEmpty.status).toBe(200)
-    expect(await toJson(resEmpty)).toEqual({ success: true, result: ['https://a.example/clipboard.png'] })
+    expect(await toJson(resEmpty)).toEqual({ success: true, result: ['https://a.example/clipboard.png'], items: [{ imgUrl: 'https://a.example/clipboard.png' }] })
 
     const resObj = await fetch(`${baseUrl}/upload`, { method: 'POST', body: '{}' })
     expect(resObj.status).toBe(200)
-    expect(await toJson(resObj)).toEqual({ success: true, result: ['https://a.example/clipboard.png'] })
+    expect(await toJson(resObj)).toEqual({ success: true, result: ['https://a.example/clipboard.png'], items: [{ imgUrl: 'https://a.example/clipboard.png' }] })
 
     const resEmptyList = await fetch(`${baseUrl}/upload`, { method: 'POST', body: JSON.stringify({ list: [] }) })
     expect(resEmptyList.status).toBe(200)
-    expect(await toJson(resEmptyList)).toEqual({ success: true, result: ['https://a.example/clipboard.png'] })
+    expect(await toJson(resEmptyList)).toEqual({ success: true, result: ['https://a.example/clipboard.png'], items: [{ imgUrl: 'https://a.example/clipboard.png' }] })
 
     const resList = await fetch(`${baseUrl}/upload`, {
       method: 'POST',
@@ -177,6 +178,10 @@ describe('ServerManager (local server)', () => {
       result: [
         'https://a.example/%2Fa.png',
         'https://a.example/%2Fb.png'
+      ],
+      items: [
+        { imgUrl: 'https://a.example/%2Fa.png' },
+        { imgUrl: 'https://a.example/%2Fb.png' }
       ]
     })
 
@@ -215,12 +220,148 @@ describe('ServerManager (local server)', () => {
 
     const res = await fetch(`http://127.0.0.1:${port as number}/upload`, { method: 'POST', body: fd })
     expect(res.status).toBe(200)
-    expect(await toJson(res)).toEqual({ success: true, result: ['https://a.example/form.png'] })
+    expect(await toJson(res)).toEqual({ success: true, result: ['https://a.example/form.png'], items: [{ imgUrl: 'https://a.example/form.png' }] })
 
     expect(uploadedFiles.length).toBeGreaterThan(0)
     for (const filePath of uploadedFiles) {
       expect(await fs.pathExists(filePath)).toBe(false)
     }
+
+    server.shutdown()
+    await fs.remove(baseDir)
+  })
+
+  it('uses internal upload adapter while keeping core response shape and cleanup', async () => {
+    const adapterTempDir = await createTempDir('picgo-core-adapter-form-')
+    const uploadedTempFiles: string[] = []
+    const uploadMock = vi.fn(async () => {
+      throw new Error('ctx.upload should not be called when adapter is set')
+    })
+    const uploadClipboardMock = vi.fn(async () => [{
+      imgUrl: 'https://a.example/clipboard.png',
+      origin: 'clipboard',
+      fileName: 'clipboard.png',
+      extname: '.png',
+      size: 123
+    }])
+    const uploadPathsMock = vi.fn(async (paths: string[]) => {
+      for (const item of paths) {
+        if (item.startsWith(adapterTempDir)) {
+          uploadedTempFiles.push(item)
+          expect(await fs.pathExists(item)).toBe(true)
+        }
+      }
+      return paths.map((item, index) => ({
+        origin: item,
+        imgUrl: `https://a.example/${index}.png`,
+        fileName: path.basename(item),
+        extname: '.png',
+        size: 456 + index
+      }))
+    })
+    const uploadAdapter: IServerUploadAdapter = {
+      uploadClipboard: uploadClipboardMock,
+      uploadPaths: uploadPathsMock,
+      getTempDir: () => adapterTempDir
+    }
+
+    const { ctx, baseDir } = await createMockCtx({
+      settings: { server: { port: 0, host: '127.0.0.1' } }
+    }, uploadMock)
+
+    const server = new ServerManager(ctx)
+    server.setUploadAdapter(uploadAdapter)
+    const port = await server.listen(0, '127.0.0.1', true)
+    expect(typeof port).toBe('number')
+
+    const baseUrl = `http://127.0.0.1:${port as number}`
+
+    const resClipboard = await fetch(`${baseUrl}/upload`, { method: 'POST' })
+    expect(resClipboard.status).toBe(200)
+    expect(await toJson(resClipboard)).toEqual({
+      success: true,
+      result: ['https://a.example/clipboard.png'],
+      items: [{
+        imgUrl: 'https://a.example/clipboard.png',
+        origin: 'clipboard',
+        fileName: 'clipboard.png',
+        extname: '.png',
+        size: 123
+      }]
+    })
+
+    const resList = await fetch(`${baseUrl}/upload`, {
+      method: 'POST',
+      body: JSON.stringify({ list: ['/input.png'] })
+    })
+    expect(resList.status).toBe(200)
+    expect(await toJson(resList)).toEqual({
+      success: true,
+      result: ['https://a.example/0.png'],
+      items: [{
+        imgUrl: 'https://a.example/0.png',
+        origin: '/input.png',
+        fileName: 'input.png',
+        extname: '.png',
+        size: 456
+      }]
+    })
+
+    const fd = new FormData()
+    fd.append('files', new Blob([Buffer.from('hello')], { type: 'image/png' }), 'form.png')
+    const resForm = await fetch(`${baseUrl}/upload`, { method: 'POST', body: fd })
+    expect(resForm.status).toBe(200)
+    const formJson = await toJson(resForm)
+    expect(formJson.success).toBe(true)
+    expect(formJson.result).toEqual(['https://a.example/0.png'])
+    expect(formJson.items[0]).toEqual(expect.objectContaining({
+      imgUrl: 'https://a.example/0.png',
+      fileName: 'form.png',
+      extname: '.png'
+    }))
+
+    expect(uploadClipboardMock).toHaveBeenCalledTimes(1)
+    expect(uploadPathsMock).toHaveBeenCalledTimes(2)
+    expect(uploadPathsMock).toHaveBeenNthCalledWith(1, ['/input.png'])
+    expect(uploadedTempFiles.length).toBeGreaterThan(0)
+    for (const filePath of uploadedTempFiles) {
+      expect(filePath.startsWith(adapterTempDir)).toBe(true)
+      expect(await fs.pathExists(filePath)).toBe(false)
+    }
+    expect(uploadMock).not.toHaveBeenCalled()
+
+    server.shutdown()
+    await fs.remove(baseDir)
+    await fs.remove(adapterTempDir)
+  })
+
+  it('rejects non-internal builtin route overrides while upload adapter remains available', async () => {
+    const uploadMock = vi.fn(async () => [{ imgUrl: 'https://a.example/core.png' }])
+    const uploadClipboardMock = vi.fn(async () => [{ imgUrl: 'https://a.example/adapter.png' }])
+    const { ctx, baseDir, log } = await createMockCtx({
+      settings: { server: { port: 0, host: '127.0.0.1' } }
+    }, uploadMock)
+
+    const server = new ServerManager(ctx)
+    server.setUploadAdapter({
+      uploadClipboard: uploadClipboardMock,
+      uploadPaths: async () => []
+    })
+    server.registerPost('/upload', (c) => c.json({ success: true, result: ['plugin-overridden'] }))
+
+    const port = await server.listen(0, '127.0.0.1', true)
+    expect(typeof port).toBe('number')
+
+    const res = await fetch(`http://127.0.0.1:${port as number}/upload`, { method: 'POST' })
+    expect(res.status).toBe(200)
+    expect(await toJson(res)).toEqual({
+      success: true,
+      result: ['https://a.example/adapter.png'],
+      items: [{ imgUrl: 'https://a.example/adapter.png' }]
+    })
+    expect(uploadClipboardMock).toHaveBeenCalledTimes(1)
+    expect(uploadMock).not.toHaveBeenCalled()
+    expect(log.warn).toHaveBeenCalledWith('[PicGo Server] Plugin attempted to overwrite builtin route: /upload. Action denied.')
 
     server.shutdown()
     await fs.remove(baseDir)
@@ -377,5 +518,73 @@ describe('ServerManager (local server)', () => {
     await fs.remove(baseDir1)
     await fs.remove(baseDir2)
     await fs.remove(baseDir3)
+  })
+
+  it('returns partial success with items when some uploads fail', async () => {
+    const uploadMock = vi.fn(async (_input?: any[]) => {
+      // Simulate: first item succeeds, second has no imgUrl (failed)
+      return [
+        { imgUrl: 'https://a.example/ok.png', origin: '/ok.png', fileName: 'ok.png' },
+        { origin: '/fail.png', fileName: 'fail.png' }
+      ] as IImgInfo[]
+    })
+
+    const { ctx, baseDir } = await createMockCtx({
+      settings: { server: { port: 0, host: '127.0.0.1' } }
+    }, uploadMock)
+
+    const server = new ServerManager(ctx)
+    const port = await server.listen(0, '127.0.0.1', true)
+
+    const res = await fetch(`http://127.0.0.1:${port as number}/upload`, {
+      method: 'POST',
+      body: JSON.stringify({ list: ['/ok.png', '/fail.png'] })
+    })
+
+    expect(res.status).toBe(200)
+    const json = await toJson(res)
+    expect(json.success).toBe(true)
+    expect(json.result).toEqual(['https://a.example/ok.png'])
+    expect(json.items).toHaveLength(2)
+    expect(json.items[0]).toEqual(expect.objectContaining({ imgUrl: 'https://a.example/ok.png', origin: '/ok.png' }))
+    expect(json.items[1]).toEqual(expect.objectContaining({ origin: '/fail.png', fileName: 'fail.png' }))
+    expect(json.items[1].imgUrl).toBeUndefined()
+
+    server.shutdown()
+    await fs.remove(baseDir)
+  })
+
+  it('returns failure when all uploads fail (no imgUrl in output)', async () => {
+    const uploadMock = vi.fn(async () => {
+      // Simulate: all items failed — no imgUrl on any
+      return [
+        { origin: '/a.png', fileName: 'a.png' },
+        { origin: '/b.png', fileName: 'b.png' }
+      ] as IImgInfo[]
+    })
+
+    const { ctx, baseDir } = await createMockCtx({
+      settings: { server: { port: 0, host: '127.0.0.1' } }
+    }, uploadMock)
+
+    const server = new ServerManager(ctx)
+    const port = await server.listen(0, '127.0.0.1', true)
+
+    const res = await fetch(`http://127.0.0.1:${port as number}/upload`, {
+      method: 'POST',
+      body: JSON.stringify({ list: ['/a.png', '/b.png'] })
+    })
+
+    expect(res.status).toBe(500)
+    const json = await toJson(res)
+    expect(json.success).toBe(false)
+    expect(json.result).toEqual([])
+    expect(json.items).toHaveLength(2)
+    expect(json.items[0]).toEqual(expect.objectContaining({ origin: '/a.png' }))
+    expect(json.items[1]).toEqual(expect.objectContaining({ origin: '/b.png' }))
+    expect(json.message).toBe('All uploads failed')
+
+    server.shutdown()
+    await fs.remove(baseDir)
   })
 })

@@ -19,30 +19,58 @@ export class Logger implements ILogger {
     [ILogType.success]: 'green',
     [ILogType.info]: 'blue',
     [ILogType.warn]: 'yellow',
-    [ILogType.error]: 'red'
+    [ILogType.error]: 'red',
+    [ILogType.debug]: 'magenta'
   }
 
   private readonly ctx: IPicGo
+  private readonly consoleOutput: boolean
+  private readonly respectSilent: boolean
   private logLevel!: string | string[]
   private logPath!: string
-  constructor (ctx: IPicGo) {
+  private logPathOverride?: string
+
+  constructor (
+    ctx: IPicGo,
+    options: {
+      /** Whether to output to console. Defaults to true. */
+      consoleOutput?: boolean
+      /**
+       * Whether to obey the global `silent` config.
+       * - true (default): when `silent` is enabled, both console output and file writes are suppressed.
+       * - false: file writes always happen regardless of `silent`, useful for audit/diagnostic logs
+       *   that must not be lost even in silent mode.
+       */
+      respectSilent?: boolean
+      /** Override the log file path. Defaults to `settings.logPath` or `ctx.baseDir/picgo.log`. */
+      logPath?: string
+    } = {}
+  ) {
     this.ctx = ctx
+    this.consoleOutput = options.consoleOutput ?? true
+    this.respectSilent = options.respectSilent ?? true
+    this.logPathOverride = options.logPath
   }
 
   private handleLog (type: ILogType, ...msg: ILogArgvTypeWithError[]): void {
-    // check config.silent
     this.logLevel = this.ctx.getConfig('settings.logLevel')
-    if (!this.ctx.getConfig<Undefinable<string>>('silent') && this.checkLogLevel(type, this.logLevel)) {
+    const isSilent = this.ctx.getConfig<Undefinable<string>>('silent')
+    const shouldWrite = (!this.respectSilent || !isSilent) && this.checkLogLevel(type, this.logLevel)
+    if (shouldWrite) {
       const logHeader = chalk[this.level[type] as ILogColor](`[PicGo ${type.toUpperCase()}]:`)
-      console.log(logHeader, ...msg)
-      this.logPath = this.ctx.getConfig<Undefinable<string>>('settings.logPath') || path.join(this.ctx.baseDir, './picgo.log')
+      if (this.consoleOutput && !isSilent) {
+        console.log(logHeader, ...msg)
+      }
+      this.logPath = this.logPathOverride || this.ctx.getConfig<Undefinable<string>>('settings.logPath') || path.join(this.ctx.baseDir, './picgo.log')
       setTimeout(() => {
         // fix log file is too large, now the log file's default size is 10 MB
         try {
           const result = this.checkLogFileIsLarge(this.logPath)
           if (result.isLarge) {
             const warningMsg = `Log file is too large (> ${(result.logFileSizeLimit!) / 1024 / 1024 || '10'} MB), recreate log file`
-            console.log(chalk.yellow('[PicGo WARN]:'), warningMsg)
+            if (this.consoleOutput && !isSilent) {
+              console.log(chalk.yellow('[PicGo WARN]:'), warningMsg)
+            }
             this.recreateLogFile(this.logPath)
             msg.unshift(warningMsg)
           }
@@ -131,8 +159,23 @@ export class Logger implements ILogger {
 
   debug (...msg: ILogArgvType[]): void {
     if (isDev()) {
-      this.handleLog(ILogType.info, ...msg)
+      this.handleLog(ILogType.debug, ...msg)
     }
+  }
+
+  createLogger (options: {
+    /** Override the log file path. */
+    logPath?: string
+    /** Whether to output to console. Defaults to true. */
+    consoleOutput?: boolean
+    /**
+     * Whether to obey the global `silent` config.
+     * - true (default): silent mode suppresses both console and file output.
+     * - false: file writes always happen, useful for audit/diagnostic logs.
+     */
+    respectSilent?: boolean
+  } = {}): Logger {
+    return new Logger(this.ctx, options)
   }
 }
 

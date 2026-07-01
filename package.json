@@ -14,7 +14,7 @@
   },
   "scripts": {
     "start": "node ./bin/picgo",
-    "lint": "pnpm lint:dpdm && tsc --noEmit && eslint src --ext .ts",
+    "lint": "pnpm lint:dpdm && tsc --noEmit && eslint src --ext .ts --ignore-pattern 'src/**/__tests__/**' --ignore-pattern 'src/**/*.spec.ts' --fix",
     "test": "vitest run",
     "build": "cross-env NODE_ENV=production rimraf ./dist && rollup -c rollup.config.js",
     "dev": "cross-env NODE_ENV=development rollup -c rollup.config.js -w",
@@ -84,6 +84,7 @@
     "execa": "^5.1.1",
     "globals": "^16.5.0",
     "husky": "^9.1.7",
+    "ora": "^9.3.0",
     "rimraf": "^6.1.2",
     "rollup": "^4.53.3",
     "rollup-plugin-copy": "^3.5.0",
@@ -118,7 +119,8 @@
     "minimist": "^1.2.5",
     "open": "^11.0.0",
     "resolve": "^1.8.1",
-    "tunnel": "^0.0.6"
+    "tunnel": "^0.0.6",
+    "write-file-atomic": "^7.0.1"
   },
   "repository": {
     "type": "git",

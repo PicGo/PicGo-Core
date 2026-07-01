@@ -2,7 +2,8 @@ import axios from 'axios'
 import type { IPicGo } from '../../../types'
 import type { IE2ERequestFields, ISyncConfigResponse } from '../../ConfigSyncManager/types'
 import { APPType } from '../../ConfigSyncManager/types'
-import { AuthRequestClient } from '../Request'
+import { ApiErrorCode } from '../ApiErrorCode'
+import { AuthRequestClient, createCloudServiceError, getCloudErrorCode, getCloudErrorMessage, getCloudErrorStatus } from '../Request'
 
 export interface IUpdateConfigResult {
   success: boolean
@@ -22,6 +23,7 @@ export class ConfigService {
 
   async fetchConfig (): Promise<ISyncConfigResponse | null> {
     this.appType = this.ctx.GUI_VERSION ? APPType.GUI : APPType.CLI
+    const now = Date.now()
     try {
       const res = await this.client.request<ISyncConfigResponse>({
         method: 'GET',
@@ -34,17 +36,19 @@ export class ConfigService {
       if (!res?.config || res.config.trim() === '') {
         return null
       }
-
+      this.ctx.log.debug(`[ConfigService] Config fetched successfully in ${Date.now() - now} ms, version: ${res.version}`)
       return res
     } catch (e: unknown) {
+      this.ctx.log.debug(`[ConfigService] Failed to fetch config in ${Date.now() - now} ms`)
       if (axios.isAxiosError(e)) {
-        const status = e.response?.status
-        if (status === 404) {
+        const status = getCloudErrorStatus(e)
+        const apiCode = getCloudErrorCode(e)
+        if (status === 404 || apiCode === ApiErrorCode.ConfigNotFound) {
           return null
         }
-        const message = e.response?.data?.message ?? e.message
+        const message = getCloudErrorMessage(e)
         this.ctx.log.warn('[ConfigService] Failed to fetch config:', message)
-        throw new Error(message)
+        throw createCloudServiceError(message, e)
       }
       throw e
     }
@@ -52,6 +56,7 @@ export class ConfigService {
 
   async updateConfig (configStr: string, baseVersion: number, e2eFields?: IE2ERequestFields): Promise<IUpdateConfigResult> {
     this.appType = this.ctx.GUI_VERSION ? APPType.GUI : APPType.CLI
+    const now = Date.now()
     try {
       const res = await this.client.request<{ version: number }>({
         method: 'PUT',
@@ -64,24 +69,25 @@ export class ConfigService {
           ...(e2eFields ?? {})
         }
       })
-
+      this.ctx.log.debug(`[ConfigService] Config updated successfully in ${Date.now() - now} ms, new version: ${res.version}`)
       return {
         success: true,
         version: res.version
       }
     } catch (e: unknown) {
+      this.ctx.log.debug(`[ConfigService] Failed to update config in ${Date.now() - now} ms`)
       if (axios.isAxiosError(e)) {
-        const data = e.response?.data
-        if (data?.code === 'CONFIG_CONFLICT') {
+        const data = e.response?.data as { currentVersion?: number } | undefined
+        if (getCloudErrorCode(e) === ApiErrorCode.ConfigConflict) {
           return {
             success: false,
             conflict: true,
-            version: typeof data.currentVersion === 'number' ? data.currentVersion : baseVersion
+            version: typeof data?.currentVersion === 'number' ? data.currentVersion : baseVersion
           }
         }
-        const message = data?.message ?? e.message
+        const message = getCloudErrorMessage(e)
         this.ctx.log.warn('[ConfigService] Failed to update config:', message)
-        throw new Error(message)
+        throw createCloudServiceError(message, e)
       }
       throw e
     }

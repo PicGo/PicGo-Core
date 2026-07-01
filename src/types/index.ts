@@ -58,7 +58,268 @@ export interface ICloudManager {
   login: (token?: string) => Promise<void>
   logout: () => void
   disposeLoginFlow: () => void
-  getUserInfo: () => Promise<{ user: string } | null>
+  album: ICloudAlbumManager
+  uploader: ICloudUploaderManager
+  getUserInfo: () => Promise<ICloudUserInfo | null>
+  refreshUserInfo: () => Promise<ICloudUserInfo | null>
+  setAutoImport: (autoImport: boolean) => Promise<ICloudUserInfo>
+  getUsage: () => Promise<CloudUsage | null>
+  getBillingOverview: () => Promise<CloudBillingOverview | null>
+}
+
+/**
+ * Entry point picgo-gui and external plugins use to manage pending multipart upload sessions.
+ * The state machine itself (runMultipartUpload) is intentionally not exposed here — uploads
+ * should always go through FileService's size dispatch, not bypass it.
+ */
+export interface ICloudUploaderManager {
+  /** Abort a remote multipart upload; fire-and-forget, errors swallowed (R2 lifecycle backstop). */
+  abort: (uploadId: string, objectKey: string) => Promise<void>
+  /** List every pending multipart session for the current user (local state only). */
+  listPending: () => MultipartSession[]
+  /** Delete only the local entry (use abort() to also notify the remote). */
+  removePending: (fingerprint: string) => void
+}
+
+export interface ICloudUserInfo {
+  user: string | null
+  avatar?: string | null
+  plan?: number
+  autoImport?: boolean
+}
+
+export type CloudUsageDimension = {
+  used: number
+  limit: number | null
+}
+
+export type CloudUsagePeriodInfo = {
+  used: number
+  periodStart: string | null
+  periodEnd: string | null
+}
+
+export type CloudUsageConfigHistory = {
+  used: number
+  limit: number
+  appType: 'gui' | 'cli'
+}
+
+export type CloudUsage = {
+  /** Paid plan code（用于展示）。 */
+  plan: string
+  /**
+   * 当前生效配额对应的 plan code（capabilityPlan）。grace/frozen/pending_cleanup
+   * 阶段会降级为 'free'，此时 effectiveQuotaPlan !== plan。
+   */
+  effectiveQuotaPlan: string
+  storage: CloudUsageDimension
+  mediaCount: CloudUsageDimension
+  monthlyServes: CloudUsagePeriodInfo
+  configHistory: CloudUsageConfigHistory
+}
+
+export type CloudBillingPlanInfo = {
+  /** 来自 entitlement 的付费 plan code，用于展示 / billing portal。 */
+  paid: string
+  /** 用于 capability / 配额检查的 plan code（admin grant + entitlement 合并结果）。 */
+  capability: string
+  /** 订阅计费周期类型：'monthly' / 'yearly' / null（免费用户）。 */
+  billingPeriod: string | null
+  source: 'entitlement' | 'admin_grant' | 'both' | 'free'
+}
+
+export type CloudLifecyclePhase = 'active' | 'grace' | 'frozen' | 'pending_cleanup'
+
+export type CloudLifecycleFlags = {
+  customDomainDisabledByLifecycle: boolean
+  autoImportDisabledByLifecycle: boolean
+}
+
+export type CloudLifecycleInfo = {
+  phase: CloudLifecyclePhase
+  daysRemaining: number | null
+  graceEndsAt: string | null
+  freezeEndsAt: string | null
+  /**
+   * 当前 lifecycle phase 结束时间。客户端用此字段统一展示套餐到期：
+   * - active → max(activeEnt.validUntil, grant.validUntil)；永久 entitlement 为 null
+   * - grace → 等同 graceEndsAt
+   * - frozen → 等同 freezeEndsAt
+   * - pending_cleanup → null
+   */
+  currentPhaseEndsAt: string | null
+  flags: CloudLifecycleFlags
+}
+
+export type CloudSubscriptionInfo = {
+  status: string
+  currentPeriodEnd: string | null
+}
+
+export type CloudBillingOverview = {
+  plan: CloudBillingPlanInfo
+  lifecycle: CloudLifecycleInfo
+  subscription: CloudSubscriptionInfo | null
+}
+
+export type ImportResult = {
+  total: number
+  created: number
+  skipped: number
+  invalid: number
+  failed: number
+  pending: number
+  items: IImgInfo[]
+}
+
+/**
+ * Generic progress base — the minimal common fields shared by every progress event payload.
+ * Consumers that only care about the ratio (CLI progress bar, future GUI progress widget) can
+ * read these three fields directly without having to discriminate on event type.
+ */
+export type IProgress = {
+  /**
+   * Current progress count. Unit depends on the event:
+   * - `FILE_UPLOAD_PROGRESS` → bytes uploaded so far
+   * - `CLOUD_IMPORT_PROGRESS` → items processed so far
+   */
+  current: number
+  /** Target total, same unit as current. */
+  total: number
+  /** current / total clipped to [0, 1]. Provided so consumers don't have to divide. 0 when total is 0. */
+  fraction: number
+}
+
+/**
+ * Per-file byte-level upload progress for the `FILE_UPLOAD_PROGRESS` event.
+ * current / total are bytes; multipart uploads also fill partsCompleted / totalParts,
+ * non-multipart paths use -1 to signal N/A.
+ */
+export type IFileUploadProgress = IProgress & {
+  /** The file name currently being uploaded (= IImgInfo.fileName; lets consumers disambiguate multi-file flows). */
+  fileName: string
+  /** Multipart: number of parts already completed. Non-multipart path uses -1. */
+  partsCompleted: number
+  /** Multipart: total part count. Non-multipart path uses -1. */
+  totalParts: number
+  /** Whether this is a resumed upload (multipart only). Always false on the non-resume path. */
+  resumed: boolean
+}
+
+export type CloudImportProgress = IProgress & {
+  batchIndex: number
+  batchTotal: number
+  created: number
+  skipped: number
+  failed: number
+}
+
+/**
+ * Metadata for a single multipart part. partNumber is 1-based; url is a server-presigned
+ * R2 endpoint the client PUTs the part bytes to.
+ */
+export type MultipartPartInfo = {
+  partNumber: number
+  url: string
+  method: 'PUT'
+  headers: Record<string, string>
+}
+
+/**
+ * Minimal record the client keeps after a single part finishes uploading.
+ * partNumber is 1-based; etag comes from the part PUT response header.
+ */
+export type MultipartCompletedPart = {
+  partNumber: number
+  etag: string
+}
+
+/**
+ * Locally persisted multipart upload session. Drives resume across process crashes / restarts.
+ * `v` is a schema version field for future migrations.
+ */
+export type MultipartSession = {
+  /** Schema version, currently 1. */
+  v: 1
+  uploadId: string
+  objectKey: string
+  publicId: string
+  url: string
+  filename: string
+  /** Total bytes. */
+  size: number
+  contentType: string
+  /** Per-part size (the last part may be smaller). */
+  partSize: number
+  /** Total part count = Math.ceil(size / partSize). */
+  partCount: number
+  /** Parts already finished, with their server-returned ETag, ready to submit at complete time. */
+  completedParts: MultipartCompletedPart[]
+  /** Epoch ms used for the 7-day TTL sweep. */
+  createdAt: number
+}
+
+export enum AlbumListOrder {
+  ASC = 'asc',
+  DESC = 'desc'
+}
+
+export enum AlbumListSort {
+  NEWEST = 'newest',
+  OLDEST = 'oldest',
+  FILE_NAME = 'fileName'
+}
+
+export type AlbumListQuery = {
+  contentType?: string
+  type?: string
+  ext?: string
+  search?: string
+  fileName?: string
+  limit?: number
+  offset?: number
+  sort?: AlbumListSort | string
+  order?: AlbumListOrder
+}
+
+export type AlbumListResponse<T = IImgInfo> = {
+  success: boolean
+  items: T[]
+  total: number
+  limit: number
+  offset: number
+}
+
+export type AlbumFiltersResponse = {
+  success: boolean
+  contentTypes: string[]
+  exts: string[]
+}
+
+export type BatchUpdateResult = {
+  updated: number
+  skipped: number
+  items: IImgInfo[]
+}
+
+export type AlbumStatsResponse = {
+  total: number
+  types: { type: string, count: number }[]
+}
+
+export interface ICloudAlbumManager {
+  import: (items: IImgInfo[]) => Promise<ImportResult>
+  list: (query?: AlbumListQuery) => Promise<AlbumListResponse>
+  get: (id: string) => Promise<IImgInfo>
+  update: (id: string, data: Partial<IImgInfo>) => Promise<IImgInfo>
+  batchUpdate: (items: { id: string, data: Partial<IImgInfo> }[]) => Promise<BatchUpdateResult>
+  delete: (id: string | string[]) => Promise<void>
+  getStats: () => Promise<AlbumStatsResponse>
+  getFilters: () => Promise<AlbumFiltersResponse>
+  getPending: () => Promise<IImgInfo[]>
+  addToPending: (items: IImgInfo[]) => Promise<IImgInfo[]>
+  retryPending: () => Promise<ImportResult>
 }
 
 export interface IPicGo extends NodeJS.EventEmitter {
@@ -171,7 +432,17 @@ export interface IPicGo extends NodeJS.EventEmitter {
   /**
    * upload gogogo
    */
-  upload: (input?: any[]) => Promise<IImgInfo[] | Error>
+  upload: (input?: any[], options?: UploadOptions) => Promise<IImgInfo[] | Error>
+}
+
+export enum OutputFormat {
+  PRETTY = 'pretty',
+  JSON = 'json'
+}
+
+export interface UploadOptions {
+  /** Output format for the success message. Defaults to 'pretty'. */
+  outputFormat?: OutputFormat
 }
 
 export interface IUploaderConfigItem {
@@ -199,13 +470,96 @@ export interface IUploaderConfigManager {
 }
 
 /**
+ * Snapshot of the currently displayed values for all fields in a plugin config form.
+ *
+ * Passed to function-form `choices` / `default` so reactive fields can derive
+ * their value space from other fields. In the GUI this is the form's merged
+ * view (stored config + schema defaults + user edits); in the CLI this is
+ * inquirer's accumulated `answers`.
+ */
+export type PluginConfigAnswers = Record<string, unknown>
+
+/**
+ * One choice for a `list` / `checkbox` field. May be a bare string (used as
+ * both label and value) or an object form.
+ */
+export type IPluginConfigChoice =
+  | string
+  | { name?: string, value: unknown, checked?: boolean }
+
+/**
  * for plugin config
+ *
+ * @example Reactive cascading dropdown
+ * const config = (ctx) => [
+ *   { name: 'uploader', type: 'list', required: true, choices: ['github', 'gitee'] },
+ *   {
+ *     name: 'repo',
+ *     type: 'list',
+ *     required: true,
+ *     dependsOn: ['uploader'],
+ *     choices: (answers) => {
+ *       return answers.uploader === 'github'
+ *         ? ['my-org/repo-a', 'my-org/repo-b']
+ *         : ['gitee-org/repo-c']
+ *     }
+ *   }
+ * ]
+ *
+ * @example Multi-line text via `type: 'editor'` (3.0.0+)
+ * const config = (ctx) => [
+ *   {
+ *     name: 'script',
+ *     type: 'editor',
+ *     alias: 'Compression script',
+ *     required: true,
+ *     message: 'Enter your compression script (multi-line supported)'
+ *   }
+ * ]
  */
 export interface IPluginConfig {
   name: string
+  /**
+   * Field widget kind. The string is forwarded to inquirer in the CLI path and
+   * used by the GUI renderer to pick a control. Kept as `string` so plugin
+   * authors can pass through any inquirer-supported value PicGo has not
+   * documented. PicGo guarantees behavior for these known values:
+   *
+   * - `'input'`     single-line text. CLI: inquirer text prompt; GUI: text input.
+   * - `'password'`  single-line text rendered masked. CLI: inquirer password
+   *                 prompt; GUI: password input with show/hide toggle.
+   * - `'list'`      pick one from `choices`. CLI: inquirer list prompt; GUI:
+   *                 single-select dropdown.
+   * - `'checkbox'`  pick many from `choices`. CLI: inquirer checkbox prompt;
+   *                 GUI: multi-select combobox.
+   * - `'confirm'`   boolean. CLI: inquirer confirm prompt; GUI: switch.
+   * - `'editor'`    multi-line text (3.0.0+). Value is a `string` and MAY
+   *                 contain `\n`. CLI: inquirer editor prompt — spawns the
+   *                 user's external editor via `VISUAL` / `EDITOR` env vars
+   *                 (falls back to platform default: `vi` / `nano` on Unix,
+   *                 `notepad` on Windows); GUI: shadcn `<Textarea>` with
+   *                 user-resizable height.
+   */
   type: string
   required: boolean
-  default?: any
+  /**
+   * Default value for the field. May be a plain value or a function that
+   * receives the current `answers` snapshot and returns the value.
+   */
+  default?: any | ((answers: PluginConfigAnswers) => any)
+  /**
+   * Available options for `list` / `checkbox` fields. May be a static array
+   * or a function that receives the current `answers` snapshot and returns
+   * the array.
+   */
+  choices?: IPluginConfigChoice[] | ((answers: PluginConfigAnswers) => IPluginConfigChoice[])
+  /**
+   * Names of other fields in the same schema this field's `choices` /
+   * `default` depends on. When any listed field's value changes, the GUI
+   * will re-evaluate this field. Has no effect in the CLI path (inquirer
+   * already passes the latest `answers` to every prompt).
+   */
+  dependsOn?: string[]
   alias?: string
   message?: string
   prefix?: string // for cli options
@@ -230,6 +584,7 @@ export interface IHelper {
   beforeTransformPlugins: ILifecyclePlugins
   beforeUploadPlugins: ILifecyclePlugins
   afterUploadPlugins: ILifecyclePlugins
+  afterFinishPlugins: ILifecyclePlugins
 }
 
 export interface ICommander extends ILifecyclePlugins {
@@ -359,6 +714,7 @@ export type ILogColor = 'blue' | 'green' | 'yellow' | 'red'
  * for uploading image info
  */
 export interface IImgInfo {
+  id?: string
   buffer?: Buffer
   base64Image?: string
   fileName?: string
@@ -366,10 +722,20 @@ export interface IImgInfo {
   height?: number
   extname?: string
   imgUrl?: string
+  /**
+   * if the imgUrl has been overwrite by url rewrite rule, then originImgUrl is the original url before rewrite
+   */
   originImgUrl?: string
+  /** @deprecated use `contentType` */
   mimeType?: string
+  _importToPicGoCloud?: boolean
+  contentType?: string
   filePath?: string
   size?: number
+  createdAt?: number | string | Date
+  updatedAt?: number | string | Date
+  /** the origin input of the image, before any processing or uploading */
+  origin?: string
   [propName: string]: any
 }
 
@@ -673,6 +1039,11 @@ export interface ILogger {
   error: (...msg: ILogArgvTypeWithError[]) => void
   warn: (...msg: ILogArgvType[]) => void
   debug: (...msg: ILogArgvType[]) => void
+  createLogger?: (options?: {
+    logPath?: string
+    consoleOutput?: boolean
+    respectSilent?: boolean
+  }) => ILogger
 }
 
 export interface IConfigChangePayload<T> {

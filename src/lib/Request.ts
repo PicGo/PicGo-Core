@@ -178,6 +178,7 @@ export class Request implements IRequest {
     this.options.headers = options.headers || {}
     this.options.maxBodyLength = Infinity
     this.options.maxContentLength = Infinity
+    this.options.withCredentials = true
     if (this.options.proxy && options.url?.startsWith('https://')) {
       this.options.httpsAgent = tunnel.httpsOverHttp({
         proxy: {

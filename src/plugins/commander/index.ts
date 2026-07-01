@@ -1,6 +1,6 @@
 import pluginHandler from './pluginHandler'
 import { configPath } from './configPath'
-import upload from './upload'
+import { upload } from './upload'
 import { config } from './config'
 import { setting } from './setting'
 import use from './use'
@@ -10,6 +10,8 @@ import { server } from './server'
 import { login } from './login'
 import { logout } from './logout'
 import { uploader } from './uploader'
+import { cloud } from './cloud'
+import { get } from './get'
 import { IPicGo } from '../../types'
 
 const commanders = (ctx: IPicGo): void => {
@@ -24,7 +26,9 @@ const commanders = (ctx: IPicGo): void => {
   ctx.cmd.register('server', server)
   ctx.cmd.register('login', login)
   ctx.cmd.register('logout', logout)
+  ctx.cmd.register('cloud', cloud)
   ctx.cmd.register('uploader', uploader)
+  ctx.cmd.register('get', get)
 }
 
 export { commanders }

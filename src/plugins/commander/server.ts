@@ -14,10 +14,14 @@ const server: IPlugin = {
       .option('--secret <s>', 'server authentication secret')
       .action(async (options: { port?: string; host?: string; secret?: string; ignoreExistingExternalServer?: boolean }) => {
         try {
+          ctx.setConfig({
+            'picgoInternal.serverMode': true
+          })
           const port = options.port ? Number(options.port) : undefined
           const host = options.host
           await ctx.server.listen(port, host, options.ignoreExistingExternalServer, options.secret)
         } catch (e) {
+          ctx.unsetConfig('picgoInternal', 'serverMode')
           ctx.log.error(e as Error)
         }
       })

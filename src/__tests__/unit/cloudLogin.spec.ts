@@ -57,6 +57,7 @@ const createI18n = (): II18nMock => {
       if (key === 'CLOUD_LOGIN_RESULT_SUCCESS_TITLE') return 'Authorization Successful!'
       if (key === 'CLOUD_LOGIN_RESULT_FAILED_TITLE') return 'Authorization Failed'
       if (key === 'CLOUD_LOGIN_RESULT_SUCCESS_MESSAGE') return 'You can now close this window and return to PicGo.'
+      if (key === 'CLOUD_ALBUM_IMPORT_PLAN_REQUIRED') return 'plan required'
       return key
     })
   }
@@ -311,17 +312,80 @@ describe('CloudManager getUserInfo', () => {
     ;(ctx.getConfig as unknown as ReturnType<typeof vi.fn>).mockReturnValue('token')
 
     const whoamiSpy = vi.spyOn(cloud.user, 'whoami').mockResolvedValue({
-      user: 'molunerfinn'
+      user: 'molunerfinn',
+      autoImport: true
     })
 
     const res = await cloud.getUserInfo()
 
-    expect(res).toEqual({ user: 'molunerfinn' })
+    expect(res).toEqual({ user: 'molunerfinn', autoImport: true })
     expect(whoamiSpy).toHaveBeenCalledWith('token')
     expect(ctx.removeConfig).not.toHaveBeenCalled()
   })
 
-  it.each([401, 403])('clears token and returns null when whoami returns %s', async (status) => {
+  it('caches user info after the first successful whoami request', async () => {
+    const { cloud, ctx } = createCloud(false)
+    ;(ctx.getConfig as unknown as ReturnType<typeof vi.fn>).mockReturnValue('token')
+
+    const whoamiSpy = vi.spyOn(cloud.user, 'whoami').mockResolvedValue({
+      user: 'molunerfinn',
+      autoImport: false
+    })
+
+    await expect(cloud.getUserInfo()).resolves.toEqual({
+      user: 'molunerfinn',
+      autoImport: false
+    })
+    await expect(cloud.getUserInfo()).resolves.toEqual({
+      user: 'molunerfinn',
+      autoImport: false
+    })
+
+    expect(whoamiSpy).toHaveBeenCalledTimes(1)
+  })
+
+  it('refreshUserInfo invalidates the cache and fetches again', async () => {
+    const { cloud, ctx } = createCloud(false)
+    ;(ctx.getConfig as unknown as ReturnType<typeof vi.fn>).mockReturnValue('token')
+
+    const whoamiSpy = vi.spyOn(cloud.user, 'whoami')
+      .mockResolvedValueOnce({
+        user: 'molunerfinn',
+        autoImport: false
+      })
+      .mockResolvedValueOnce({
+        user: 'molunerfinn',
+        autoImport: true
+      })
+
+    await expect(cloud.getUserInfo()).resolves.toEqual({
+      user: 'molunerfinn',
+      autoImport: false
+    })
+    await expect(cloud.refreshUserInfo()).resolves.toEqual({
+      user: 'molunerfinn',
+      autoImport: true
+    })
+
+    expect(whoamiSpy).toHaveBeenCalledTimes(2)
+  })
+
+  it('rejects enabling auto import for free users', async () => {
+    const { cloud, ctx } = createCloud(false)
+    ;(ctx.getConfig as unknown as ReturnType<typeof vi.fn>).mockReturnValue('token')
+
+    vi.spyOn(cloud.user, 'whoami').mockResolvedValue({
+      user: 'molunerfinn',
+      plan: 0,
+      autoImport: true
+    })
+    const setAutoImportSpy = vi.spyOn(cloud.user, 'setAutoImport')
+
+    await expect(cloud.setAutoImport(true)).rejects.toThrow('plan required')
+    expect(setAutoImportSpy).not.toHaveBeenCalled()
+  })
+
+  it('clears token and returns null when whoami returns 401', async () => {
     const { cloud, ctx } = createCloud(false)
     ;(ctx.getConfig as unknown as ReturnType<typeof vi.fn>).mockReturnValue('token')
 
@@ -329,7 +393,7 @@ describe('CloudManager getUserInfo', () => {
       isAxiosError: true,
       message: 'invalid',
       response: {
-        status
+        status: 401
       }
     })
 
@@ -337,6 +401,25 @@ describe('CloudManager getUserInfo', () => {
 
     expect(res).toBeNull()
     expect(ctx.removeConfig).toHaveBeenCalledWith('settings.picgoCloud', 'token')
+  })
+
+  it('throws when whoami returns 403 and keeps the token', async () => {
+    const { cloud, ctx } = createCloud(false)
+    ;(ctx.getConfig as unknown as ReturnType<typeof vi.fn>).mockReturnValue('token')
+
+    vi.spyOn(cloud.user, 'whoami').mockRejectedValue({
+      isAxiosError: true,
+      message: 'forbidden',
+      response: {
+        status: 403,
+        data: {
+          message: 'forbidden'
+        }
+      }
+    })
+
+    await expect(cloud.getUserInfo()).rejects.toThrow('forbidden')
+    expect(ctx.removeConfig).not.toHaveBeenCalled()
   })
 
   it('throws when whoami fails with non-401/403 axios error', async () => {
@@ -399,7 +482,7 @@ describe('logout command', () => {
     logoutCommand.handle(ctx)
 
     expect(program.command).toHaveBeenCalledWith('logout')
-    expect(commandBuilder.description).toHaveBeenCalledWith('logout from cloud.picgo.app')
+    expect(commandBuilder.description).toHaveBeenCalledWith('logout from cloud.picgo.app (shortcut for cloud logout)')
     expect(actionHandler).toBeDefined()
 
     await actionHandler?.()
@@ -421,12 +504,60 @@ describe('logout command', () => {
     }
     const error = new Error('logout failed')
     const cloud: ICloudManager = {
+      album: {
+        import: async () => ({
+          total: 0,
+          created: 0,
+          skipped: 0,
+          invalid: 0,
+          failed: 0,
+          pending: 0,
+          items: []
+        }),
+        list: async () => ({
+          success: true,
+          items: [],
+          total: 0,
+          limit: 20,
+          offset: 0
+        }),
+        get: async () => ({}),
+        update: async () => ({}),
+        batchUpdate: async () => ({ updated: 0, skipped: 0, items: [] }),
+        delete: async () => {},
+        getStats: async () => ({ total: 0, types: [] }),
+        getFilters: async () => ({
+          success: true,
+          contentTypes: [],
+          exts: []
+        }),
+        getPending: async () => [],
+        addToPending: async () => [],
+        retryPending: async () => ({
+          total: 0,
+          created: 0,
+          skipped: 0,
+          invalid: 0,
+          failed: 0,
+          pending: 0,
+          items: []
+        })
+      },
+      uploader: {
+        abort: async () => {},
+        listPending: () => [],
+        removePending: () => {}
+      },
       login: async () => {},
       logout: () => {
         throw error
       },
       disposeLoginFlow: () => {},
-      getUserInfo: async () => null
+      getUserInfo: async () => null,
+      refreshUserInfo: async () => null,
+      setAutoImport: async () => ({ user: null }),
+      getUsage: async () => null,
+      getBillingOverview: async () => null
     }
     const logError = vi.fn()
     const ctx = {
