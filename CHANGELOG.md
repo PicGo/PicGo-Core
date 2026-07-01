@@ -1,3 +1,12 @@
+# :tada: 3.0.0 (2026-07-01)
+
+
+### :sparkles: Features
+
+* v3 ([#197](https://github.com/PicGo/PicGo-Core/issues/197)) ([34d50fc](https://github.com/PicGo/PicGo-Core/commit/34d50fc))
+
+
+
 ## :tada: 2.0.3 (2026-03-02)
 
 
