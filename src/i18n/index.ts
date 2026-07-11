@@ -10,11 +10,13 @@ import { IStringKeyMap, II18nManager } from '../types/index'
 import { ILocale } from '@picgo/i18n/dist/types'
 import { EN } from './en'
 import { ZH_TW } from './zh-TW'
+import { KO } from './ko'
 
 const languageList: IStringKeyMap<IStringKeyMap<string>> = {
   'zh-CN': ZH_CN,
   'zh-TW': ZH_TW,
-  en: EN
+  en: EN,
+  ko: KO
 }
 
 class I18nManager implements II18nManager {
