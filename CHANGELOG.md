@@ -1,3 +1,13 @@
+## :tada: 3.0.1 (2026-07-12)
+
+
+### :sparkles: Features
+
+* **i18n:** add Japanese (ja) translation ([996948e](https://github.com/PicGo/PicGo-Core/commit/996948e))
+* **i18n:** add Korean (ko) translation ([6bcddbb](https://github.com/PicGo/PicGo-Core/commit/6bcddbb))
+
+
+
 # :tada: 3.0.0 (2026-07-01)
 
 
