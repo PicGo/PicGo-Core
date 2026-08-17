@@ -1,6 +1,6 @@
 import fs from 'fs-extra'
 import path from 'path'
-import { imageSize } from 'image-size'
+import { imageSize } from 'image-size-next'
 import {
   IImgSize,
   IPathTransformedImgInfo,

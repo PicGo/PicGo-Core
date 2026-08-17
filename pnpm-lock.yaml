@@ -56,9 +56,9 @@ importers:
       hono:
         specifier: ^4.11.3
         version: 4.11.3
-      image-size:
-        specifier: ^0.8.3
-        version: 0.8.3
+      image-size-next:
+        specifier: 2.1.1
+        version: 2.1.1
       inquirer:
         specifier: ^6.0.0
         version: 6.5.2
@@ -129,9 +129,6 @@ importers:
       '@types/fs-extra':
         specifier: ^5.0.4
         version: 5.1.0
-      '@types/image-size':
-        specifier: ^0.0.29
-        version: 0.0.29
       '@types/inquirer':
         specifier: ^0.0.42
         version: 0.0.42
@@ -1011,9 +1008,6 @@ packages:
 
   '@types/graceful-fs@4.1.9':
     resolution: {integrity: sha512-olP3sd1qOEe5dXTSaFvQG+02VdRXcdytWLAZsAq1PecU8uqQAhkrnbli7DagjtXKW/Bl7YJbUsa8MPcuc8LHEQ==}
-
-  '@types/image-size@0.0.29':
-    resolution: {integrity: sha512-d47SGzTnoUXSLRn3Kej43FZXLduZjHJqkb26BmxKp9fQveCvjfirtpk7a5iLCGkJ/rur9kxUf7DwD2eKlPxjMg==}
 
   '@types/inquirer@0.0.42':
     resolution: {integrity: sha512-flMaNWU2g9NrtZ4bIV+7SEY2W7OdWNNhmJ0rE1lWVxGrkp3TfFGMcFCxRIBmGWigI8e6n+2HqLjizTTfgcpHLg==}
@@ -2400,9 +2394,9 @@ packages:
     resolution: {integrity: sha512-Hs59xBNfUIunMFgWAbGX5cq6893IbWg4KnrjbYwX3tx0ztorVgTDA6B2sxf8ejHJ4wz8BqGUMYlnzNBer5NvGg==}
     engines: {node: '>= 4'}
 
-  image-size@0.8.3:
-    resolution: {integrity: sha512-SMtq1AJ+aqHB45c3FsB4ERK0UCiA2d3H1uq8s+8T0Pf8A3W4teyBQyaFaktH6xvZqh+npwlKU7i4fJo0r7TYTg==}
-    engines: {node: '>=6.9.0'}
+  image-size-next@2.1.1:
+    resolution: {integrity: sha512-n+DFjUct+G9mxZck+lvzqrTsqBJvSHMs6iEo//W5iAgRV7oUbrh1JWmKgAEpmyRB5lw6plIQizS1wK1dvrsvAw==}
+    engines: {node: '>=18'}
     hasBin: true
 
   import-fresh@2.0.0:
@@ -3306,9 +3300,6 @@ packages:
 
   queue-microtask@1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
-
-  queue@6.0.1:
-    resolution: {integrity: sha512-AJBQabRCCNr9ANq8v77RJEv73DPbn55cdTb+Giq4X0AVnNVZvMHlYp7XlQiN+1npCZj1DuSmaA2hYVUUDgxFDg==}
 
   quick-lru@1.1.0:
     resolution: {integrity: sha512-tRS7sTgyxMXtLum8L65daJnHUhfDUgboRdcWW2bR9vBfrj2+O5HSMbQOJfJJjIVSPFqbBCF37FpwWXGitDc5tA==}
@@ -4819,10 +4810,6 @@ snapshots:
       '@types/node': 20.19.26
 
   '@types/graceful-fs@4.1.9':
-    dependencies:
-      '@types/node': 20.19.26
-
-  '@types/image-size@0.0.29':
     dependencies:
       '@types/node': 20.19.26
 
@@ -6495,9 +6482,7 @@ snapshots:
 
   ignore@7.0.5: {}
 
-  image-size@0.8.3:
-    dependencies:
-      queue: 6.0.1
+  image-size-next@2.1.1: {}
 
   import-fresh@2.0.0:
     dependencies:
@@ -7371,10 +7356,6 @@ snapshots:
   q@1.5.1: {}
 
   queue-microtask@1.2.3: {}
-
-  queue@6.0.1:
-    dependencies:
-      inherits: 2.0.4
 
   quick-lru@1.1.0: {}
 
