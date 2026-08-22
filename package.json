@@ -37,12 +37,12 @@
       "path": "./node_modules/cz-customizable"
     },
     "cz-customizable": {
-      "config": "./node_modules/@picgo/bump-version/.cz-config.js"
+      "config": "./node_modules/@picgo/bump-version/.cz-config.cjs"
     }
   },
   "commitlint": {
     "extends": [
-      "./node_modules/@picgo/bump-version/commitlint-picgo"
+      "./node_modules/@picgo/bump-version/commitlint-picgo/index.cjs"
     ]
   },
   "author": "Molunerfinn",
@@ -50,7 +50,7 @@
   "devDependencies": {
     "@commitlint/cli": "^20.2.0",
     "@eslint/js": "^9.39.1",
-    "@picgo/bump-version": "^2.0.0",
+    "@picgo/bump-version": "^3.0.0",
     "@rollup/plugin-commonjs": "^29.0.0",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^16.0.3",
