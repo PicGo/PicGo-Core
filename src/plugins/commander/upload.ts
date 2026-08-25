@@ -1,6 +1,7 @@
 import path from 'path'
 import fs from 'fs-extra'
 import { isUrl } from '../../utils/common'
+import { normalizeWslPath } from '../../utils/normalizeWslPath'
 import { IPicGo, IPlugin, OutputFormat, IFileUploadProgress, IStringKeyMap } from '../../types'
 import type { ILocalesKey } from '../../i18n/zh-CN'
 import { IBuildInEvent } from '../../utils/enum'
@@ -13,6 +14,11 @@ interface UploadCommandOptions {
 }
 
 const formatMB = (bytes: number): string => (bytes / BYTES_PER_MB).toFixed(1)
+
+const resolveUploadInput = (item: string): string => {
+  const normalizedItem = normalizeWslPath(item)
+  return isUrl(normalizedItem) ? normalizedItem : path.resolve(normalizedItem)
+}
 
 const buildFileUploadArgs = (ctx: IPicGo, payload: IFileUploadProgress): IStringKeyMap<string> => {
   const resumedSuffix = payload.resumed
@@ -47,9 +53,7 @@ const upload: IPlugin = {
       )
       .action(async (input: string[], options: UploadCommandOptions) => {
         const inputList = input
-          .map((item: string) => {
-            return isUrl(item) ? item : path.resolve(item)
-          })
+          .map(resolveUploadInput)
           .filter((item: string) => {
             const exist = fs.existsSync(item) || isUrl(item)
             if (!exist) {
@@ -86,4 +90,4 @@ const upload: IPlugin = {
   }
 }
 
-export { upload }
+export { resolveUploadInput, upload }

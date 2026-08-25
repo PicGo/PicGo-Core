@@ -9,6 +9,7 @@ import {
   IPicGo
 } from '../types'
 import { URL } from 'url'
+import { normalizeWslPath } from './normalizeWslPath'
 
 export const isUrl = (url: string): boolean => (url.startsWith('http://') || url.startsWith('https://'))
 
@@ -71,17 +72,19 @@ export const getImageSize = (file: Buffer): IImgSize => {
 }
 
 export const getFSFile = async (filePath: string): Promise<IPathTransformedImgInfo> => {
+  const normalizedFilePath = normalizeWslPath(filePath)
+
   try {
     return {
-      extname: path.extname(filePath),
-      fileName: path.basename(filePath),
-      filePath,
-      buffer: await fs.readFile(filePath),
+      extname: path.extname(normalizedFilePath),
+      fileName: path.basename(normalizedFilePath),
+      filePath: normalizedFilePath,
+      buffer: await fs.readFile(normalizedFilePath),
       success: true
     }
   } catch {
     return {
-      reason: `read file ${filePath} error`,
+      reason: `read file ${normalizedFilePath} error`,
       success: false
     }
   }
