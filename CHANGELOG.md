@@ -1,3 +1,23 @@
+## :tada: 3.0.2 (2026-08-27)
+
+
+### :bug: Bug Fixes
+
+* **core:** replace vulnerable image-size dependency ([d95b0cd](https://github.com/PicGo/PicGo-Core/commit/d95b0cd)), closes [#198](https://github.com/PicGo/PicGo-Core/issues/198)
+* **core:** support WSL network-share paths on Windows ([#200](https://github.com/PicGo/PicGo-Core/issues/200)) ([2774e20](https://github.com/PicGo/PicGo-Core/commit/2774e20)), closes [#1439](https://github.com/PicGo/PicGo-Core/issues/1439)
+
+
+### :arrow_up: Dependencies Upgrade
+
+* bump @picgo/bump-version to 3.0.0 ([4263624](https://github.com/PicGo/PicGo-Core/commit/4263624))
+
+
+### :pencil: Documentation
+
+* replace Warp sponsorship with NocoBase ([cb5c56c](https://github.com/PicGo/PicGo-Core/commit/cb5c56c))
+
+
+
 ## :tada: 3.0.1 (2026-07-12)
 
 
