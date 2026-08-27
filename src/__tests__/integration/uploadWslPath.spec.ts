@@ -16,48 +16,40 @@ const PNG_BYTES = Buffer.from(
 )
 const FILE_NAME = 'integration-upload.png'
 
-const findWslDistro = (): string | undefined => {
+const findDefaultWslHome = (): string | undefined => {
   if (process.platform !== 'win32') return undefined
 
   try {
-    const output = execFileSync('wsl.exe', ['--list', '--quiet'], { encoding: 'utf8' })
-    return output
-      .replaceAll('\0', '')
-      .split(/\r?\n/)
-      .map(line => line.trim())
-      .find(line => line.length > 0)
+    const output = execFileSync('wsl.exe', ['--exec', 'sh', '-c', 'wslpath -w "$HOME"'], { encoding: 'utf8' })
+    const wslHome = output.replaceAll('\0', '').trim()
+    return /^\\\\wsl(?:\$|\.localhost)\\/i.test(wslHome) ? wslHome : undefined
   } catch {
     return undefined
   }
 }
 
-const runInWsl = (distro: string, command: string): string => {
-  return execFileSync('wsl.exe', ['-d', distro, '--', 'sh', '-c', command], { encoding: 'utf8' }).trim()
-}
+const defaultWslHome = findDefaultWslHome()
 
-const wslDistro = findWslDistro()
-
-describe.skipIf(wslDistro === undefined)('WSL network-share path upload integration', () => {
+describe.skipIf(defaultWslHome === undefined)('WSL network-share path upload integration', () => {
   let configDir = ''
   let uncDirPath = ''
   let relativeWslPath = ''
   const received: Array<{ fileName?: string, filePath?: string, buffer?: Buffer }> = []
 
   beforeAll(() => {
-    if (wslDistro === undefined) return
+    if (defaultWslHome === undefined) return
 
     configDir = mkdtempSync(path.join(tmpdir(), 'picgo-wsl-integration-'))
-    const linuxHome = runInWsl(wslDistro, 'printf %s "$HOME"')
-    const relativeHome = linuxHome.slice(1).replaceAll('/', '\\')
     const relativeDir = `picgo-core-integration-${process.pid}`
-    uncDirPath = `\\\\wsl$\\${wslDistro}\\${relativeHome}\\${relativeDir}`
-    const uncFilePath = `${uncDirPath}\\${FILE_NAME}`
-    relativeWslPath = `wsl$\\${wslDistro}\\${relativeHome}\\${relativeDir}\\${FILE_NAME}`
+    uncDirPath = path.win32.join(defaultWslHome, relativeDir)
+    const uncFilePath = path.win32.join(uncDirPath, FILE_NAME)
+    relativeWslPath = uncFilePath.replace(/^\\\\/, '')
 
     mkdirSync(uncDirPath, { recursive: true })
     writeFileSync(uncFilePath, PNG_BYTES)
     expect(existsSync(uncFilePath)).toBe(true)
     expect(existsSync(relativeWslPath)).toBe(false)
+    expect(relativeWslPath).toMatch(/^wsl(?:\$|\.localhost)\\/i)
   }, 60000)
 
   afterAll(async () => {
@@ -83,7 +75,7 @@ describe.skipIf(wslDistro === undefined)('WSL network-share path upload integrat
 
     expect(received).toHaveLength(1)
     expect(received[0].fileName).toBe(FILE_NAME)
-    expect(received[0].filePath).toMatch(/^\\\\wsl\$\\/i)
+    expect(received[0].filePath).toMatch(/^\\\\wsl(?:\$|\.localhost)\\/i)
     expect(received[0].buffer?.equals(PNG_BYTES)).toBe(true)
     expect(result).toEqual([
       expect.objectContaining({

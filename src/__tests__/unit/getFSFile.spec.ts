@@ -10,10 +10,10 @@ vi.mock('../../utils/normalizeWslPath', () => ({
   normalizeWslPath: mocks.normalizeWslPath
 }))
 
-describe('utils/getFSFile', () => {
+describe.skipIf(process.platform !== 'win32')('utils/getFSFile', () => {
   it('normalizes the path before reading while preserving file metadata', async () => {
-    const inputPath = 'wsl$\\Ubuntu\\home\\user\\image.png'
-    const normalizedPath = '\\\\wsl$\\Ubuntu\\home\\user\\image.png'
+    const inputPath = 'wsl$\\TestDistro\\home\\user\\image.png'
+    const normalizedPath = '\\\\wsl$\\TestDistro\\home\\user\\image.png'
     const buffer = Buffer.from('image')
     mocks.normalizeWslPath.mockReturnValue(normalizedPath)
     const readFileMock = vi.spyOn(fs, 'readFile').mockResolvedValue(buffer)
