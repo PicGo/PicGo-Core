@@ -1,5 +1,5 @@
 import fs from 'fs-extra'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { getFSFile } from '../../utils/common'
 
 const mocks = vi.hoisted(() => ({
@@ -11,21 +11,32 @@ vi.mock('../../utils/normalizeWslPath', () => ({
 }))
 
 describe.skipIf(process.platform !== 'win32')('utils/getFSFile', () => {
-  it('normalizes the path before reading while preserving file metadata', async () => {
-    const inputPath = 'wsl$\\TestDistro\\home\\user\\image.png'
-    const normalizedPath = '\\\\wsl$\\TestDistro\\home\\user\\image.png'
-    const buffer = Buffer.from('image')
-    mocks.normalizeWslPath.mockReturnValue(normalizedPath)
-    const readFileMock = vi.spyOn(fs, 'readFile').mockResolvedValue(buffer)
-
-    await expect(getFSFile(inputPath)).resolves.toEqual({
-      extname: '.png',
-      fileName: 'image.png',
-      filePath: normalizedPath,
-      buffer,
-      success: true
-    })
-    expect(mocks.normalizeWslPath).toHaveBeenCalledWith(inputPath)
-    expect(readFileMock).toHaveBeenCalledWith(normalizedPath)
+  beforeEach(() => {
+    vi.clearAllMocks()
   })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it.each(['wsl$', 'wsl.localhost'])(
+    'normalizes the %s path before reading while preserving file metadata',
+    async (prefix) => {
+      const inputPath = `${prefix}\\TestDistro\\home\\user\\image.png`
+      const normalizedPath = `\\\\${inputPath}`
+      const buffer = Buffer.from('image')
+      mocks.normalizeWslPath.mockReturnValue(normalizedPath)
+      const readFileMock = vi.spyOn(fs, 'readFile').mockResolvedValue(buffer)
+
+      await expect(getFSFile(inputPath)).resolves.toEqual({
+        extname: '.png',
+        fileName: 'image.png',
+        filePath: normalizedPath,
+        buffer,
+        success: true
+      })
+      expect(mocks.normalizeWslPath).toHaveBeenCalledWith(inputPath)
+      expect(readFileMock).toHaveBeenCalledWith(normalizedPath)
+    }
+  )
 })
