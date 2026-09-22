@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events'
-import { ILifecyclePlugins, IPicGo, IPlugin, OutputFormat, ResolvedUploadOption, Undefinable, UploadOptions } from '../types'
+import { ILifecyclePlugins, IPicGo, IPlugin, OutputFormat, Undefinable, UploadOptions } from '../types'
 import { handleUrlEncode } from '../utils/common'
 import { applyUrlRewriteToOutput } from '../utils/urlRewrite'
 import { IBuildInEvent, LifecycleStep } from '../utils/enum'
@@ -22,8 +22,8 @@ export class Lifecycle extends EventEmitter {
     this.ctx = ctx
   }
 
-  async start (input: any[], options?: UploadOptions, resolvedOption?: ResolvedUploadOption): Promise<IPicGo> {
-    const option = resolvedOption ?? resolveUploadOptions(this.ctx, options)
+  async start (input: any[], options?: UploadOptions): Promise<IPicGo> {
+    const option = resolveUploadOptions(this.ctx, options)
     // ensure every upload process has an unique context
     const ctx = createContext(this.ctx, option)
     let step = LifecycleStep.IDLE

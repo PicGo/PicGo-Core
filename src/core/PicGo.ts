@@ -211,16 +211,17 @@ export class PicGo extends EventEmitter implements IPicGo {
       this.log.error('The configuration file only supports JSON format.')
       return []
     }
-    const option = resolveUploadOptions(this, options)
     // upload from clipboard
     if (input === undefined || input.length === 0) {
+      // Reject invalid options before reading the clipboard or creating a temporary image.
+      resolveUploadOptions(this, options)
       try {
         const { imgPath, shouldKeepAfterUploading } = await getClipboardImage(this)
         if (imgPath === 'no image') {
           throw new Error('image not found in clipboard')
         }
         try {
-          const { output } = await this.lifecycle.start([imgPath], options, option)
+          const { output } = await this.lifecycle.start([imgPath], options)
           return output
         } finally {
           if (!shouldKeepAfterUploading) {
@@ -238,7 +239,7 @@ export class PicGo extends EventEmitter implements IPicGo {
       }
     } else {
       // upload from path
-      const { output } = await this.lifecycle.start(input, options, option)
+      const { output } = await this.lifecycle.start(input, options)
       return output
     }
   }
