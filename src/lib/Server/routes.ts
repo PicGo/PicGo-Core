@@ -101,8 +101,8 @@ interface UploadResponse {
 type GetUploadAdapter = () => IServerUploadAdapter | undefined
 
 const createDefaultUploadAdapter = (ctx: IPicGo): IServerUploadAdapter => ({
-  uploadClipboard: async (options?: UploadOptions) => options === undefined ? await ctx.upload() : await ctx.upload(undefined, options),
-  uploadPaths: async (paths: string[], options?: UploadOptions) => options === undefined ? await ctx.upload(paths) : await ctx.upload(paths, options),
+  uploadClipboard: async (options?: UploadOptions) => await ctx.upload(undefined, options),
+  uploadPaths: async (paths: string[], options?: UploadOptions) => await ctx.upload(paths, options),
   getTempDir: () => path.join(ctx.baseDir, 'picgo-form-images')
 })
 
@@ -192,6 +192,8 @@ const registerCoreRoutes = (app: Hono<any, any, any>, ctx: IPicGo, getUploadAdap
 
       if (contentType.includes('multipart/form-data')) {
         const tempParentDir = uploadAdapter.getTempDir?.() ?? path.join(ctx.baseDir, 'picgo-form-images')
+        // Multipart bodies contain file bytes, so the server must create temporary local files.
+        // Isolate requests so concurrent uploads cannot overwrite or delete each other's files.
         const requestTempDir = path.join(tempParentDir, randomUUID())
         const tempFiles: string[] = []
         try {
@@ -208,6 +210,8 @@ const registerCoreRoutes = (app: Hono<any, any, any>, ctx: IPicGo, getUploadAdap
 
             const fileName = getFormDataFileName(file)
             const safeName = path.basename(fileName)
+            // Files in the same request may share a name. A separate directory preserves
+            // each original basename without overwriting another file's contents.
             const filePath = path.join(requestTempDir, randomUUID(), safeName)
             const buffer = Buffer.from(await file.arrayBuffer())
             await fs.ensureDir(path.dirname(filePath))
@@ -215,9 +219,7 @@ const registerCoreRoutes = (app: Hono<any, any, any>, ctx: IPicGo, getUploadAdap
             tempFiles.push(filePath)
           }
 
-          const output = uploadOptions === undefined
-            ? await uploadAdapter.uploadPaths(tempFiles)
-            : await uploadAdapter.uploadPaths(tempFiles, uploadOptions)
+          const output = await uploadAdapter.uploadPaths(tempFiles, uploadOptions)
           const response = buildUploadResponse(output)
           return c.json(response, getUploadResponseStatus(response))
         } catch (e: unknown) {
@@ -228,6 +230,8 @@ const registerCoreRoutes = (app: Hono<any, any, any>, ctx: IPicGo, getUploadAdap
           return c.json({ success: false, result: [], items: [], message: getErrorMessage(e) }, 500)
         } finally {
           try {
+            // Remove only files created for this multipart request, on success or failure.
+            // JSON uploads pass existing paths directly and never enter this cleanup block.
             await fs.remove(requestTempDir)
           } catch (cleanupError: unknown) {
             ctx.log.error(cleanupError)
@@ -239,9 +243,7 @@ const registerCoreRoutes = (app: Hono<any, any, any>, ctx: IPicGo, getUploadAdap
 
       // No request body -> upload from clipboard.
       if (bodyText.trim() === '') {
-        const output = uploadOptions === undefined
-          ? await uploadAdapter.uploadClipboard()
-          : await uploadAdapter.uploadClipboard(uploadOptions)
+        const output = await uploadAdapter.uploadClipboard(uploadOptions)
         const response = buildUploadResponse(output)
         return c.json(response, getUploadResponseStatus(response))
       }
@@ -259,16 +261,12 @@ const registerCoreRoutes = (app: Hono<any, any, any>, ctx: IPicGo, getUploadAdap
       }
 
       if (parsedBody.kind === ParsedUploadRequestBodyKind.Clipboard) {
-        const output = uploadOptions === undefined
-          ? await uploadAdapter.uploadClipboard()
-          : await uploadAdapter.uploadClipboard(uploadOptions)
+        const output = await uploadAdapter.uploadClipboard(uploadOptions)
         const response = buildUploadResponse(output)
         return c.json(response, getUploadResponseStatus(response))
       }
 
-      const output = uploadOptions === undefined
-        ? await uploadAdapter.uploadPaths(parsedBody.list)
-        : await uploadAdapter.uploadPaths(parsedBody.list, uploadOptions)
+      const output = await uploadAdapter.uploadPaths(parsedBody.list, uploadOptions)
       const response = buildUploadResponse(output)
       return c.json(response, getUploadResponseStatus(response))
     } catch (e: unknown) {

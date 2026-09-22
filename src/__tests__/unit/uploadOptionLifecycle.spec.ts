@@ -296,15 +296,16 @@ describe('per-upload option lifecycle isolation', () => {
     expect(picgo.getConfig('legacy.temporary')).toBe('shared')
   })
 
-  it('generates a unique clipboard path for concurrent captures in the same millisecond', () => {
-    vi.spyOn(Date, 'now').mockReturnValue(1_700_000_000_000)
-
-    const first = createClipboardImagePath('/tmp/picgo')
-    const second = createClipboardImagePath('/tmp/picgo')
-
-    expect(first).not.toBe(second)
-    expect(path.basename(first)).toMatch(/^\d{17}-[0-9a-f-]+\.png$/)
-    expect(path.dirname(first)).toBe(path.join('/tmp/picgo', 'picgo-clipboard-images'))
+  it('preserves the legacy timestamp-only clipboard filename', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date(2026, 8, 22, 12, 34, 56, 789))
+    try {
+      expect(createClipboardImagePath('/tmp/picgo')).toBe(
+        path.join('/tmp/picgo', 'picgo-clipboard-images', '20260922123456789.png')
+      )
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it('cleans only the clipboard file owned by each overlapping upload', async () => {

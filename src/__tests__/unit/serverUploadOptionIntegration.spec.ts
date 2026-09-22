@@ -155,6 +155,33 @@ describe('HTTP upload option with real PicGo lifecycle', () => {
       ['https://home.example/image-data/image.png']
     ])
     expect(save).not.toHaveBeenCalled()
+    expect(await fs.readFile(image, 'utf8')).toBe('image-data')
+    await assertUnchanged(picgo, rootBefore, diskBefore)
+  })
+
+  it.each([
+    { label: 'default configuration', query: '', destination: 'other' },
+    { label: 'explicit upload options', query: '?uploader=option-a&configName=Work', destination: 'work' }
+  ])('retains existing local files uploaded with $label', async ({ query, destination }) => {
+    const { picgo, endpoint, rootBefore, diskBefore } = await createServer()
+    const image = path.join(picgo.baseDir, 'existing.png')
+    await fs.writeFile(image, 'existing-data')
+    const save = vi.spyOn(picgo, 'saveConfig')
+
+    const response = await fetch(`${endpoint}${query}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer option-test-secret' },
+      body: JSON.stringify({ list: [image] })
+    })
+
+    expect(response.status).toBe(200)
+    expect(await response.json()).toMatchObject({
+      success: true,
+      result: [`https://${destination}.example/existing-data/existing.png`]
+    })
+    expect(await fs.readFile(image, 'utf8')).toBe('existing-data')
+    expect(await fs.pathExists(path.join(picgo.baseDir, 'picgo-form-images'))).toBe(false)
+    expect(save).not.toHaveBeenCalled()
     await assertUnchanged(picgo, rootBefore, diskBefore)
   })
 

@@ -11,6 +11,9 @@ import { createProgressRenderer } from './utils/progressRenderer'
 interface UploadCommandOptions {
   format?: string
   verbose?: boolean
+  uploader?: string
+  configName?: string
+  configId?: string
 }
 
 const formatMB = (bytes: number): string => (bytes / BYTES_PER_MB).toFixed(1)
@@ -43,6 +46,9 @@ const upload: IPlugin = {
       .arguments('[input...]')
       .alias('u')
       .option('--format <format>', 'output format: pretty | json', 'pretty')
+      .option('--uploader <type>', 'uploader type to use')
+      .option('--configName <name>', 'uploader configuration name to use')
+      .option('--configId <id>', 'uploader configuration ID to use')
       .option(
         '--verbose',
         'Force per-event progress lines (one console.log per progress tick) instead of an in-place spinner. ' +
@@ -76,7 +82,10 @@ const upload: IPlugin = {
 
         try {
           await ctx.upload(inputList, {
-            outputFormat: options.format === 'json' ? OutputFormat.JSON : OutputFormat.PRETTY
+            outputFormat: options.format === 'json' ? OutputFormat.JSON : OutputFormat.PRETTY,
+            uploader: options.uploader,
+            configName: options.configName,
+            configId: options.configId
           })
         } catch (e: unknown) {
           ctx.log.error(e instanceof Error ? e : new Error(String(e)))

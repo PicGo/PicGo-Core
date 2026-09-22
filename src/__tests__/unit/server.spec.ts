@@ -221,10 +221,10 @@ describe('ServerManager (local server)', () => {
 
     // upload() called: empty, {}, {list:[]}, list
     expect(uploadMock).toHaveBeenCalledTimes(4)
-    expect(uploadMock).toHaveBeenNthCalledWith(1)
-    expect(uploadMock).toHaveBeenNthCalledWith(2)
-    expect(uploadMock).toHaveBeenNthCalledWith(3)
-    expect(uploadMock).toHaveBeenNthCalledWith(4, ['/a.png', '/b.png'])
+    expect(uploadMock).toHaveBeenNthCalledWith(1, undefined, undefined)
+    expect(uploadMock).toHaveBeenNthCalledWith(2, undefined, undefined)
+    expect(uploadMock).toHaveBeenNthCalledWith(3, undefined, undefined)
+    expect(uploadMock).toHaveBeenNthCalledWith(4, ['/a.png', '/b.png'], undefined)
 
     server.shutdown()
     await fs.remove(baseDir)
@@ -496,9 +496,9 @@ describe('ServerManager (local server)', () => {
     }))
 
     expect(uploadClipboardMock).toHaveBeenCalledTimes(1)
-    expect(uploadClipboardMock).toHaveBeenCalledWith()
+    expect(uploadClipboardMock).toHaveBeenCalledWith(undefined)
     expect(uploadPathsMock).toHaveBeenCalledTimes(2)
-    expect(uploadPathsMock).toHaveBeenNthCalledWith(1, ['/input.png'])
+    expect(uploadPathsMock).toHaveBeenNthCalledWith(1, ['/input.png'], undefined)
     expect(uploadedTempFiles.length).toBeGreaterThan(0)
     for (const filePath of uploadedTempFiles) {
       expect(filePath.startsWith(adapterTempDir)).toBe(true)

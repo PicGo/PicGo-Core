@@ -96,6 +96,21 @@ $ picgo -h
 picgo upload /xxx/xx/xx.jpg
 ```
 
+#### Upload with a saved configuration
+
+Use `--configName` to choose a saved configuration for one upload. Add `--uploader` when the same name exists in multiple uploader types. You can also use `--configId`; a unique ID match takes precedence over the name, and an unresolved ID falls back to the name when provided.
+
+```bash
+picgo upload ./photo.png --configName=Work
+picgo upload ./photo.png --uploader=github --configName="Work Images"
+picgo upload ./photo.png --uploader=github --configId=your-config-id --configName=Work
+
+# Upload from the clipboard with a saved configuration.
+picgo upload --configName=Work
+```
+
+These options use the same lookup rules as HTTP and SDK uploads and do not change saved defaults. Without these options, `picgo upload` retains its existing default behavior. Existing local input files are retained after upload; only temporary multipart files and clipboard images created by PicGo are cleaned up. Clipboard filenames keep the existing `YYYYMMDDHHmmssSSS.png` format.
+
 #### Upload a picture from clipboard
 
 > picture from clipboard will be converted to `png`
@@ -119,7 +134,7 @@ Add `uploader`, `configName`, or `configId` to `POST /upload` to choose an exist
 ```js
 const url = new URL('http://127.0.0.1:36677/upload')
 url.searchParams.set('uploader', 'github')
-url.searchParams.set('configName', '工作图床')
+url.searchParams.set('configName', 'Work')
 
 const response = await fetch(url, {
   method: 'POST',
@@ -292,11 +307,11 @@ const picgo = new PicGo()
 try {
   await picgo.upload(['/absolute/path/photo.png'], {
     uploader: 'github',
-    configName: '工作图床'
+    configName: 'Work'
   })
 
   // A globally unique name can identify both the uploader and its configuration.
-  await picgo.upload(undefined, { configName: '工作图床' })
+  await picgo.upload(undefined, { configName: 'Work' })
 } catch (error) {
   if (error instanceof UploadOptionError) {
     console.error(error.code, error.message)
