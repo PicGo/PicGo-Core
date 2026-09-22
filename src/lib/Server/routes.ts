@@ -6,7 +6,7 @@ import type { IImgInfo, IPicGo, UploadOptions, UploadSelection } from '../../typ
 import type { IServerUploadAdapter } from '../../types/internal'
 import { BuiltinRoutePath } from '../Routes/routePath'
 import type { ILocalesKey } from '../../i18n/zh-CN'
-import { resolveUploadSelection, UploadSelectionError, UploadSelectionErrorCode } from '../UploadSelection'
+import { resolveUploadOptions, UploadSelectionError, UploadSelectionErrorCode } from '../UploadSelection'
 
 type FormDataFileLike = {
   name?: string
@@ -185,7 +185,7 @@ const registerCoreRoutes = (app: Hono<any, any, any>, ctx: IPicGo, getUploadAdap
 
     try {
       const uploadOptions = parseUploadSelection(new URL(c.req.url), t)
-      resolveUploadSelection(ctx, uploadOptions)
+      resolveUploadOptions(ctx, uploadOptions)
 
       const contentType = c.req.raw.headers.get('content-type') || ''
       const uploadAdapter = getUploadAdapter?.() ?? createDefaultUploadAdapter(ctx)

@@ -113,7 +113,7 @@ const throwAmbiguous = (
   )
 }
 
-const resolveUploadSelection = (
+const resolveUploadOptions = (
   ctx: IPicGo,
   selection?: UploadSelection
 ): ResolvedUploadSelection | undefined => {
@@ -177,7 +177,7 @@ const resolveUploadSelection = (
 }
 
 export {
-  resolveUploadSelection,
+  resolveUploadOptions,
   UploadSelectionError,
   UploadSelectionErrorCode
 }

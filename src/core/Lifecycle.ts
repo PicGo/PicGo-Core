@@ -5,7 +5,7 @@ import { applyUrlRewriteToOutput } from '../utils/urlRewrite'
 import { IBuildInEvent, LifecycleStep } from '../utils/enum'
 import { createContext } from '../utils/createContext'
 import { PICGO_CLOUD, PICGO_CLOUD_AUTO_IMPORT_PLUGIN } from '../utils/static'
-import { resolveUploadSelection } from '../lib/UploadSelection'
+import { resolveUploadOptions } from '../lib/UploadSelection'
 
 /**
  * Built-in lifecycle plugin IDs that should be excluded from running logs.
@@ -23,7 +23,7 @@ export class Lifecycle extends EventEmitter {
   }
 
   async start (input: any[], options?: UploadOptions, resolvedSelection?: ResolvedUploadSelection): Promise<IPicGo> {
-    const selection = resolvedSelection ?? resolveUploadSelection(this.ctx, options)
+    const selection = resolvedSelection ?? resolveUploadOptions(this.ctx, options)
     // ensure every upload process has an unique context
     const ctx = createContext(this.ctx, selection)
     let step = LifecycleStep.IDLE

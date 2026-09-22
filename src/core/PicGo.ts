@@ -22,7 +22,7 @@ import { I18nManager } from '../i18n'
 import { ServerManager } from '../lib/Server'
 import { CloudManager } from '../lib/Cloud'
 import { UploaderConfigManager } from '../lib/UploaderConfigManager'
-import { resolveUploadSelection } from '../lib/UploadSelection'
+import { resolveUploadOptions } from '../lib/UploadSelection'
 
 export class PicGo extends EventEmitter implements IPicGo {
   private _config!: IConfig
@@ -211,7 +211,7 @@ export class PicGo extends EventEmitter implements IPicGo {
       this.log.error('The configuration file only supports JSON format.')
       return []
     }
-    const selection = resolveUploadSelection(this, options)
+    const selection = resolveUploadOptions(this, options)
     // upload from clipboard
     if (input === undefined || input.length === 0) {
       try {

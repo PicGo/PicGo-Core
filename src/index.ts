@@ -14,7 +14,7 @@ export { PluginLoader } from './lib/PluginLoader'
 export { Request } from './lib/Request'
 export { ServerManager } from './lib/Server'
 export {
-  resolveUploadSelection,
+  resolveUploadOptions,
   UploadSelectionError,
   UploadSelectionErrorCode
 } from './lib/UploadSelection'
