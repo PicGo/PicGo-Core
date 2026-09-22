@@ -94,6 +94,46 @@ describe('HTTP upload option with real PicGo lifecycle', () => {
     vi.restoreAllMocks()
   })
 
+  it.each([
+    { label: 'literal Chinese', configName: '配置一', query: 'configName=配置一' },
+    { label: 'percent-encoded Chinese', configName: '配置一', query: 'configName=%E9%85%8D%E7%BD%AE%E4%B8%80' },
+    {
+      label: 'Chinese with spaces, plus and ampersand',
+      configName: '配置一 + 测试&备份',
+      query: new URLSearchParams({ configName: '配置一 + 测试&备份' }).toString()
+    },
+    {
+      label: 'Chinese with a literal percent escape decoded only once',
+      configName: '配置%20一',
+      query: 'configName=%E9%85%8D%E7%BD%AE%2520%E4%B8%80'
+    }
+  ])('uploads using $label configuration names from the URL', async ({ configName, query }) => {
+    const { picgo, endpoint } = await createServer()
+    picgo.uploaderConfig.createOrUpdate('option-a', configName, { destination: 'chinese' })
+    picgo.uploaderConfig.use('option-b', 'Work')
+    const rootBefore = cloneDeep(picgo.getConfig<IConfig>())
+    const diskBefore = await fs.readFile(picgo.configPath, 'utf8')
+    const image = path.join(picgo.baseDir, 'image.png')
+    await fs.writeFile(image, 'image-data')
+    const upload = vi.spyOn(picgo, 'upload')
+    const save = vi.spyOn(picgo, 'saveConfig')
+
+    const response = await fetch(`${endpoint}?${query}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer option-test-secret' },
+      body: JSON.stringify({ list: [image] })
+    })
+
+    expect(response.status).toBe(200)
+    expect(upload).toHaveBeenCalledWith([image], { configName })
+    expect(await response.json()).toMatchObject({
+      success: true,
+      result: ['https://chinese.example/image-data/image.png']
+    })
+    expect(save).not.toHaveBeenCalled()
+    await assertUnchanged(picgo, rootBefore, diskBefore)
+  })
+
   it('isolates concurrent JSON uploads to two profiles and preserves root and disk configuration', async () => {
     const { picgo, endpoint, rootBefore, diskBefore } = await createServer(rendezvous())
     const image = path.join(picgo.baseDir, 'image.png')
