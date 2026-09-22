@@ -8,6 +8,14 @@ export const EN: ILocales = {
   UPLOAD_FAILED_REASON: 'Error code: ${code}, please open the browser and paste the address to see the reason',
   SERVER_ERROR: 'Server error, please try again later',
   AUTH_FAILED: 'Authentication failed',
+  CONFIG_INVALID_FORMAT: 'Invalid configuration format; provide an object.',
+  CONFIG_KEY_READ_ONLY: 'config.${name} cannot be modified.',
+  CONFIG_KEY_CANNOT_UNSET: 'config.${key} cannot be unset.',
+  UPLOAD_SELECTION_INVALID_PARAMETER: 'Invalid upload selection parameter "${parameter}": provide one non-empty string value.',
+  UPLOAD_SELECTION_ACTIVE_CONFIG: 'the active configuration (default ID, then first saved configuration)',
+  UPLOAD_SELECTION_UNKNOWN_UPLOADER: 'Uploader "${uploader}" is not registered. Available uploaders: ${uploaders}.',
+  UPLOAD_SELECTION_CONFIG_NOT_FOUND: 'No upload configuration matched ${selectors} in ${scope}.',
+  UPLOAD_SELECTION_CONFIG_AMBIGUOUS: 'Upload configuration ${selector} is ambiguous in ${scope}. Matches: ${candidates}. Specify an uploader or a unique configuration ID.',
 
   // cloud login
   CLOUD_LOGIN_CANCELLED: 'Login cancelled',

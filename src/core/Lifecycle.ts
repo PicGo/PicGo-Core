@@ -1,10 +1,11 @@
 import { EventEmitter } from 'events'
-import { ILifecyclePlugins, IPicGo, IPlugin, OutputFormat, Undefinable, UploadOptions } from '../types'
+import { ILifecyclePlugins, IPicGo, IPlugin, OutputFormat, ResolvedUploadSelection, Undefinable, UploadOptions } from '../types'
 import { handleUrlEncode } from '../utils/common'
 import { applyUrlRewriteToOutput } from '../utils/urlRewrite'
 import { IBuildInEvent, LifecycleStep } from '../utils/enum'
 import { createContext } from '../utils/createContext'
 import { PICGO_CLOUD, PICGO_CLOUD_AUTO_IMPORT_PLUGIN } from '../utils/static'
+import { resolveUploadSelection } from '../lib/UploadSelection'
 
 /**
  * Built-in lifecycle plugin IDs that should be excluded from running logs.
@@ -15,17 +16,17 @@ const BUILTIN_LIFECYCLE_PLUGINS: ReadonlySet<string> = new Set([
 
 export class Lifecycle extends EventEmitter {
   private readonly ctx: IPicGo
-  private step: LifecycleStep = LifecycleStep.IDLE
 
   constructor (ctx: IPicGo) {
     super()
     this.ctx = ctx
   }
 
-  async start (input: any[], options?: UploadOptions): Promise<IPicGo> {
+  async start (input: any[], options?: UploadOptions, resolvedSelection?: ResolvedUploadSelection): Promise<IPicGo> {
+    const selection = resolvedSelection ?? resolveUploadSelection(this.ctx, options)
     // ensure every upload process has an unique context
-    const ctx = createContext(this.ctx)
-    this.step = LifecycleStep.IDLE
+    const ctx = createContext(this.ctx, selection)
+    let step = LifecycleStep.IDLE
     try {
       // images input
       if (!Array.isArray(input)) {
@@ -35,24 +36,24 @@ export class Lifecycle extends EventEmitter {
       ctx.output = []
 
       // lifecycle main
-      this.step = LifecycleStep.BEFORE_TRANSFORM
+      step = LifecycleStep.BEFORE_TRANSFORM
       await this.beforeTransform(ctx)
-      this.step = LifecycleStep.TRANSFORM
+      step = LifecycleStep.TRANSFORM
       await this.doTransform(ctx)
-      this.step = LifecycleStep.BEFORE_UPLOAD
+      step = LifecycleStep.BEFORE_UPLOAD
       await this.beforeUpload(ctx)
-      this.step = LifecycleStep.UPLOAD
+      step = LifecycleStep.UPLOAD
       await this.doUpload(ctx)
-      this.step = LifecycleStep.AFTER_UPLOAD
+      step = LifecycleStep.AFTER_UPLOAD
       await this.afterUpload(ctx, options)
       return ctx
     } catch (e: any) {
       // If error came from doUpload and some items already uploaded successfully,
       // still run afterUpload so users see the successful URLs and plugins
       // (like cloud auto-import) can process the partial results.
-      if (this.step === LifecycleStep.UPLOAD && ctx.output.some(item => item.imgUrl !== undefined)) {
+      if (step === LifecycleStep.UPLOAD && ctx.output.some(item => item.imgUrl !== undefined)) {
         try {
-          this.step = LifecycleStep.AFTER_UPLOAD
+          step = LifecycleStep.AFTER_UPLOAD
           await this.afterUpload(ctx, options)
         } catch {
           // afterUpload failed too — don't mask the original upload error
@@ -193,5 +194,3 @@ export class Lifecycle extends EventEmitter {
     return ctx
   }
 }
-
-export default Lifecycle

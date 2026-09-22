@@ -1,0 +1,3 @@
+allowBuilds:
+  # Required by Vitest and other esbuild consumers during installation.
+  esbuild: true

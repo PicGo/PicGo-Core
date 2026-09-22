@@ -1,6 +1,5 @@
 import path from 'path'
 import { spawn } from 'child_process'
-import dayjs from 'dayjs'
 import os from 'os'
 import fs from 'fs-extra'
 import isWsl from 'is-wsl'
@@ -12,6 +11,7 @@ import windows10ClipboardScript from './clipboard/windows10.ps1'
 import linuxClipboardScript from './clipboard/linux.sh'
 import wslClipboardScript from './clipboard/wsl.sh'
 import { CLIPBOARD_IMAGE_FOLDER } from './static'
+import { createClipboardImagePath } from './createClipboardImagePath'
 
 export type Platform = 'darwin' | 'win32' | 'win10' | 'linux' | 'wsl'
 
@@ -65,10 +65,10 @@ function createImageFolder (ctx: IPicGo): void {
 }
 
 // Thanks to vs-picgo: https://github.com/Spades-S/vs-picgo/blob/master/src/extension.ts
-const getClipboardImage = async (ctx: IPicGo): Promise<IClipboardImage> => {
+export const getClipboardImage = async (ctx: IPicGo): Promise<IClipboardImage> => {
   createImageFolder(ctx)
   // add an clipboard image folder to control the image cache file
-  const imagePath = path.join(ctx.baseDir, CLIPBOARD_IMAGE_FOLDER, `${dayjs().format('YYYYMMDDHHmmssSSS')}.png`)
+  const imagePath = createClipboardImagePath(ctx.baseDir)
   return await new Promise<IClipboardImage>((resolve: Function, reject: Function): void => {
     const platform = getCurrentPlatform()
     const scriptPath = path.join(ctx.baseDir, platform2ScriptFilename[platform])
@@ -137,5 +137,3 @@ const getClipboardImage = async (ctx: IPicGo): Promise<IClipboardImage> => {
     })
   })
 }
-
-export default getClipboardImage

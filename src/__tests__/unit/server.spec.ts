@@ -7,8 +7,9 @@ import type { AddressInfo } from 'node:net'
 import { get, set } from 'lodash'
 import { ServerManager } from '../../lib/Server'
 import { EN } from '../../i18n/en'
-import type { II18nManager, IPicGo, IImgInfo } from '../../types'
+import type { II18nManager, IPicGo, IImgInfo, IUploaderConfigItem, UploadOptions } from '../../types'
 import type { IServerUploadAdapter } from '../../types/internal'
+import { UploadSelectionError, UploadSelectionErrorCode } from '../../lib/UploadSelection'
 
 type ILogSpy = {
   warn: ReturnType<typeof vi.fn>
@@ -44,9 +45,16 @@ const createMockI18n = (): II18nManager => {
 
 const originalEnvSecret = process.env.PICGO_SERVER_SECRET
 
+const createUploaderProfile = (id: string, name: string): IUploaderConfigItem => ({
+  _id: id,
+  _configName: name,
+  _createdAt: 1,
+  _updatedAt: 1
+})
+
 const createMockCtx = async (
   initialConfig: Record<string, unknown>,
-  uploadMock: (input?: any[]) => Promise<IImgInfo[] | Error>
+  uploadMock: (input?: any[], options?: UploadOptions) => Promise<IImgInfo[] | Error>
 ): Promise<{
   ctx: IPicGo
   log: ILogSpy
@@ -77,12 +85,34 @@ const createMockCtx = async (
     }
   })
 
+  const listUploaderTypes = (): string[] => {
+    const uploaderConfig = get(config, 'uploader')
+    if (typeof uploaderConfig !== 'object' || uploaderConfig === null || Array.isArray(uploaderConfig)) return []
+    return Object.keys(uploaderConfig)
+  }
+
+  const getConfigList = (type: string): IUploaderConfigItem[] => {
+    const configList = get(config, `uploader.${type}.configList`)
+    return Array.isArray(configList) ? configList as IUploaderConfigItem[] : []
+  }
+
+  const getActiveConfig = (type: string): IUploaderConfigItem | undefined => {
+    const configList = getConfigList(type)
+    const defaultId = get(config, `uploader.${type}.defaultId`)
+    return configList.find(item => item._id === defaultId) ?? configList[0]
+  }
+
   const ctx = {
     baseDir,
     log,
     getConfig: getConfigMock,
     saveConfig: saveConfigMock,
     i18n,
+    uploaderConfig: {
+      listUploaderTypes,
+      getConfigList,
+      getActiveConfig
+    },
     upload: uploadMock
   } as unknown as IPicGo
 
@@ -191,6 +221,10 @@ describe('ServerManager (local server)', () => {
 
     // upload() called: empty, {}, {list:[]}, list
     expect(uploadMock).toHaveBeenCalledTimes(4)
+    expect(uploadMock).toHaveBeenNthCalledWith(1)
+    expect(uploadMock).toHaveBeenNthCalledWith(2)
+    expect(uploadMock).toHaveBeenNthCalledWith(3)
+    expect(uploadMock).toHaveBeenNthCalledWith(4, ['/a.png', '/b.png'])
 
     server.shutdown()
     await fs.remove(baseDir)
@@ -229,6 +263,147 @@ describe('ServerManager (local server)', () => {
 
     server.shutdown()
     await fs.remove(baseDir)
+  })
+
+  it('keeps duplicate multipart filenames distinct within one request and cleans the request directory', async () => {
+    const adapterTempDir = await createTempDir('picgo-core-same-request-')
+    const uploadedPaths: string[] = []
+    const uploadedContents: string[] = []
+    let requestTempDir = ''
+    const uploadPathsMock = vi.fn(async (paths: string[]) => {
+      uploadedPaths.push(...paths)
+      requestTempDir = path.dirname(path.dirname(paths[0]))
+      for (const filePath of paths) {
+        uploadedContents.push((await fs.readFile(filePath)).toString())
+      }
+      return paths.map((filePath, index) => ({
+        origin: filePath,
+        imgUrl: `https://a.example/${index}.png`
+      }))
+    })
+    const { ctx, baseDir } = await createMockCtx({
+      settings: { server: { port: 0, host: '127.0.0.1' } }
+    }, vi.fn(async () => [{ imgUrl: 'https://a.example/unexpected.png' }]))
+
+    const server = new ServerManager(ctx)
+    server.setUploadAdapter({
+      uploadClipboard: async () => [{ imgUrl: 'https://a.example/unexpected.png' }],
+      uploadPaths: uploadPathsMock,
+      getTempDir: () => adapterTempDir
+    })
+    const port = await server.listen(0, '127.0.0.1', true)
+    const formData = new FormData()
+    formData.append('files', new Blob([Buffer.from('first')]), 'same.png')
+    formData.append('files', new Blob([Buffer.from('second')]), 'same.png')
+
+    const response = await fetch(`http://127.0.0.1:${port as number}/upload`, { method: 'POST', body: formData })
+    expect(response.status).toBe(200)
+    expect(uploadedPaths).toHaveLength(2)
+    expect(uploadedPaths[0]).not.toBe(uploadedPaths[1])
+    expect(uploadedPaths.map(filePath => path.basename(filePath))).toEqual(['same.png', 'same.png'])
+    expect(uploadedContents).toEqual(['first', 'second'])
+    expect(requestTempDir.startsWith(adapterTempDir)).toBe(true)
+    expect(await fs.pathExists(requestTempDir)).toBe(false)
+
+    server.shutdown()
+    await fs.remove(baseDir)
+    await fs.remove(adapterTempDir)
+  })
+
+  it('isolates identical multipart filenames across concurrent requests', async () => {
+    const adapterTempDir = await createTempDir('picgo-core-concurrent-requests-')
+    let firstEnteredResolve: (() => void) | undefined
+    let secondEnteredResolve: (() => void) | undefined
+    let releaseSecondResolve: (() => void) | undefined
+    const firstEntered = new Promise<void>((resolve) => { firstEnteredResolve = resolve })
+    const secondEntered = new Promise<void>((resolve) => { secondEnteredResolve = resolve })
+    const releaseSecond = new Promise<void>((resolve) => { releaseSecondResolve = resolve })
+    const pathsByContent = new Map<string, string>()
+    const uploadPathsMock = vi.fn(async (paths: string[]) => {
+      const filePath = paths[0]
+      const content = (await fs.readFile(filePath)).toString()
+      pathsByContent.set(content, filePath)
+      if (content === 'first-request') {
+        firstEnteredResolve?.()
+        await secondEntered
+      } else {
+        secondEnteredResolve?.()
+        await releaseSecond
+      }
+      expect((await fs.readFile(filePath)).toString()).toBe(content)
+      return [{ imgUrl: `https://a.example/${content}.png` }]
+    })
+    const { ctx, baseDir } = await createMockCtx({
+      settings: { server: { port: 0, host: '127.0.0.1' } }
+    }, vi.fn(async () => [{ imgUrl: 'https://a.example/unexpected.png' }]))
+
+    const server = new ServerManager(ctx)
+    server.setUploadAdapter({
+      uploadClipboard: async () => [{ imgUrl: 'https://a.example/unexpected.png' }],
+      uploadPaths: uploadPathsMock,
+      getTempDir: () => adapterTempDir
+    })
+    const port = await server.listen(0, '127.0.0.1', true)
+    const url = `http://127.0.0.1:${port as number}/upload`
+    const firstForm = new FormData()
+    firstForm.append('files', new Blob([Buffer.from('first-request')]), 'same.png')
+    const firstRequest = fetch(url, { method: 'POST', body: firstForm })
+    await firstEntered
+
+    const secondForm = new FormData()
+    secondForm.append('files', new Blob([Buffer.from('second-request')]), 'same.png')
+    const secondRequest = fetch(url, { method: 'POST', body: secondForm })
+    await secondEntered
+
+    const firstResponse = await firstRequest
+    expect(firstResponse.status).toBe(200)
+    const firstPath = pathsByContent.get('first-request')
+    const secondPath = pathsByContent.get('second-request')
+    expect(firstPath).toBeDefined()
+    expect(secondPath).toBeDefined()
+    expect(firstPath).not.toBe(secondPath)
+    expect(path.dirname(path.dirname(firstPath as string))).not.toBe(path.dirname(path.dirname(secondPath as string)))
+    expect(await fs.pathExists(firstPath as string)).toBe(false)
+    expect((await fs.readFile(secondPath as string)).toString()).toBe('second-request')
+
+    releaseSecondResolve?.()
+    const secondResponse = await secondRequest
+    expect(secondResponse.status).toBe(200)
+    expect(await fs.pathExists(secondPath as string)).toBe(false)
+
+    server.shutdown()
+    await fs.remove(baseDir)
+    await fs.remove(adapterTempDir)
+  })
+
+  it('cleans the multipart request directory when upload execution fails', async () => {
+    const adapterTempDir = await createTempDir('picgo-core-failed-request-')
+    let requestTempDir = ''
+    const { ctx, baseDir } = await createMockCtx({
+      settings: { server: { port: 0, host: '127.0.0.1' } }
+    }, vi.fn(async () => [{ imgUrl: 'https://a.example/unexpected.png' }]))
+
+    const server = new ServerManager(ctx)
+    server.setUploadAdapter({
+      uploadClipboard: async () => [{ imgUrl: 'https://a.example/unexpected.png' }],
+      uploadPaths: async (paths: string[]) => {
+        requestTempDir = path.dirname(path.dirname(paths[0]))
+        throw new Error('multipart upload failed')
+      },
+      getTempDir: () => adapterTempDir
+    })
+    const port = await server.listen(0, '127.0.0.1', true)
+    const formData = new FormData()
+    formData.append('files', new Blob([Buffer.from('failure')]), 'same.png')
+
+    const response = await fetch(`http://127.0.0.1:${port as number}/upload`, { method: 'POST', body: formData })
+    expect(response.status).toBe(500)
+    expect(requestTempDir.startsWith(adapterTempDir)).toBe(true)
+    expect(await fs.pathExists(requestTempDir)).toBe(false)
+
+    server.shutdown()
+    await fs.remove(baseDir)
+    await fs.remove(adapterTempDir)
   })
 
   it('uses internal upload adapter while keeping core response shape and cleanup', async () => {
@@ -321,6 +496,7 @@ describe('ServerManager (local server)', () => {
     }))
 
     expect(uploadClipboardMock).toHaveBeenCalledTimes(1)
+    expect(uploadClipboardMock).toHaveBeenCalledWith()
     expect(uploadPathsMock).toHaveBeenCalledTimes(2)
     expect(uploadPathsMock).toHaveBeenNthCalledWith(1, ['/input.png'])
     expect(uploadedTempFiles.length).toBeGreaterThan(0)
@@ -333,6 +509,251 @@ describe('ServerManager (local server)', () => {
     server.shutdown()
     await fs.remove(baseDir)
     await fs.remove(adapterTempDir)
+  })
+
+  it('forwards validated upload selection to every request body mode', async () => {
+    const options: UploadOptions = { uploader: 's3', configName: 'Primary' }
+    const uploadMock = vi.fn(async () => {
+      throw new Error('ctx.upload should not be called when adapter is set')
+    })
+    const uploadClipboardMock = vi.fn(async (_options?: UploadOptions) => [{ imgUrl: 'https://a.example/clipboard.png' }])
+    const uploadPathsMock = vi.fn(async (paths: string[], _options?: UploadOptions) => paths.map((item, index) => ({
+      origin: item,
+      imgUrl: `https://a.example/${index}.png`
+    })))
+    const { ctx, baseDir } = await createMockCtx({
+      settings: { server: { port: 0, host: '127.0.0.1' } },
+      uploader: {
+        s3: {
+          configList: [createUploaderProfile('s3-primary', 'Primary')],
+          defaultId: 's3-primary'
+        }
+      }
+    }, uploadMock)
+
+    const server = new ServerManager(ctx)
+    server.setUploadAdapter({
+      uploadClipboard: uploadClipboardMock,
+      uploadPaths: uploadPathsMock
+    })
+    const port = await server.listen(0, '127.0.0.1', true)
+    const url = `http://127.0.0.1:${port as number}/upload?uploader=s3&configName=Primary`
+
+    const emptyResponse = await fetch(url, { method: 'POST' })
+    expect(emptyResponse.status).toBe(200)
+
+    const jsonClipboardResponse = await fetch(url, { method: 'POST', body: '{}' })
+    expect(jsonClipboardResponse.status).toBe(200)
+
+    const listResponse = await fetch(url, {
+      method: 'POST',
+      body: JSON.stringify({ list: ['/selected.png'] })
+    })
+    expect(listResponse.status).toBe(200)
+
+    const formData = new FormData()
+    formData.append('files', new Blob([Buffer.from('selected')], { type: 'image/png' }), 'selected.png')
+    const multipartResponse = await fetch(url, { method: 'POST', body: formData })
+    expect(multipartResponse.status).toBe(200)
+
+    expect(uploadClipboardMock).toHaveBeenCalledTimes(2)
+    expect(uploadClipboardMock).toHaveBeenNthCalledWith(1, options)
+    expect(uploadClipboardMock).toHaveBeenNthCalledWith(2, options)
+    expect(uploadPathsMock).toHaveBeenCalledTimes(2)
+    expect(uploadPathsMock).toHaveBeenNthCalledWith(1, ['/selected.png'], options)
+    expect(uploadPathsMock.mock.calls[1]?.[1]).toEqual(options)
+    expect(uploadMock).not.toHaveBeenCalled()
+
+    server.shutdown()
+    await fs.remove(baseDir)
+  })
+
+  it('forwards selection through the default adapter to PicGo upload', async () => {
+    const uploadMock = vi.fn(async (input?: any[]) => {
+      return [{ imgUrl: input === undefined ? 'https://a.example/clipboard.png' : 'https://a.example/path.png' }]
+    })
+    const { ctx, baseDir } = await createMockCtx({
+      settings: { server: { port: 0, host: '127.0.0.1' } },
+      uploader: {
+        s3: {
+          configList: [createUploaderProfile('s3-primary', 'Primary')],
+          defaultId: 's3-primary'
+        }
+      }
+    }, uploadMock)
+
+    const server = new ServerManager(ctx)
+    const port = await server.listen(0, '127.0.0.1', true)
+    const url = `http://127.0.0.1:${port as number}/upload?uploader=s3&configName=Primary`
+    const options: UploadOptions = { uploader: 's3', configName: 'Primary' }
+
+    const clipboardResponse = await fetch(url, { method: 'POST' })
+    expect(clipboardResponse.status).toBe(200)
+    const listResponse = await fetch(url, {
+      method: 'POST',
+      body: JSON.stringify({ list: ['/selected.png'] })
+    })
+    expect(listResponse.status).toBe(200)
+    expect(uploadMock).toHaveBeenNthCalledWith(1, undefined, options)
+    expect(uploadMock).toHaveBeenNthCalledWith(2, ['/selected.png'], options)
+
+    server.shutdown()
+    await fs.remove(baseDir)
+  })
+
+  it('returns structured selection errors before adapter or multipart temp operations', async () => {
+    const adapterTempDir = await createTempDir('picgo-core-selection-prevalidation-')
+    const getTempDirMock = vi.fn(() => adapterTempDir)
+    const uploadClipboardMock = vi.fn(async () => [{ imgUrl: 'https://a.example/unexpected.png' }])
+    const uploadPathsMock = vi.fn(async () => [{ imgUrl: 'https://a.example/unexpected.png' }])
+    const uploadMock = vi.fn(async () => [{ imgUrl: 'https://a.example/unexpected.png' }])
+    const { ctx, baseDir } = await createMockCtx({
+      settings: { server: { port: 0, host: '127.0.0.1' } },
+      uploader: {
+        s3: {
+          configList: [createUploaderProfile('s3-primary', 'Primary')],
+          defaultId: 's3-primary'
+        },
+        oss: {
+          configList: [createUploaderProfile('oss-shared', 'Shared')],
+          defaultId: 'oss-shared'
+        },
+        cos: {
+          configList: [createUploaderProfile('cos-shared', 'Shared')],
+          defaultId: 'cos-shared'
+        }
+      }
+    }, uploadMock)
+
+    const server = new ServerManager(ctx)
+    server.setUploadAdapter({
+      uploadClipboard: uploadClipboardMock,
+      uploadPaths: uploadPathsMock,
+      getTempDir: getTempDirMock
+    })
+    const port = await server.listen(0, '127.0.0.1', true)
+    const baseUrl = `http://127.0.0.1:${port as number}/upload`
+
+    const invalidForm = new FormData()
+    invalidForm.append('files', new Blob([Buffer.from('must-not-write')]), 'same.png')
+    const cases = [
+      { query: 'uploader=', code: UploadSelectionErrorCode.InvalidSelection, body: invalidForm },
+      { query: 'configName=one&configName=two', code: UploadSelectionErrorCode.InvalidSelection },
+      { query: 'uploader=unknown', code: UploadSelectionErrorCode.UnknownUploader },
+      { query: 'uploader=s3&configName=Missing', code: UploadSelectionErrorCode.ConfigNotFound },
+      { query: 'configName=Shared', code: UploadSelectionErrorCode.AmbiguousConfig }
+    ]
+
+    for (const testCase of cases) {
+      const response = await fetch(`${baseUrl}?${testCase.query}`, {
+        method: 'POST',
+        body: testCase.body
+      })
+      expect(response.status).toBe(400)
+      const json = await toJson(response)
+      expect(json).toMatchObject({
+        success: false,
+        result: [],
+        items: [],
+        code: testCase.code,
+        message: expect.any(String)
+      })
+      expect(json.message).not.toMatch(/^UPLOAD_SELECTION_/)
+    }
+
+    expect(getTempDirMock).not.toHaveBeenCalled()
+    expect(uploadClipboardMock).not.toHaveBeenCalled()
+    expect(uploadPathsMock).not.toHaveBeenCalled()
+    expect(uploadMock).not.toHaveBeenCalled()
+    expect(await fs.readdir(adapterTempDir)).toEqual([])
+
+    server.shutdown()
+    await fs.remove(baseDir)
+    await fs.remove(adapterTempDir)
+  })
+
+  it('accepts resolver ID fallback to name and forwards both selectors', async () => {
+    const uploadPathsMock = vi.fn(async () => [{ imgUrl: 'https://a.example/fallback.png' }])
+    const { ctx, baseDir } = await createMockCtx({
+      settings: { server: { port: 0, host: '127.0.0.1' } },
+      uploader: {
+        s3: {
+          configList: [createUploaderProfile('s3-secondary', 'Secondary')],
+          defaultId: 's3-secondary'
+        }
+      }
+    }, vi.fn(async () => [{ imgUrl: 'https://a.example/unexpected.png' }]))
+
+    const server = new ServerManager(ctx)
+    server.setUploadAdapter({
+      uploadClipboard: async () => [{ imgUrl: 'https://a.example/unexpected.png' }],
+      uploadPaths: uploadPathsMock
+    })
+    const port = await server.listen(0, '127.0.0.1', true)
+    const response = await fetch(`http://127.0.0.1:${port as number}/upload?uploader=s3&configId=missing-id&configName=Secondary`, {
+      method: 'POST',
+      body: JSON.stringify({ list: ['/fallback.png'] })
+    })
+
+    expect(response.status).toBe(200)
+    expect(uploadPathsMock).toHaveBeenCalledWith(['/fallback.png'], {
+      uploader: 's3',
+      configId: 'missing-id',
+      configName: 'Secondary'
+    })
+
+    server.shutdown()
+    await fs.remove(baseDir)
+  })
+
+  it('preserves structured selection errors returned or thrown by adapters', async () => {
+    const returnedError = new UploadSelectionError(UploadSelectionErrorCode.ConfigNotFound, 'returned selection failure')
+    const thrownError = new UploadSelectionError(UploadSelectionErrorCode.AmbiguousConfig, 'thrown selection failure')
+    const { ctx, baseDir } = await createMockCtx({
+      settings: { server: { port: 0, host: '127.0.0.1' } },
+      uploader: {
+        s3: {
+          configList: [createUploaderProfile('s3-primary', 'Primary')],
+          defaultId: 's3-primary'
+        }
+      }
+    }, vi.fn(async () => [{ imgUrl: 'https://a.example/unexpected.png' }]))
+
+    const server = new ServerManager(ctx)
+    server.setUploadAdapter({
+      uploadClipboard: async () => returnedError,
+      uploadPaths: async () => {
+        throw thrownError
+      }
+    })
+    const port = await server.listen(0, '127.0.0.1', true)
+    const baseUrl = `http://127.0.0.1:${port as number}/upload?uploader=s3`
+
+    const returnedResponse = await fetch(baseUrl, { method: 'POST' })
+    expect(returnedResponse.status).toBe(400)
+    expect(await toJson(returnedResponse)).toEqual({
+      success: false,
+      result: [],
+      items: [],
+      code: UploadSelectionErrorCode.ConfigNotFound,
+      message: returnedError.message
+    })
+
+    const thrownResponse = await fetch(baseUrl, {
+      method: 'POST',
+      body: JSON.stringify({ list: ['/a.png'] })
+    })
+    expect(thrownResponse.status).toBe(400)
+    expect(await toJson(thrownResponse)).toEqual({
+      success: false,
+      result: [],
+      items: [],
+      code: UploadSelectionErrorCode.AmbiguousConfig,
+      message: thrownError.message
+    })
+
+    server.shutdown()
+    await fs.remove(baseDir)
   })
 
   it('rejects non-internal builtin route overrides while upload adapter remains available', async () => {
@@ -383,6 +804,10 @@ describe('ServerManager (local server)', () => {
 
     const heartbeat = await fetch(`${baseUrl}/heartbeat`, { method: 'POST' })
     expect(heartbeat.status).toBe(200)
+
+    const invalidSelectionWithoutAuth = await fetch(`${baseUrl}/upload?uploader=`, { method: 'POST' })
+    expect(invalidSelectionWithoutAuth.status).toBe(401)
+    expect(uploadMock).not.toHaveBeenCalled()
 
     const resNoFallback = await fetch(`${baseUrl}/upload`, {
       method: 'POST',
