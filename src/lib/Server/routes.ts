@@ -2,10 +2,11 @@ import fs from 'fs-extra'
 import { randomUUID } from 'node:crypto'
 import path from 'path'
 import type { Hono } from 'hono'
-import type { IImgInfo, IPicGo } from '../../types'
+import type { IImgInfo, IPicGo, UploadOptions, UploadOption } from '../../types'
 import type { IServerUploadAdapter } from '../../types/internal'
 import { BuiltinRoutePath } from '../Routes/routePath'
 import type { ILocalesKey } from '../../i18n/zh-CN'
+import { resolveUploadOptions, UploadOptionError, UploadOptionErrorCode } from '../UploadOption'
 
 type FormDataFileLike = {
   name?: string
@@ -93,18 +94,23 @@ interface UploadResponse {
   success: boolean
   result: string[]
   items: UploadResultItem[]
+  code?: UploadOptionErrorCode
   message?: string
 }
 
 type GetUploadAdapter = () => IServerUploadAdapter | undefined
 
 const createDefaultUploadAdapter = (ctx: IPicGo): IServerUploadAdapter => ({
-  uploadClipboard: async () => await ctx.upload(),
-  uploadPaths: async (paths: string[]) => await ctx.upload(paths),
+  uploadClipboard: async (options?: UploadOptions) => await ctx.upload(undefined, options),
+  uploadPaths: async (paths: string[], options?: UploadOptions) => await ctx.upload(paths, options),
   getTempDir: () => path.join(ctx.baseDir, 'picgo-form-images')
 })
 
 const buildUploadResponse = (output: IImgInfo[] | Error): UploadResponse => {
+  if (output instanceof UploadOptionError) {
+    return { success: false, result: [], items: [], code: output.code, message: output.message }
+  }
+
   if (output instanceof Error) {
     return { success: false, result: [], items: [], message: output.message }
   }
@@ -132,20 +138,65 @@ const buildUploadResponse = (output: IImgInfo[] | Error): UploadResponse => {
   return { success: true, result, items }
 }
 
+const getUploadResponseStatus = (response: UploadResponse): 200 | 400 | 500 => {
+  if (response.success) return 200
+  if (response.code !== undefined) return 400
+  return 500
+}
+
+const buildUploadOptionErrorResponse = (error: UploadOptionError): UploadResponse => ({
+  success: false,
+  result: [],
+  items: [],
+  code: error.code,
+  message: error.message
+})
+
+const uploadOptionParameterNames = ['uploader', 'configName', 'configId'] as const
+
+const parseUploadOptions = (
+  url: URL,
+  translate: <T extends ILocalesKey>(key: T, args?: Record<string, string>) => string
+): UploadOption | undefined => {
+  const option: UploadOption = {}
+  let hasOption = false
+
+  for (const parameter of uploadOptionParameterNames) {
+    const values = url.searchParams.getAll(parameter)
+    if (values.length === 0) continue
+    if (values.length !== 1 || values[0].trim() === '') {
+      throw new UploadOptionError(
+        UploadOptionErrorCode.InvalidOption,
+        translate('UPLOAD_OPTION_INVALID_PARAMETER', { parameter })
+      )
+    }
+    option[parameter] = values[0]
+    hasOption = true
+  }
+
+  return hasOption ? option : undefined
+}
+
 const registerCoreRoutes = (app: Hono<any, any, any>, ctx: IPicGo, getUploadAdapter?: GetUploadAdapter): void => {
   app.post(BuiltinRoutePath.UPLOAD, async (c) => {
+    const t = <T extends ILocalesKey>(key: T, args?: Record<string, string>): string => {
+      return ctx.i18n?.translate<T>(key, args) ?? String(key)
+    }
+
     try {
+      const uploadOptions = parseUploadOptions(new URL(c.req.url), t)
+      resolveUploadOptions(ctx, uploadOptions)
+
       const contentType = c.req.raw.headers.get('content-type') || ''
-      const t = <T extends ILocalesKey>(key: T, args?: Record<string, string>): string => {
-        return ctx.i18n?.translate<T>(key, args) ?? String(key)
-      }
       const uploadAdapter = getUploadAdapter?.() ?? createDefaultUploadAdapter(ctx)
 
       if (contentType.includes('multipart/form-data')) {
-        const tempDir = uploadAdapter.getTempDir?.() ?? path.join(ctx.baseDir, 'picgo-form-images')
+        const tempParentDir = uploadAdapter.getTempDir?.() ?? path.join(ctx.baseDir, 'picgo-form-images')
+        // Multipart bodies contain file bytes, so the server must create temporary local files.
+        // Isolate requests so concurrent uploads cannot overwrite or delete each other's files.
+        const requestTempDir = path.join(tempParentDir, randomUUID())
         const tempFiles: string[] = []
         try {
-          await fs.ensureDir(tempDir)
           const formData = await c.req.formData()
           const files = formData.getAll('files') as unknown[]
           if (files.length === 0) {
@@ -159,20 +210,32 @@ const registerCoreRoutes = (app: Hono<any, any, any>, ctx: IPicGo, getUploadAdap
 
             const fileName = getFormDataFileName(file)
             const safeName = path.basename(fileName)
-            const filePath = path.join(tempDir, safeName)
+            // Files in the same request may share a name. A separate directory preserves
+            // each original basename without overwriting another file's contents.
+            const filePath = path.join(requestTempDir, randomUUID(), safeName)
             const buffer = Buffer.from(await file.arrayBuffer())
+            await fs.ensureDir(path.dirname(filePath))
             await fs.writeFile(filePath, buffer)
             tempFiles.push(filePath)
           }
 
-          const output = await uploadAdapter.uploadPaths(tempFiles)
+          const output = await uploadAdapter.uploadPaths(tempFiles, uploadOptions)
           const response = buildUploadResponse(output)
-          return c.json(response, response.success ? 200 : 500)
+          return c.json(response, getUploadResponseStatus(response))
         } catch (e: unknown) {
+          if (e instanceof UploadOptionError) {
+            return c.json(buildUploadOptionErrorResponse(e), 400)
+          }
           ctx.log.error(e)
           return c.json({ success: false, result: [], items: [], message: getErrorMessage(e) }, 500)
         } finally {
-          await Promise.allSettled(tempFiles.map(file => fs.remove(file)))
+          try {
+            // Remove only files created for this multipart request, on success or failure.
+            // JSON uploads pass existing paths directly and never enter this cleanup block.
+            await fs.remove(requestTempDir)
+          } catch (cleanupError: unknown) {
+            ctx.log.error(cleanupError)
+          }
         }
       }
 
@@ -180,9 +243,9 @@ const registerCoreRoutes = (app: Hono<any, any, any>, ctx: IPicGo, getUploadAdap
 
       // No request body -> upload from clipboard.
       if (bodyText.trim() === '') {
-        const output = await uploadAdapter.uploadClipboard()
+        const output = await uploadAdapter.uploadClipboard(uploadOptions)
         const response = buildUploadResponse(output)
-        return c.json(response, response.success ? 200 : 500)
+        return c.json(response, getUploadResponseStatus(response))
       }
 
       let body: unknown
@@ -198,15 +261,18 @@ const registerCoreRoutes = (app: Hono<any, any, any>, ctx: IPicGo, getUploadAdap
       }
 
       if (parsedBody.kind === ParsedUploadRequestBodyKind.Clipboard) {
-        const output = await uploadAdapter.uploadClipboard()
+        const output = await uploadAdapter.uploadClipboard(uploadOptions)
         const response = buildUploadResponse(output)
-        return c.json(response, response.success ? 200 : 500)
+        return c.json(response, getUploadResponseStatus(response))
       }
 
-      const output = await uploadAdapter.uploadPaths(parsedBody.list)
+      const output = await uploadAdapter.uploadPaths(parsedBody.list, uploadOptions)
       const response = buildUploadResponse(output)
-      return c.json(response, response.success ? 200 : 500)
+      return c.json(response, getUploadResponseStatus(response))
     } catch (e: unknown) {
+      if (e instanceof UploadOptionError) {
+        return c.json(buildUploadOptionErrorResponse(e), 400)
+      }
       ctx.log.error(e)
       return c.json({ success: false, result: [], items: [], message: getErrorMessage(e) }, 500)
     }

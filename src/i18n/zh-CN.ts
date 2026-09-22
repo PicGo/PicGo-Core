@@ -6,6 +6,14 @@ export const ZH_CN = {
   UPLOAD_FAILED_REASON: '错误码：${code}，请打开浏览器粘贴地址查看相关原因',
   SERVER_ERROR: '服务端出错，请重试',
   AUTH_FAILED: '认证失败',
+  CONFIG_INVALID_FORMAT: '配置格式无效，请重新配置。',
+  CONFIG_KEY_READ_ONLY: '无法修改 config.${name}。',
+  CONFIG_KEY_CANNOT_UNSET: '无法删除 config.${key}。',
+  UPLOAD_OPTION_INVALID_PARAMETER: '上传参数“${parameter}”无效：请提供一个非空字符串值。',
+  UPLOAD_OPTION_ACTIVE_CONFIG: '当前配置（优先使用默认 ID，其次使用首个已保存配置）',
+  UPLOAD_OPTION_UNKNOWN_UPLOADER: '图床“${uploader}”尚未注册。可用图床：${uploaders}。',
+  UPLOAD_OPTION_CONFIG_NOT_FOUND: '在${scope}中找不到匹配${selectors}的上传配置。',
+  UPLOAD_OPTION_CONFIG_AMBIGUOUS: '${scope}中的上传配置${selector}存在歧义。匹配项：${candidates}。请指定图床或唯一的配置 ID。',
 
   // cloud login
   CLOUD_LOGIN_CANCELLED: '登录已取消',

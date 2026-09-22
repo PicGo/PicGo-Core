@@ -4,14 +4,14 @@ import { EventEmitter } from 'events'
 import { homedir } from 'os'
 import Commander from '../lib/Commander'
 import { Logger } from '../lib/Logger'
-import Lifecycle from './Lifecycle'
+import { Lifecycle } from './Lifecycle'
 import LifecyclePlugins, { setCurrentPluginName } from '../lib/LifecyclePlugins'
 import uploaders from '../plugins/uploader'
 import transformers from '../plugins/transformer'
 import PluginLoader from '../lib/PluginLoader'
 import { get, set, unset } from 'lodash'
 import { IHelper, IImgInfo, IConfig, IPicGo, IStringKeyMap, IPluginLoader, II18nManager, IPicGoPlugin, IPicGoPluginInterface, IRequest, IUploaderConfigManager, IServerManager, UploadOptions } from '../types'
-import getClipboardImage from '../utils/getClipboardImage'
+import { getClipboardImage } from '../utils/getClipboardImage'
 import Request from '../lib/Request'
 import DB from '../utils/db'
 import PluginHandler from '../lib/PluginHandler'
@@ -22,6 +22,7 @@ import { I18nManager } from '../i18n'
 import { ServerManager } from '../lib/Server'
 import { CloudManager } from '../lib/Cloud'
 import { UploaderConfigManager } from '../lib/UploaderConfigManager'
+import { resolveUploadOptions } from '../lib/UploadOption'
 
 export class PicGo extends EventEmitter implements IPicGo {
   private _config!: IConfig
@@ -212,24 +213,25 @@ export class PicGo extends EventEmitter implements IPicGo {
     }
     // upload from clipboard
     if (input === undefined || input.length === 0) {
+      // Reject invalid options before reading the clipboard or creating a temporary image.
+      resolveUploadOptions(this, options)
       try {
         const { imgPath, shouldKeepAfterUploading } = await getClipboardImage(this)
         if (imgPath === 'no image') {
           throw new Error('image not found in clipboard')
-        } else {
-          this.once(IBuildInEvent.FAILED, () => {
-            if (!shouldKeepAfterUploading) {
-              // 删除 picgo 生成的图片文件，例如 `~/.picgo/20200621205720.png`
-              fs.remove(imgPath).catch((e) => { this.log.error(e) })
-            }
-          })
-          this.once('finished', () => {
-            if (!shouldKeepAfterUploading) {
-              fs.remove(imgPath).catch((e) => { this.log.error(e) })
-            }
-          })
+        }
+        try {
           const { output } = await this.lifecycle.start([imgPath], options)
           return output
+        } finally {
+          if (!shouldKeepAfterUploading) {
+            try {
+              // 删除 PicGo 为本次上传生成的图片文件，例如 `~/.picgo/20200621205720.png`
+              await fs.remove(imgPath)
+            } catch (e) {
+              this.log.error(e)
+            }
+          }
         }
       } catch (e) {
         this.emit(IBuildInEvent.FAILED, e)

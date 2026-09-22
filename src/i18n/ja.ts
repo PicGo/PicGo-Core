@@ -8,6 +8,14 @@ export const JA: ILocales = {
   UPLOAD_FAILED_REASON: 'エラーコード: ${code}、ブラウザを開いてアドレスを貼り付けて原因を確認してください',
   SERVER_ERROR: 'サーバーエラーが発生しました。後でもう一度お試しください',
   AUTH_FAILED: '認証失敗',
+  CONFIG_INVALID_FORMAT: '設定形式が無効です。再設定してください。',
+  CONFIG_KEY_READ_ONLY: 'config.${name}は変更できません。',
+  CONFIG_KEY_CANNOT_UNSET: 'config.${key}は削除できません。',
+  UPLOAD_OPTION_INVALID_PARAMETER: 'アップロードパラメーター「${parameter}」が無効です。空でない文字列を1つ指定してください。',
+  UPLOAD_OPTION_ACTIVE_CONFIG: '現在の設定（デフォルトID、次に最初の保存済み設定）',
+  UPLOAD_OPTION_UNKNOWN_UPLOADER: 'アップローダー「${uploader}」は登録されていません。利用可能なアップローダー: ${uploaders}。',
+  UPLOAD_OPTION_CONFIG_NOT_FOUND: '${scope}に${selectors}と一致するアップロード設定がありません。',
+  UPLOAD_OPTION_CONFIG_AMBIGUOUS: '${scope}のアップロード設定${selector}は一意ではありません。一致候補: ${candidates}。アップローダーまたは一意の設定IDを指定してください。',
 
   // cloud login
   CLOUD_LOGIN_CANCELLED: 'ログインがキャンセルされました',

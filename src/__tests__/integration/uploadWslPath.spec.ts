@@ -7,7 +7,7 @@ import { PicGo } from '../../core/PicGo'
 import type { IPicGo } from '../../types'
 
 vi.mock('../../utils/getClipboardImage', () => ({
-  default: vi.fn()
+  getClipboardImage: vi.fn()
 }))
 
 const PNG_BYTES = Buffer.from(

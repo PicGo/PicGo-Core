@@ -96,6 +96,21 @@ $ picgo -h
 picgo upload /xxx/xx/xx.jpg
 ```
 
+#### Upload with a saved configuration
+
+Use `--configName` to choose a saved configuration for one upload. Add `--uploader` when the same name exists in multiple uploader types. You can also use `--configId`; a unique ID match takes precedence over the name, and an unresolved ID falls back to the name when provided.
+
+```bash
+picgo upload ./photo.png --configName=Work
+picgo upload ./photo.png --uploader=github --configName="Work Images"
+picgo upload ./photo.png --uploader=github --configId=your-config-id --configName=Work
+
+# Upload from the clipboard with a saved configuration.
+picgo upload --configName=Work
+```
+
+These options use the same lookup rules as HTTP and SDK uploads and do not change saved defaults. Without these options, `picgo upload` retains its existing default behavior. Existing local input files are retained after upload; only temporary multipart files and clipboard images created by PicGo are cleaned up. Clipboard filenames keep the existing `YYYYMMDDHHmmssSSS.png` format.
+
 #### Upload a picture from clipboard
 
 > picture from clipboard will be converted to `png`
@@ -111,6 +126,40 @@ Thanks to [vs-picgo](https://github.com/Spades-S/vs-picgo) && [Spades-S](https:/
 ```bash
 picgo server -p 36677 -h 127.0.0.1
 ```
+
+##### Select a configuration for one upload
+
+Add `uploader`, `configName`, or `configId` to `POST /upload` to choose an existing saved configuration for that request. Configuration names are recommended for readability. Use URL encoding for names containing spaces, Chinese characters, or other special characters:
+
+```js
+const url = new URL('http://127.0.0.1:36677/upload')
+url.searchParams.set('uploader', 'github')
+url.searchParams.set('configName', 'Work')
+
+const response = await fetch(url, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ list: ['/absolute/path/photo.png'] })
+})
+const result = await response.json()
+```
+
+The same query parameters work with an empty body for clipboard uploads, JSON without `list` or with an empty `list`, and multipart uploads using the `files` field. If server authentication is enabled, include your existing `Authorization: Bearer <secret>` header.
+
+| Upload options | Behavior |
+| --- | --- |
+| No upload options | Existing default upload behavior. |
+| `uploader=github` | Use GitHub's currently selected configuration (`defaultId`, falling back to its first configuration). |
+| `uploader=github&configName=Work` | Find `Work` within GitHub, ignoring case and surrounding whitespace. |
+| `configName=Work` | Search registered uploader types; exactly one configuration must match. |
+| `configId=<id>` | Search by exact ID, optionally restricted by `uploader`. IDs remain stable when configurations are renamed. |
+| Both `configId` and `configName` | Use a unique ID match first; if it cannot be uniquely resolved, try the name. |
+
+Unknown uploaders, missing or ambiguous configurations, and blank or repeated upload parameters return HTTP `400` with `{ success: false, result: [], items: [], code, message }`. Messages explain the lookup failure or ambiguity; specify `uploader` to disambiguate names shared across types. Invalid upload options never fall back to the global default uploader. Existing authentication failures remain HTTP `401`.
+
+Upload options do not change global defaults or save the requested configuration to disk. Concurrent requests can use different configurations. Plugins that read configuration through the context passed to their lifecycle handler see the request's configuration; plugins that cache global configuration may need adaptation. Explicit plugin persistence and Cloud session maintenance retain their normal behavior. `uploader=picgo-cloud` uses the current Cloud login; these options do not switch Cloud accounts.
+
+Applications providing a custom internal server upload adapter must forward the optional `UploadOptions` argument to `picgo.upload`: `uploadPaths(paths, options)` forwards to `picgo.upload(paths, options)`, and `uploadClipboard(options)` forwards to `picgo.upload(undefined, options)`. Existing adapters can still handle requests without selectors, but ignoring these options will ignore the requested destination.
 
 #### Login to [PicGo Cloud](https://cloud.picgo.app)
 
@@ -246,6 +295,43 @@ picgo.upload(['/xxx/xxx.jpg'])
 
 // upload a picture from clipboard
 picgo.upload()
+```
+
+The SDK accepts the same selectors in the second argument:
+
+```js
+import { PicGo, UploadOptionError } from 'picgo'
+
+const picgo = new PicGo()
+
+try {
+  await picgo.upload(['/absolute/path/photo.png'], {
+    uploader: 'github',
+    configName: 'Work'
+  })
+
+  // A globally unique name can identify both the uploader and its configuration.
+  await picgo.upload(undefined, { configName: 'Work' })
+} catch (error) {
+  if (error instanceof UploadOptionError) {
+    console.error(error.code, error.message)
+  } else {
+    throw error
+  }
+}
+```
+
+Invalid upload options reject the upload promise before processing inputs. Error codes are `INVALID_UPLOAD_OPTION`, `UNKNOWN_UPLOADER`, `UPLOAD_CONFIG_NOT_FOUND`, and `UPLOAD_CONFIG_AMBIGUOUS`. Temporary `setConfig`/`unsetConfig` calls on a scoped upload context affect that upload only; explicit `saveConfig`/`removeConfig` calls remain persistent. Existing SDK calls without upload options keep their behavior.
+
+## Development
+
+Use Node.js >= 22.13 and pnpm 11.7.0 for repository development. The package manager is pinned in `package.json`; `pnpm-workspace.yaml` records the allowed esbuild installation script. This tooling requirement does not change PicGo's published runtime requirements.
+
+```bash
+pnpm install --frozen-lockfile
+pnpm lint
+pnpm test
+pnpm build
 ```
 
 ## Documentation

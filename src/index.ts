@@ -13,6 +13,11 @@ export { Commander } from './lib/Commander'
 export { PluginLoader } from './lib/PluginLoader'
 export { Request } from './lib/Request'
 export { ServerManager } from './lib/Server'
+export {
+  resolveUploadOptions,
+  UploadOptionError,
+  UploadOptionErrorCode
+} from './lib/UploadOption'
 export { CloudManager } from './lib/Cloud'
 export {
   ConfigSyncManager,

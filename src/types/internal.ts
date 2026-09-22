@@ -1,9 +1,9 @@
-import { Env, Handler } from 'hono'
-import { IImgInfo, IServerManager } from '.'
+import type { Env, Handler } from 'hono'
+import type { IImgInfo, IServerManager, UploadOptions } from '.'
 
 export interface IServerUploadAdapter {
-  uploadClipboard: () => Promise<IImgInfo[] | Error>
-  uploadPaths: (paths: string[]) => Promise<IImgInfo[] | Error>
+  uploadClipboard: (options?: UploadOptions) => Promise<IImgInfo[] | Error>
+  uploadPaths: (paths: string[], options?: UploadOptions) => Promise<IImgInfo[] | Error>
   getTempDir?: () => string
 }
 
