@@ -1,3 +1,12 @@
+# :tada: 3.1.0 (2026-09-22)
+
+
+### :sparkles: Features
+
+* **core:** support per-upload configuration options ([#203](https://github.com/PicGo/PicGo-Core/issues/203)) ([94459be](https://github.com/PicGo/PicGo-Core/commit/94459be))
+
+
+
 ## :tada: 3.0.2 (2026-08-27)
 
 
