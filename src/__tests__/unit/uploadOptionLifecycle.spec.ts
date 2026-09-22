@@ -4,7 +4,7 @@ import path from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { PicGo } from '../../core/PicGo'
 import { Lifecycle } from '../../core/Lifecycle'
-import { UploadSelectionErrorCode } from '../../lib/UploadSelection'
+import { UploadOptionErrorCode } from '../../lib/UploadOption'
 import type { IImgInfo, IPicGo, IUploaderConfigItem } from '../../types'
 import { createClipboardImagePath } from '../../utils/createClipboardImagePath'
 
@@ -66,7 +66,7 @@ const readConfigFile = (configPath: string): Record<string, unknown> => {
 }
 
 const createHarness = (): ITestHarness => {
-  const directory = mkdtempSync(path.join(tmpdir(), 'picgo-upload-selection-'))
+  const directory = mkdtempSync(path.join(tmpdir(), 'picgo-upload-option-'))
   temporaryDirectories.push(directory)
   const configPath = path.join(directory, 'config.json')
   const alphaOne: ITestProfile = {
@@ -94,7 +94,7 @@ const createHarness = (): ITestHarness => {
     picBed: {
       uploader: 'alpha',
       current: 'alpha',
-      transformer: 'selection-test',
+      transformer: 'option-test',
       alpha: alphaOne,
       beta: betaOne
     },
@@ -118,7 +118,7 @@ const createHarness = (): ITestHarness => {
   writeFileSync(configPath, JSON.stringify(initialConfig), 'utf8')
 
   const picgo = new PicGo(configPath)
-  picgo.helper.transformer.register('selection-test', {
+  picgo.helper.transformer.register('option-test', {
     handle: async (ctx: IPicGo) => {
       ctx.output = ctx.input.map((item: unknown, index: number): IImgInfo => ({
         buffer: Buffer.from(`image-${index}`),
@@ -157,17 +157,17 @@ afterEach(async () => {
   }
 })
 
-describe('per-upload selection lifecycle isolation', () => {
-  it('rejects invalid SDK selection before reading the clipboard', async () => {
+describe('per-upload option lifecycle isolation', () => {
+  it('rejects invalid SDK option before reading the clipboard', async () => {
     const { picgo } = createHarness()
 
     await expect(picgo.upload(undefined, { uploader: 'missing-uploader' })).rejects.toMatchObject({
-      code: UploadSelectionErrorCode.UnknownUploader
+      code: UploadOptionErrorCode.UnknownUploader
     })
     expect(getClipboardImageMock).not.toHaveBeenCalled()
   })
 
-  it('uses isolated selection for SDK and direct Lifecycle calls without changing root or disk config', async () => {
+  it('uses isolated option for SDK and direct Lifecycle calls without changing root or disk config', async () => {
     const { picgo, configPath } = createHarness()
     registerEndpointUploader(picgo, 'alpha')
     registerEndpointUploader(picgo, 'beta')
@@ -187,7 +187,7 @@ describe('per-upload selection lifecycle isolation', () => {
     const { picgo, configPath } = createHarness()
     const observed: Record<string, unknown> = {}
 
-    picgo.helper.beforeUploadPlugins.register('selection-mutations', {
+    picgo.helper.beforeUploadPlugins.register('option-mutations', {
       handle: async (ctx: IPicGo) => {
         ctx.setConfig({
           'temporary.keep': true,

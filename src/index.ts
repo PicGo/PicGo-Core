@@ -15,9 +15,9 @@ export { Request } from './lib/Request'
 export { ServerManager } from './lib/Server'
 export {
   resolveUploadOptions,
-  UploadSelectionError,
-  UploadSelectionErrorCode
-} from './lib/UploadSelection'
+  UploadOptionError,
+  UploadOptionErrorCode
+} from './lib/UploadOption'
 export { CloudManager } from './lib/Cloud'
 export {
   ConfigSyncManager,

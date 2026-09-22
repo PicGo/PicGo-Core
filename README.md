@@ -131,18 +131,18 @@ const result = await response.json()
 
 The same query parameters work with an empty body for clipboard uploads, JSON without `list` or with an empty `list`, and multipart uploads using the `files` field. If server authentication is enabled, include your existing `Authorization: Bearer <secret>` header.
 
-| Selection | Behavior |
+| Upload options | Behavior |
 | --- | --- |
-| No selection parameters | Existing default upload behavior. |
+| No upload options | Existing default upload behavior. |
 | `uploader=github` | Use GitHub's currently selected configuration (`defaultId`, falling back to its first configuration). |
 | `uploader=github&configName=Work` | Find `Work` within GitHub, ignoring case and surrounding whitespace. |
 | `configName=Work` | Search registered uploader types; exactly one configuration must match. |
 | `configId=<id>` | Search by exact ID, optionally restricted by `uploader`. IDs remain stable when configurations are renamed. |
 | Both `configId` and `configName` | Use a unique ID match first; if it cannot be uniquely resolved, try the name. |
 
-Unknown uploaders, missing or ambiguous configurations, and blank or repeated selector parameters return HTTP `400` with `{ success: false, result: [], items: [], code, message }`. Messages explain the lookup failure or ambiguity; specify `uploader` to disambiguate names shared across types. Selection errors never fall back to the global default uploader. Existing authentication failures remain HTTP `401`.
+Unknown uploaders, missing or ambiguous configurations, and blank or repeated upload parameters return HTTP `400` with `{ success: false, result: [], items: [], code, message }`. Messages explain the lookup failure or ambiguity; specify `uploader` to disambiguate names shared across types. Invalid upload options never fall back to the global default uploader. Existing authentication failures remain HTTP `401`.
 
-Selection does not change global defaults or save the selected configuration to disk. Concurrent requests can use different configurations. Plugins that read configuration through the context passed to their lifecycle handler see the request's selection; plugins that cache global configuration may need adaptation. Explicit plugin persistence and Cloud session maintenance retain their normal behavior. `uploader=picgo-cloud` uses the current Cloud login; these selectors do not switch Cloud accounts.
+Upload options do not change global defaults or save the requested configuration to disk. Concurrent requests can use different configurations. Plugins that read configuration through the context passed to their lifecycle handler see the request's configuration; plugins that cache global configuration may need adaptation. Explicit plugin persistence and Cloud session maintenance retain their normal behavior. `uploader=picgo-cloud` uses the current Cloud login; these options do not switch Cloud accounts.
 
 Applications providing a custom internal server upload adapter must forward the optional `UploadOptions` argument to `picgo.upload`: `uploadPaths(paths, options)` forwards to `picgo.upload(paths, options)`, and `uploadClipboard(options)` forwards to `picgo.upload(undefined, options)`. Existing adapters can still handle requests without selectors, but ignoring these options will ignore the requested destination.
 
@@ -285,7 +285,7 @@ picgo.upload()
 The SDK accepts the same selectors in the second argument:
 
 ```js
-import { PicGo, UploadSelectionError } from 'picgo'
+import { PicGo, UploadOptionError } from 'picgo'
 
 const picgo = new PicGo()
 
@@ -298,7 +298,7 @@ try {
   // A globally unique name can identify both the uploader and its configuration.
   await picgo.upload(undefined, { configName: '工作图床' })
 } catch (error) {
-  if (error instanceof UploadSelectionError) {
+  if (error instanceof UploadOptionError) {
     console.error(error.code, error.message)
   } else {
     throw error
@@ -306,7 +306,7 @@ try {
 }
 ```
 
-Selection failures reject the upload promise before processing inputs. Error codes are `INVALID_UPLOAD_SELECTION`, `UNKNOWN_UPLOADER`, `UPLOAD_CONFIG_NOT_FOUND`, and `UPLOAD_CONFIG_AMBIGUOUS`. Temporary `setConfig`/`unsetConfig` calls on a selected upload context affect that upload only; explicit `saveConfig`/`removeConfig` calls remain persistent. Existing SDK calls without selectors keep their behavior.
+Invalid upload options reject the upload promise before processing inputs. Error codes are `INVALID_UPLOAD_OPTION`, `UNKNOWN_UPLOADER`, `UPLOAD_CONFIG_NOT_FOUND`, and `UPLOAD_CONFIG_AMBIGUOUS`. Temporary `setConfig`/`unsetConfig` calls on a scoped upload context affect that upload only; explicit `saveConfig`/`removeConfig` calls remain persistent. Existing SDK calls without upload options keep their behavior.
 
 ## Development
 

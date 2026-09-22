@@ -22,7 +22,7 @@ import { I18nManager } from '../i18n'
 import { ServerManager } from '../lib/Server'
 import { CloudManager } from '../lib/Cloud'
 import { UploaderConfigManager } from '../lib/UploaderConfigManager'
-import { resolveUploadOptions } from '../lib/UploadSelection'
+import { resolveUploadOptions } from '../lib/UploadOption'
 
 export class PicGo extends EventEmitter implements IPicGo {
   private _config!: IConfig
@@ -211,7 +211,7 @@ export class PicGo extends EventEmitter implements IPicGo {
       this.log.error('The configuration file only supports JSON format.')
       return []
     }
-    const selection = resolveUploadOptions(this, options)
+    const option = resolveUploadOptions(this, options)
     // upload from clipboard
     if (input === undefined || input.length === 0) {
       try {
@@ -220,7 +220,7 @@ export class PicGo extends EventEmitter implements IPicGo {
           throw new Error('image not found in clipboard')
         }
         try {
-          const { output } = await this.lifecycle.start([imgPath], options, selection)
+          const { output } = await this.lifecycle.start([imgPath], options, option)
           return output
         } finally {
           if (!shouldKeepAfterUploading) {
@@ -238,7 +238,7 @@ export class PicGo extends EventEmitter implements IPicGo {
       }
     } else {
       // upload from path
-      const { output } = await this.lifecycle.start(input, options, selection)
+      const { output } = await this.lifecycle.start(input, options, option)
       return output
     }
   }

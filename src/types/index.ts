@@ -440,7 +440,7 @@ export enum OutputFormat {
   JSON = 'json'
 }
 
-export interface UploadSelection {
+export interface UploadOption {
   /** Registered uploader type. Omit to search all registered types by configuration name or ID. */
   uploader?: string
   /** Friendly configuration name, matched case-insensitively within the search scope. */
@@ -449,13 +449,13 @@ export interface UploadSelection {
   configId?: string
 }
 
-export interface ResolvedUploadSelection {
+export interface ResolvedUploadOption {
   uploader: string
   /** PicGo Cloud may use the current login without a saved uploader profile. */
   config?: IUploaderConfigItem
 }
 
-export interface UploadOptions extends UploadSelection {
+export interface UploadOptions extends UploadOption {
   /** Output format for the success message. Defaults to 'pretty'. */
   outputFormat?: OutputFormat
 }

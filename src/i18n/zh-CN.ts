@@ -9,11 +9,11 @@ export const ZH_CN = {
   CONFIG_INVALID_FORMAT: '配置格式无效，请重新配置。',
   CONFIG_KEY_READ_ONLY: '无法修改 config.${name}。',
   CONFIG_KEY_CANNOT_UNSET: '无法删除 config.${key}。',
-  UPLOAD_SELECTION_INVALID_PARAMETER: '上传选择参数“${parameter}”无效：请提供一个非空字符串值。',
-  UPLOAD_SELECTION_ACTIVE_CONFIG: '当前配置（优先使用默认 ID，其次使用首个已保存配置）',
-  UPLOAD_SELECTION_UNKNOWN_UPLOADER: '图床“${uploader}”尚未注册。可用图床：${uploaders}。',
-  UPLOAD_SELECTION_CONFIG_NOT_FOUND: '在${scope}中找不到匹配${selectors}的上传配置。',
-  UPLOAD_SELECTION_CONFIG_AMBIGUOUS: '${scope}中的上传配置${selector}存在歧义。匹配项：${candidates}。请指定图床或唯一的配置 ID。',
+  UPLOAD_OPTION_INVALID_PARAMETER: '上传参数“${parameter}”无效：请提供一个非空字符串值。',
+  UPLOAD_OPTION_ACTIVE_CONFIG: '当前配置（优先使用默认 ID，其次使用首个已保存配置）',
+  UPLOAD_OPTION_UNKNOWN_UPLOADER: '图床“${uploader}”尚未注册。可用图床：${uploaders}。',
+  UPLOAD_OPTION_CONFIG_NOT_FOUND: '在${scope}中找不到匹配${selectors}的上传配置。',
+  UPLOAD_OPTION_CONFIG_AMBIGUOUS: '${scope}中的上传配置${selector}存在歧义。匹配项：${candidates}。请指定图床或唯一的配置 ID。',
 
   // cloud login
   CLOUD_LOGIN_CANCELLED: '登录已取消',

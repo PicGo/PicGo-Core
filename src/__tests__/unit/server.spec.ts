@@ -9,7 +9,7 @@ import { ServerManager } from '../../lib/Server'
 import { EN } from '../../i18n/en'
 import type { II18nManager, IPicGo, IImgInfo, IUploaderConfigItem, UploadOptions } from '../../types'
 import type { IServerUploadAdapter } from '../../types/internal'
-import { UploadSelectionError, UploadSelectionErrorCode } from '../../lib/UploadSelection'
+import { UploadOptionError, UploadOptionErrorCode } from '../../lib/UploadOption'
 
 type ILogSpy = {
   warn: ReturnType<typeof vi.fn>
@@ -511,7 +511,7 @@ describe('ServerManager (local server)', () => {
     await fs.remove(adapterTempDir)
   })
 
-  it('forwards validated upload selection to every request body mode', async () => {
+  it('forwards validated upload option to every request body mode', async () => {
     const options: UploadOptions = { uploader: 's3', configName: 'Primary' }
     const uploadMock = vi.fn(async () => {
       throw new Error('ctx.upload should not be called when adapter is set')
@@ -568,7 +568,7 @@ describe('ServerManager (local server)', () => {
     await fs.remove(baseDir)
   })
 
-  it('forwards selection through the default adapter to PicGo upload', async () => {
+  it('forwards option through the default adapter to PicGo upload', async () => {
     const uploadMock = vi.fn(async (input?: any[]) => {
       return [{ imgUrl: input === undefined ? 'https://a.example/clipboard.png' : 'https://a.example/path.png' }]
     })
@@ -601,8 +601,8 @@ describe('ServerManager (local server)', () => {
     await fs.remove(baseDir)
   })
 
-  it('returns structured selection errors before adapter or multipart temp operations', async () => {
-    const adapterTempDir = await createTempDir('picgo-core-selection-prevalidation-')
+  it('returns structured option errors before adapter or multipart temp operations', async () => {
+    const adapterTempDir = await createTempDir('picgo-core-option-prevalidation-')
     const getTempDirMock = vi.fn(() => adapterTempDir)
     const uploadClipboardMock = vi.fn(async () => [{ imgUrl: 'https://a.example/unexpected.png' }])
     const uploadPathsMock = vi.fn(async () => [{ imgUrl: 'https://a.example/unexpected.png' }])
@@ -637,11 +637,11 @@ describe('ServerManager (local server)', () => {
     const invalidForm = new FormData()
     invalidForm.append('files', new Blob([Buffer.from('must-not-write')]), 'same.png')
     const cases = [
-      { query: 'uploader=', code: UploadSelectionErrorCode.InvalidSelection, body: invalidForm },
-      { query: 'configName=one&configName=two', code: UploadSelectionErrorCode.InvalidSelection },
-      { query: 'uploader=unknown', code: UploadSelectionErrorCode.UnknownUploader },
-      { query: 'uploader=s3&configName=Missing', code: UploadSelectionErrorCode.ConfigNotFound },
-      { query: 'configName=Shared', code: UploadSelectionErrorCode.AmbiguousConfig }
+      { query: 'uploader=', code: UploadOptionErrorCode.InvalidOption, body: invalidForm },
+      { query: 'configName=one&configName=two', code: UploadOptionErrorCode.InvalidOption },
+      { query: 'uploader=unknown', code: UploadOptionErrorCode.UnknownUploader },
+      { query: 'uploader=s3&configName=Missing', code: UploadOptionErrorCode.ConfigNotFound },
+      { query: 'configName=Shared', code: UploadOptionErrorCode.AmbiguousConfig }
     ]
 
     for (const testCase of cases) {
@@ -658,7 +658,7 @@ describe('ServerManager (local server)', () => {
         code: testCase.code,
         message: expect.any(String)
       })
-      expect(json.message).not.toMatch(/^UPLOAD_SELECTION_/)
+      expect(json.message).not.toMatch(/^UPLOAD_OPTION_/)
     }
 
     expect(getTempDirMock).not.toHaveBeenCalled()
@@ -706,9 +706,9 @@ describe('ServerManager (local server)', () => {
     await fs.remove(baseDir)
   })
 
-  it('preserves structured selection errors returned or thrown by adapters', async () => {
-    const returnedError = new UploadSelectionError(UploadSelectionErrorCode.ConfigNotFound, 'returned selection failure')
-    const thrownError = new UploadSelectionError(UploadSelectionErrorCode.AmbiguousConfig, 'thrown selection failure')
+  it('preserves structured option errors returned or thrown by adapters', async () => {
+    const returnedError = new UploadOptionError(UploadOptionErrorCode.ConfigNotFound, 'returned option failure')
+    const thrownError = new UploadOptionError(UploadOptionErrorCode.AmbiguousConfig, 'thrown option failure')
     const { ctx, baseDir } = await createMockCtx({
       settings: { server: { port: 0, host: '127.0.0.1' } },
       uploader: {
@@ -735,7 +735,7 @@ describe('ServerManager (local server)', () => {
       success: false,
       result: [],
       items: [],
-      code: UploadSelectionErrorCode.ConfigNotFound,
+      code: UploadOptionErrorCode.ConfigNotFound,
       message: returnedError.message
     })
 
@@ -748,7 +748,7 @@ describe('ServerManager (local server)', () => {
       success: false,
       result: [],
       items: [],
-      code: UploadSelectionErrorCode.AmbiguousConfig,
+      code: UploadOptionErrorCode.AmbiguousConfig,
       message: thrownError.message
     })
 
@@ -805,8 +805,8 @@ describe('ServerManager (local server)', () => {
     const heartbeat = await fetch(`${baseUrl}/heartbeat`, { method: 'POST' })
     expect(heartbeat.status).toBe(200)
 
-    const invalidSelectionWithoutAuth = await fetch(`${baseUrl}/upload?uploader=`, { method: 'POST' })
-    expect(invalidSelectionWithoutAuth.status).toBe(401)
+    const invalidOptionWithoutAuth = await fetch(`${baseUrl}/upload?uploader=`, { method: 'POST' })
+    expect(invalidOptionWithoutAuth.status).toBe(401)
     expect(uploadMock).not.toHaveBeenCalled()
 
     const resNoFallback = await fetch(`${baseUrl}/upload`, {

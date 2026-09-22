@@ -2,11 +2,11 @@ import fs from 'fs-extra'
 import { randomUUID } from 'node:crypto'
 import path from 'path'
 import type { Hono } from 'hono'
-import type { IImgInfo, IPicGo, UploadOptions, UploadSelection } from '../../types'
+import type { IImgInfo, IPicGo, UploadOptions, UploadOption } from '../../types'
 import type { IServerUploadAdapter } from '../../types/internal'
 import { BuiltinRoutePath } from '../Routes/routePath'
 import type { ILocalesKey } from '../../i18n/zh-CN'
-import { resolveUploadOptions, UploadSelectionError, UploadSelectionErrorCode } from '../UploadSelection'
+import { resolveUploadOptions, UploadOptionError, UploadOptionErrorCode } from '../UploadOption'
 
 type FormDataFileLike = {
   name?: string
@@ -94,7 +94,7 @@ interface UploadResponse {
   success: boolean
   result: string[]
   items: UploadResultItem[]
-  code?: UploadSelectionErrorCode
+  code?: UploadOptionErrorCode
   message?: string
 }
 
@@ -107,7 +107,7 @@ const createDefaultUploadAdapter = (ctx: IPicGo): IServerUploadAdapter => ({
 })
 
 const buildUploadResponse = (output: IImgInfo[] | Error): UploadResponse => {
-  if (output instanceof UploadSelectionError) {
+  if (output instanceof UploadOptionError) {
     return { success: false, result: [], items: [], code: output.code, message: output.message }
   }
 
@@ -144,7 +144,7 @@ const getUploadResponseStatus = (response: UploadResponse): 200 | 400 | 500 => {
   return 500
 }
 
-const buildSelectionErrorResponse = (error: UploadSelectionError): UploadResponse => ({
+const buildUploadOptionErrorResponse = (error: UploadOptionError): UploadResponse => ({
   success: false,
   result: [],
   items: [],
@@ -152,29 +152,29 @@ const buildSelectionErrorResponse = (error: UploadSelectionError): UploadRespons
   message: error.message
 })
 
-const selectionParameterNames = ['uploader', 'configName', 'configId'] as const
+const uploadOptionParameterNames = ['uploader', 'configName', 'configId'] as const
 
-const parseUploadSelection = (
+const parseUploadOptions = (
   url: URL,
   translate: <T extends ILocalesKey>(key: T, args?: Record<string, string>) => string
-): UploadSelection | undefined => {
-  const selection: UploadSelection = {}
-  let hasSelection = false
+): UploadOption | undefined => {
+  const option: UploadOption = {}
+  let hasOption = false
 
-  for (const parameter of selectionParameterNames) {
+  for (const parameter of uploadOptionParameterNames) {
     const values = url.searchParams.getAll(parameter)
     if (values.length === 0) continue
     if (values.length !== 1 || values[0].trim() === '') {
-      throw new UploadSelectionError(
-        UploadSelectionErrorCode.InvalidSelection,
-        translate('UPLOAD_SELECTION_INVALID_PARAMETER', { parameter })
+      throw new UploadOptionError(
+        UploadOptionErrorCode.InvalidOption,
+        translate('UPLOAD_OPTION_INVALID_PARAMETER', { parameter })
       )
     }
-    selection[parameter] = values[0]
-    hasSelection = true
+    option[parameter] = values[0]
+    hasOption = true
   }
 
-  return hasSelection ? selection : undefined
+  return hasOption ? option : undefined
 }
 
 const registerCoreRoutes = (app: Hono<any, any, any>, ctx: IPicGo, getUploadAdapter?: GetUploadAdapter): void => {
@@ -184,7 +184,7 @@ const registerCoreRoutes = (app: Hono<any, any, any>, ctx: IPicGo, getUploadAdap
     }
 
     try {
-      const uploadOptions = parseUploadSelection(new URL(c.req.url), t)
+      const uploadOptions = parseUploadOptions(new URL(c.req.url), t)
       resolveUploadOptions(ctx, uploadOptions)
 
       const contentType = c.req.raw.headers.get('content-type') || ''
@@ -221,8 +221,8 @@ const registerCoreRoutes = (app: Hono<any, any, any>, ctx: IPicGo, getUploadAdap
           const response = buildUploadResponse(output)
           return c.json(response, getUploadResponseStatus(response))
         } catch (e: unknown) {
-          if (e instanceof UploadSelectionError) {
-            return c.json(buildSelectionErrorResponse(e), 400)
+          if (e instanceof UploadOptionError) {
+            return c.json(buildUploadOptionErrorResponse(e), 400)
           }
           ctx.log.error(e)
           return c.json({ success: false, result: [], items: [], message: getErrorMessage(e) }, 500)
@@ -272,8 +272,8 @@ const registerCoreRoutes = (app: Hono<any, any, any>, ctx: IPicGo, getUploadAdap
       const response = buildUploadResponse(output)
       return c.json(response, getUploadResponseStatus(response))
     } catch (e: unknown) {
-      if (e instanceof UploadSelectionError) {
-        return c.json(buildSelectionErrorResponse(e), 400)
+      if (e instanceof UploadOptionError) {
+        return c.json(buildUploadOptionErrorResponse(e), 400)
       }
       ctx.log.error(e)
       return c.json({ success: false, result: [], items: [], message: getErrorMessage(e) }, 500)

@@ -11,11 +11,11 @@ export const KO: ILocales = {
   CONFIG_INVALID_FORMAT: '설정 형식이 올바르지 않습니다. 다시 설정해 주세요.',
   CONFIG_KEY_READ_ONLY: 'config.${name}은(는) 수정할 수 없습니다.',
   CONFIG_KEY_CANNOT_UNSET: 'config.${key}은(는) 삭제할 수 없습니다.',
-  UPLOAD_SELECTION_INVALID_PARAMETER: '업로드 선택 매개변수 "${parameter}"이(가) 올바르지 않습니다. 비어 있지 않은 문자열 값 하나를 입력해 주세요.',
-  UPLOAD_SELECTION_ACTIVE_CONFIG: '현재 설정(기본 ID, 이후 첫 번째 저장된 설정)',
-  UPLOAD_SELECTION_UNKNOWN_UPLOADER: '업로더 "${uploader}"이(가) 등록되지 않았습니다. 사용 가능한 업로더: ${uploaders}.',
-  UPLOAD_SELECTION_CONFIG_NOT_FOUND: '${scope}에서 ${selectors}과(와) 일치하는 업로드 설정을 찾을 수 없습니다.',
-  UPLOAD_SELECTION_CONFIG_AMBIGUOUS: '${scope}의 업로드 설정 ${selector}이(가) 모호합니다. 일치 항목: ${candidates}. 업로더 또는 고유한 설정 ID를 지정해 주세요.',
+  UPLOAD_OPTION_INVALID_PARAMETER: '업로드 매개변수 "${parameter}"이(가) 올바르지 않습니다. 비어 있지 않은 문자열 값 하나를 입력해 주세요.',
+  UPLOAD_OPTION_ACTIVE_CONFIG: '현재 설정(기본 ID, 이후 첫 번째 저장된 설정)',
+  UPLOAD_OPTION_UNKNOWN_UPLOADER: '업로더 "${uploader}"이(가) 등록되지 않았습니다. 사용 가능한 업로더: ${uploaders}.',
+  UPLOAD_OPTION_CONFIG_NOT_FOUND: '${scope}에서 ${selectors}과(와) 일치하는 업로드 설정을 찾을 수 없습니다.',
+  UPLOAD_OPTION_CONFIG_AMBIGUOUS: '${scope}의 업로드 설정 ${selector}이(가) 모호합니다. 일치 항목: ${candidates}. 업로더 또는 고유한 설정 ID를 지정해 주세요.',
 
   // cloud login
   CLOUD_LOGIN_CANCELLED: '로그인이 취소되었습니다',

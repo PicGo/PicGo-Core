@@ -26,7 +26,7 @@ const createServer = async (synchronize?: () => Promise<void>): Promise<{
   rootBefore: IConfig
   diskBefore: string
 }> => {
-  const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'picgo-selection-integration-'))
+  const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'picgo-option-integration-'))
   directories.push(directory)
   const picgo = new PicGo(path.join(directory, 'config.json'))
   instances.push(picgo)
@@ -34,7 +34,7 @@ const createServer = async (synchronize?: () => Promise<void>): Promise<{
     vi.spyOn(picgo.log, method).mockImplementation(() => {})
   }
 
-  picgo.helper.transformer.register('selection-integration', {
+  picgo.helper.transformer.register('option-integration', {
     handle: async (ctx: IPicGo) => {
       ctx.output = await Promise.all(ctx.input.map(async (input: string) => ({
         origin: input,
@@ -44,7 +44,7 @@ const createServer = async (synchronize?: () => Promise<void>): Promise<{
     }
   })
 
-  for (const uploader of ['selection-a', 'selection-b']) {
+  for (const uploader of ['option-a', 'option-b']) {
     picgo.helper.uploader.register(uploader, {
       handle: async (ctx: IPicGo) => {
         const selected = ctx.getConfig<{ destination: string }>(`picBed.${uploader}`)
@@ -56,11 +56,11 @@ const createServer = async (synchronize?: () => Promise<void>): Promise<{
     })
   }
 
-  picgo.uploaderConfig.createOrUpdate('selection-a', 'Work', { destination: 'work' })
-  picgo.uploaderConfig.createOrUpdate('selection-a', 'Home', { destination: 'home' })
-  picgo.uploaderConfig.createOrUpdate('selection-b', 'Work', { destination: 'other' })
-  picgo.saveConfig({ 'picBed.transformer': 'selection-integration' })
-  const port = await picgo.server.listen(0, '127.0.0.1', true, 'selection-test-secret')
+  picgo.uploaderConfig.createOrUpdate('option-a', 'Work', { destination: 'work' })
+  picgo.uploaderConfig.createOrUpdate('option-a', 'Home', { destination: 'home' })
+  picgo.uploaderConfig.createOrUpdate('option-b', 'Work', { destination: 'other' })
+  picgo.saveConfig({ 'picBed.transformer': 'option-integration' })
+  const port = await picgo.server.listen(0, '127.0.0.1', true, 'option-test-secret')
   if (typeof port !== 'number') throw new Error('Test server did not start')
 
   return {
@@ -87,7 +87,7 @@ const assertUnchanged = async (picgo: PicGo, rootBefore: IConfig, diskBefore: st
   expect(await fs.readFile(picgo.configPath, 'utf8')).toBe(diskBefore)
 }
 
-describe('HTTP upload selection with real PicGo lifecycle', () => {
+describe('HTTP upload option with real PicGo lifecycle', () => {
   afterEach(async () => {
     for (const instance of instances.splice(0)) instance.server.shutdown()
     await Promise.all(directories.splice(0).map(async directory => await fs.remove(directory)))
@@ -99,9 +99,9 @@ describe('HTTP upload selection with real PicGo lifecycle', () => {
     const image = path.join(picgo.baseDir, 'image.png')
     await fs.writeFile(image, 'image-data')
     const save = vi.spyOn(picgo, 'saveConfig')
-    const headers = { 'Content-Type': 'application/json', Authorization: 'Bearer selection-test-secret' }
+    const headers = { 'Content-Type': 'application/json', Authorization: 'Bearer option-test-secret' }
     const responses = await Promise.all([
-      fetch(`${endpoint}?uploader=selection-a&configName=Work`, {
+      fetch(`${endpoint}?uploader=option-a&configName=Work`, {
         method: 'POST', headers, body: JSON.stringify({ list: [image] })
       }),
       fetch(`${endpoint}?configId=missing&configName=Home`, {
@@ -123,8 +123,8 @@ describe('HTTP upload selection with real PicGo lifecycle', () => {
     const responses = await Promise.all(['first', 'second'].map(async (contents, index) => {
       const body = new FormData()
       body.append('files', new Blob([contents]), 'same.png')
-      return await fetch(`${endpoint}?uploader=selection-a&configName=${index === 0 ? 'Work' : 'Home'}`, {
-        method: 'POST', headers: { Authorization: 'Bearer selection-test-secret' }, body
+      return await fetch(`${endpoint}?uploader=option-a&configName=${index === 0 ? 'Work' : 'Home'}`, {
+        method: 'POST', headers: { Authorization: 'Bearer option-test-secret' }, body
       })
     }))
     expect(responses.map(response => response.status)).toEqual([200, 200])
@@ -144,7 +144,7 @@ describe('HTTP upload selection with real PicGo lifecycle', () => {
     expect(unauthorized.status).toBe(401)
 
     const response = await fetch(`${endpoint}?configName=Work`, {
-      method: 'POST', headers: { Authorization: 'Bearer selection-test-secret' }
+      method: 'POST', headers: { Authorization: 'Bearer option-test-secret' }
     })
     expect(response.status).toBe(400)
     expect(await response.json()).toMatchObject({ success: false, code: 'UPLOAD_CONFIG_AMBIGUOUS', result: [], items: [] })

@@ -1,15 +1,15 @@
 import { cloneDeep, get, set, unset } from 'lodash'
 import type { ILocalesKey } from '../i18n/zh-CN'
-import { IConfig, IPicGo, ResolvedUploadSelection } from '../types'
+import { IConfig, IPicGo, ResolvedUploadOption } from '../types'
 import { isConfigKeyInBlackList, isInputConfigValid } from './common'
 
-const createSelectedConfigMethods = (ctx: IPicGo, selection: ResolvedUploadSelection): Pick<IPicGo, 'getConfig' | 'saveConfig' | 'removeConfig' | 'setConfig' | 'unsetConfig'> => {
+const createUploadConfigMethods = (ctx: IPicGo, option: ResolvedUploadOption): Pick<IPicGo, 'getConfig' | 'saveConfig' | 'removeConfig' | 'setConfig' | 'unsetConfig'> => {
   const config = cloneDeep(ctx.getConfig<IConfig>())
 
-  set(config, 'picBed.uploader', selection.uploader)
-  set(config, 'picBed.current', selection.uploader)
-  if (selection.config !== undefined) {
-    set(config, `picBed.${selection.uploader}`, cloneDeep(selection.config))
+  set(config, 'picBed.uploader', option.uploader)
+  set(config, 'picBed.current', option.uploader)
+  if (option.config !== undefined) {
+    set(config, `picBed.${option.uploader}`, cloneDeep(option.config))
   }
 
   const getConfig = <T = unknown>(name?: string): T => {
@@ -73,8 +73,8 @@ const createSelectedConfigMethods = (ctx: IPicGo, selection: ResolvedUploadSelec
  * create an unique context for each upload process
  * @param ctx
  */
-export const createContext = (ctx: IPicGo, selection?: ResolvedUploadSelection): IPicGo => {
-  const configMethods = selection === undefined
+export const createContext = (ctx: IPicGo, option?: ResolvedUploadOption): IPicGo => {
+  const configMethods = option === undefined
     ? {
       getConfig: ctx.getConfig.bind(ctx),
       saveConfig: ctx.saveConfig.bind(ctx),
@@ -82,7 +82,7 @@ export const createContext = (ctx: IPicGo, selection?: ResolvedUploadSelection):
       setConfig: ctx.setConfig.bind(ctx),
       unsetConfig: ctx.unsetConfig.bind(ctx)
     }
-    : createSelectedConfigMethods(ctx, selection)
+    : createUploadConfigMethods(ctx, option)
 
   return {
     configPath: ctx.configPath,

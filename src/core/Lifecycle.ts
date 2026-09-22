@@ -1,11 +1,11 @@
 import { EventEmitter } from 'events'
-import { ILifecyclePlugins, IPicGo, IPlugin, OutputFormat, ResolvedUploadSelection, Undefinable, UploadOptions } from '../types'
+import { ILifecyclePlugins, IPicGo, IPlugin, OutputFormat, ResolvedUploadOption, Undefinable, UploadOptions } from '../types'
 import { handleUrlEncode } from '../utils/common'
 import { applyUrlRewriteToOutput } from '../utils/urlRewrite'
 import { IBuildInEvent, LifecycleStep } from '../utils/enum'
 import { createContext } from '../utils/createContext'
 import { PICGO_CLOUD, PICGO_CLOUD_AUTO_IMPORT_PLUGIN } from '../utils/static'
-import { resolveUploadOptions } from '../lib/UploadSelection'
+import { resolveUploadOptions } from '../lib/UploadOption'
 
 /**
  * Built-in lifecycle plugin IDs that should be excluded from running logs.
@@ -22,10 +22,10 @@ export class Lifecycle extends EventEmitter {
     this.ctx = ctx
   }
 
-  async start (input: any[], options?: UploadOptions, resolvedSelection?: ResolvedUploadSelection): Promise<IPicGo> {
-    const selection = resolvedSelection ?? resolveUploadOptions(this.ctx, options)
+  async start (input: any[], options?: UploadOptions, resolvedOption?: ResolvedUploadOption): Promise<IPicGo> {
+    const option = resolvedOption ?? resolveUploadOptions(this.ctx, options)
     // ensure every upload process has an unique context
-    const ctx = createContext(this.ctx, selection)
+    const ctx = createContext(this.ctx, option)
     let step = LifecycleStep.IDLE
     try {
       // images input

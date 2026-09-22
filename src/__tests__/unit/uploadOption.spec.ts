@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
 import {
   resolveUploadOptions,
-  UploadSelectionError,
-  UploadSelectionErrorCode
-} from '../../lib/UploadSelection'
-import type { IPicGo, IUploaderConfigItem, UploadSelection } from '../../types'
+  UploadOptionError,
+  UploadOptionErrorCode
+} from '../../lib/UploadOption'
+import type { IPicGo, IUploaderConfigItem, UploadOption } from '../../types'
 
 const createConfig = (
   id: string,
@@ -50,14 +50,14 @@ const createCtx = (
   return { ctx, getConfigList, getActiveConfig, translate }
 }
 
-const captureSelectionError = (callback: () => unknown): UploadSelectionError => {
+const captureOptionError = (callback: () => unknown): UploadOptionError => {
   try {
     callback()
   } catch (error: unknown) {
-    if (error instanceof UploadSelectionError) return error
+    if (error instanceof UploadOptionError) return error
     throw error
   }
-  throw new Error('Expected UploadSelectionError')
+  throw new Error('Expected UploadOptionError')
 }
 
 describe('resolveUploadOptions', () => {
@@ -77,23 +77,23 @@ describe('resolveUploadOptions', () => {
     ['configId', null]
   ])('rejects malformed %s selectors', (parameter, value) => {
     const { ctx, translate } = createCtx({ smms: [] })
-    const selection = { [parameter]: value } as unknown as UploadSelection
+    const option = { [parameter]: value } as unknown as UploadOption
 
-    const error = captureSelectionError(() => resolveUploadOptions(ctx, selection))
+    const error = captureOptionError(() => resolveUploadOptions(ctx, option))
 
-    expect(error.code).toBe(UploadSelectionErrorCode.InvalidSelection)
-    expect(translate).toHaveBeenCalledWith('UPLOAD_SELECTION_INVALID_PARAMETER', { parameter })
+    expect(error.code).toBe(UploadOptionErrorCode.InvalidOption)
+    expect(translate).toHaveBeenCalledWith('UPLOAD_OPTION_INVALID_PARAMETER', { parameter })
   })
 
   it('rejects an unregistered explicit uploader before reading configurations', () => {
     const { ctx, getConfigList } = createCtx({ smms: [] })
 
-    const error = captureSelectionError(() => resolveUploadOptions(ctx, {
+    const error = captureOptionError(() => resolveUploadOptions(ctx, {
       uploader: 'github',
       configName: 'Work'
     }))
 
-    expect(error.code).toBe(UploadSelectionErrorCode.UnknownUploader)
+    expect(error.code).toBe(UploadOptionErrorCode.UnknownUploader)
     expect(error.message).toContain('uploader=github')
     expect(error.message).toContain('uploaders=[smms]')
     expect(getConfigList).not.toHaveBeenCalled()
@@ -140,9 +140,9 @@ describe('resolveUploadOptions', () => {
       github: [createConfig('github-1', 'work', { token: 'github-secret' })]
     })
 
-    const error = captureSelectionError(() => resolveUploadOptions(ctx, { configName: 'Work' }))
+    const error = captureOptionError(() => resolveUploadOptions(ctx, { configName: 'Work' }))
 
-    expect(error.code).toBe(UploadSelectionErrorCode.AmbiguousConfig)
+    expect(error.code).toBe(UploadOptionErrorCode.AmbiguousConfig)
     expect(error.message).toContain('smms/Work (smms-1)')
     expect(error.message).toContain('github/work (github-1)')
     expect(error.message).not.toContain('smms-secret')
@@ -182,9 +182,9 @@ describe('resolveUploadOptions', () => {
       github: [createConfig('duplicate-id', 'Work')]
     })
 
-    const error = captureSelectionError(() => resolveUploadOptions(ctx, { configId: 'duplicate-id' }))
+    const error = captureOptionError(() => resolveUploadOptions(ctx, { configId: 'duplicate-id' }))
 
-    expect(error.code).toBe(UploadSelectionErrorCode.AmbiguousConfig)
+    expect(error.code).toBe(UploadOptionErrorCode.AmbiguousConfig)
   })
 
   it('includes the attempted ID when its name fallback is ambiguous', () => {
@@ -193,38 +193,38 @@ describe('resolveUploadOptions', () => {
       github: [createConfig('duplicate-id', 'work')]
     })
 
-    const error = captureSelectionError(() => resolveUploadOptions(ctx, {
+    const error = captureOptionError(() => resolveUploadOptions(ctx, {
       configId: 'duplicate-id',
       configName: 'Work'
     }))
 
-    expect(error.code).toBe(UploadSelectionErrorCode.AmbiguousConfig)
+    expect(error.code).toBe(UploadOptionErrorCode.AmbiguousConfig)
     expect(error.message).toContain('selector=configId="duplicate-id", configName="Work"')
   })
 
   it('matches IDs exactly without trimming', () => {
     const { ctx } = createCtx({ smms: [createConfig('stable-id', 'Personal')] })
 
-    const error = captureSelectionError(() => resolveUploadOptions(ctx, { configId: ' stable-id ' }))
+    const error = captureOptionError(() => resolveUploadOptions(ctx, { configId: ' stable-id ' }))
 
-    expect(error.code).toBe(UploadSelectionErrorCode.ConfigNotFound)
+    expect(error.code).toBe(UploadOptionErrorCode.ConfigNotFound)
   })
 
   it('reports all attempted selectors and scope when no configuration matches', () => {
     const { ctx } = createCtx({ smms: [] })
 
-    const error = captureSelectionError(() => resolveUploadOptions(ctx, {
+    const error = captureOptionError(() => resolveUploadOptions(ctx, {
       uploader: 'smms',
       configId: 'missing-id',
       configName: 'Missing'
     }))
 
-    expect(error.code).toBe(UploadSelectionErrorCode.ConfigNotFound)
+    expect(error.code).toBe(UploadOptionErrorCode.ConfigNotFound)
     expect(error.message).toContain('selectors=configId="missing-id", configName="Missing"')
     expect(error.message).toContain('scope=uploader="smms"')
   })
 
-  it('uses the existing active-config behavior for uploader-only selection and clones the result', () => {
+  it('uses the existing active-config behavior for uploader-only option and clones the result', () => {
     const active = createConfig('active-id', 'Active', { nested: { region: 'one' } })
     const { ctx, getConfigList, getActiveConfig } = createCtx({ smms: [] }, {
       activeConfigs: { smms: active }
@@ -239,15 +239,15 @@ describe('resolveUploadOptions', () => {
     expect(getConfigList).not.toHaveBeenCalled()
   })
 
-  it('rejects uploader-only selection when a regular uploader has no active profile', () => {
+  it('rejects uploader-only option when a regular uploader has no active profile', () => {
     const { ctx } = createCtx({ smms: [] })
 
-    const error = captureSelectionError(() => resolveUploadOptions(ctx, { uploader: 'smms' }))
+    const error = captureOptionError(() => resolveUploadOptions(ctx, { uploader: 'smms' }))
 
-    expect(error.code).toBe(UploadSelectionErrorCode.ConfigNotFound)
+    expect(error.code).toBe(UploadOptionErrorCode.ConfigNotFound)
   })
 
-  it('allows PicGo Cloud uploader-only selection without a saved profile', () => {
+  it('allows PicGo Cloud uploader-only option without a saved profile', () => {
     const { ctx } = createCtx({ 'picgo-cloud': [] })
 
     expect(resolveUploadOptions(ctx, { uploader: 'picgo-cloud' })).toEqual({
@@ -258,11 +258,11 @@ describe('resolveUploadOptions', () => {
   it('still rejects an explicitly requested missing PicGo Cloud profile', () => {
     const { ctx } = createCtx({ 'picgo-cloud': [] })
 
-    const error = captureSelectionError(() => resolveUploadOptions(ctx, {
+    const error = captureOptionError(() => resolveUploadOptions(ctx, {
       uploader: 'picgo-cloud',
       configName: 'Missing'
     }))
 
-    expect(error.code).toBe(UploadSelectionErrorCode.ConfigNotFound)
+    expect(error.code).toBe(UploadOptionErrorCode.ConfigNotFound)
   })
 })

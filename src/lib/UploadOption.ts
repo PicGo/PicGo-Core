@@ -1,20 +1,20 @@
 import type { ILocalesKey } from '../i18n/zh-CN'
-import type { IPicGo, IUploaderConfigItem, ResolvedUploadSelection, UploadSelection } from '../types'
+import type { IPicGo, IUploaderConfigItem, ResolvedUploadOption, UploadOption } from '../types'
 import { PICGO_CLOUD } from '../utils/static'
 
-enum UploadSelectionErrorCode {
-  InvalidSelection = 'INVALID_UPLOAD_SELECTION',
+enum UploadOptionErrorCode {
+  InvalidOption = 'INVALID_UPLOAD_OPTION',
   UnknownUploader = 'UNKNOWN_UPLOADER',
   ConfigNotFound = 'UPLOAD_CONFIG_NOT_FOUND',
   AmbiguousConfig = 'UPLOAD_CONFIG_AMBIGUOUS'
 }
 
-class UploadSelectionError extends Error {
-  readonly code: UploadSelectionErrorCode
+class UploadOptionError extends Error {
+  readonly code: UploadOptionErrorCode
 
-  constructor (code: UploadSelectionErrorCode, message: string) {
+  constructor (code: UploadOptionErrorCode, message: string) {
     super(message)
-    this.name = 'UploadSelectionError'
+    this.name = 'UploadOptionError'
     this.code = code
   }
 }
@@ -24,39 +24,39 @@ interface IConfigMatch {
   config: IUploaderConfigItem
 }
 
-interface IValidatedSelection {
+interface IValidatedUploadOption {
   uploader?: string
   configName?: string
   configId?: string
 }
 
-const validateSelector = (
+const validateUploadOptionValue = (
   ctx: IPicGo,
-  parameter: keyof UploadSelection,
+  parameter: keyof UploadOption,
   value: unknown
 ): string | undefined => {
   if (value === undefined) return undefined
   if (typeof value !== 'string' || value.trim() === '') {
-    throw new UploadSelectionError(
-      UploadSelectionErrorCode.InvalidSelection,
-      ctx.i18n.translate<ILocalesKey>('UPLOAD_SELECTION_INVALID_PARAMETER', { parameter })
+    throw new UploadOptionError(
+      UploadOptionErrorCode.InvalidOption,
+      ctx.i18n.translate<ILocalesKey>('UPLOAD_OPTION_INVALID_PARAMETER', { parameter })
     )
   }
   return parameter === 'configName' ? value.trim() : value
 }
 
-const validateSelection = (ctx: IPicGo, selection?: UploadSelection): IValidatedSelection | undefined => {
-  if (selection === undefined) return undefined
+const validateUploadOption = (ctx: IPicGo, option?: UploadOption): IValidatedUploadOption | undefined => {
+  if (option === undefined) return undefined
 
-  const uploader = validateSelector(ctx, 'uploader', selection.uploader)
-  const configName = validateSelector(ctx, 'configName', selection.configName)
-  const configId = validateSelector(ctx, 'configId', selection.configId)
+  const uploader = validateUploadOptionValue(ctx, 'uploader', option.uploader)
+  const configName = validateUploadOptionValue(ctx, 'configName', option.configName)
+  const configId = validateUploadOptionValue(ctx, 'configId', option.configId)
 
   if (uploader === undefined && configName === undefined && configId === undefined) return undefined
   return { uploader, configName, configId }
 }
 
-const cloneResolvedSelection = (match: IConfigMatch): ResolvedUploadSelection => ({
+const cloneResolvedUploadOption = (match: IConfigMatch): ResolvedUploadOption => ({
   uploader: match.uploader,
   config: structuredClone(match.config)
 })
@@ -91,9 +91,9 @@ const throwNotFound = (
   selectors: string,
   scope: string
 ): never => {
-  throw new UploadSelectionError(
-    UploadSelectionErrorCode.ConfigNotFound,
-    ctx.i18n.translate<ILocalesKey>('UPLOAD_SELECTION_CONFIG_NOT_FOUND', { selectors, scope })
+  throw new UploadOptionError(
+    UploadOptionErrorCode.ConfigNotFound,
+    ctx.i18n.translate<ILocalesKey>('UPLOAD_OPTION_CONFIG_NOT_FOUND', { selectors, scope })
   )
 }
 
@@ -103,9 +103,9 @@ const throwAmbiguous = (
   scope: string,
   matches: IConfigMatch[]
 ): never => {
-  throw new UploadSelectionError(
-    UploadSelectionErrorCode.AmbiguousConfig,
-    ctx.i18n.translate<ILocalesKey>('UPLOAD_SELECTION_CONFIG_AMBIGUOUS', {
+  throw new UploadOptionError(
+    UploadOptionErrorCode.AmbiguousConfig,
+    ctx.i18n.translate<ILocalesKey>('UPLOAD_OPTION_CONFIG_AMBIGUOUS', {
       selector,
       scope,
       candidates: formatCandidates(matches)
@@ -115,17 +115,17 @@ const throwAmbiguous = (
 
 const resolveUploadOptions = (
   ctx: IPicGo,
-  selection?: UploadSelection
-): ResolvedUploadSelection | undefined => {
-  const validated = validateSelection(ctx, selection)
+  option?: UploadOption
+): ResolvedUploadOption | undefined => {
+  const validated = validateUploadOption(ctx, option)
   if (validated === undefined) return undefined
 
   const registeredTypes = [...new Set(ctx.uploaderConfig.listUploaderTypes())]
   const { uploader, configName, configId } = validated
   if (uploader !== undefined && !registeredTypes.includes(uploader)) {
-    throw new UploadSelectionError(
-      UploadSelectionErrorCode.UnknownUploader,
-      ctx.i18n.translate<ILocalesKey>('UPLOAD_SELECTION_UNKNOWN_UPLOADER', {
+    throw new UploadOptionError(
+      UploadOptionErrorCode.UnknownUploader,
+      ctx.i18n.translate<ILocalesKey>('UPLOAD_OPTION_UNKNOWN_UPLOADER', {
         uploader,
         uploaders: `[${registeredTypes.join(', ')}]`
       })
@@ -137,15 +137,15 @@ const resolveUploadOptions = (
 
   if (configId === undefined && configName === undefined && uploader !== undefined) {
     const activeConfig = ctx.uploaderConfig.getActiveConfig(uploader)
-    if (activeConfig !== undefined) return cloneResolvedSelection({ uploader, config: activeConfig })
+    if (activeConfig !== undefined) return cloneResolvedUploadOption({ uploader, config: activeConfig })
     if (uploader === PICGO_CLOUD) return { uploader }
-    return throwNotFound(ctx, ctx.i18n.translate<ILocalesKey>('UPLOAD_SELECTION_ACTIVE_CONFIG'), scope)
+    return throwNotFound(ctx, ctx.i18n.translate<ILocalesKey>('UPLOAD_OPTION_ACTIVE_CONFIG'), scope)
   }
 
   let idMatches: IConfigMatch[] = []
   if (configId !== undefined) {
     idMatches = findMatches(ctx, scopeTypes, config => config._id === configId)
-    if (idMatches.length === 1) return cloneResolvedSelection(idMatches[0])
+    if (idMatches.length === 1) return cloneResolvedUploadOption(idMatches[0])
   }
 
   if (configName !== undefined) {
@@ -155,7 +155,7 @@ const resolveUploadOptions = (
       scopeTypes,
       config => typeof config._configName === 'string' && config._configName.trim().toLowerCase() === targetName
     )
-    if (nameMatches.length === 1) return cloneResolvedSelection(nameMatches[0])
+    if (nameMatches.length === 1) return cloneResolvedUploadOption(nameMatches[0])
     if (nameMatches.length > 1) {
       const attemptedSelectors = [
         configId === undefined ? undefined : `configId="${configId}"`,
@@ -178,6 +178,6 @@ const resolveUploadOptions = (
 
 export {
   resolveUploadOptions,
-  UploadSelectionError,
-  UploadSelectionErrorCode
+  UploadOptionError,
+  UploadOptionErrorCode
 }
