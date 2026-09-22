@@ -6,7 +6,7 @@ export const ZH_CN = {
   UPLOAD_FAILED_REASON: '错误码：${code}，请打开浏览器粘贴地址查看相关原因',
   SERVER_ERROR: '服务端出错，请重试',
   AUTH_FAILED: '认证失败',
-  CONFIG_INVALID_FORMAT: '配置格式无效，请提供一个对象。',
+  CONFIG_INVALID_FORMAT: '配置格式无效，请重新配置。',
   CONFIG_KEY_READ_ONLY: '无法修改 config.${name}。',
   CONFIG_KEY_CANNOT_UNSET: '无法删除 config.${key}。',
   UPLOAD_SELECTION_INVALID_PARAMETER: '上传选择参数“${parameter}”无效：请提供一个非空字符串值。',

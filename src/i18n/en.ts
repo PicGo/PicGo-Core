@@ -8,7 +8,7 @@ export const EN: ILocales = {
   UPLOAD_FAILED_REASON: 'Error code: ${code}, please open the browser and paste the address to see the reason',
   SERVER_ERROR: 'Server error, please try again later',
   AUTH_FAILED: 'Authentication failed',
-  CONFIG_INVALID_FORMAT: 'Invalid configuration format; provide an object.',
+  CONFIG_INVALID_FORMAT: 'Invalid configuration format. Please reconfigure.',
   CONFIG_KEY_READ_ONLY: 'config.${name} cannot be modified.',
   CONFIG_KEY_CANNOT_UNSET: 'config.${key} cannot be unset.',
   UPLOAD_SELECTION_INVALID_PARAMETER: 'Invalid upload selection parameter "${parameter}": provide one non-empty string value.',

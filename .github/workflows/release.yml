@@ -25,7 +25,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: 25
+          node-version: 24
           registry-url: https://registry.npmjs.org
 
       - name: Setup pnpm
@@ -41,9 +41,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ steps.pnpm-store.outputs.path }}
-          key: ${{ runner.os }}-node-25-pnpm-11.7.0-${{ hashFiles('pnpm-lock.yaml', 'pnpm-workspace.yaml') }}
+          key: ${{ runner.os }}-node-24-pnpm-11.7.0-${{ hashFiles('pnpm-lock.yaml', 'pnpm-workspace.yaml') }}
           restore-keys: |
-            ${{ runner.os }}-node-25-pnpm-11.7.0-
+            ${{ runner.os }}-node-24-pnpm-11.7.0-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

@@ -8,7 +8,7 @@ export const ZH_TW: ILocales = {
   UPLOAD_FAILED_REASON: '錯誤碼：${code}，請打開瀏覽器貼上地址查看相關原因',
   SERVER_ERROR: '伺服器出錯，請重試',
   AUTH_FAILED: '認證失敗',
-  CONFIG_INVALID_FORMAT: '設定格式無效，請提供一個物件。',
+  CONFIG_INVALID_FORMAT: '設定格式無效，請重新設定。',
   CONFIG_KEY_READ_ONLY: '無法修改 config.${name}。',
   CONFIG_KEY_CANNOT_UNSET: '無法刪除 config.${key}。',
   UPLOAD_SELECTION_INVALID_PARAMETER: '上傳選擇參數「${parameter}」無效：請提供一個非空字串值。',

@@ -8,7 +8,7 @@ export const JA: ILocales = {
   UPLOAD_FAILED_REASON: 'エラーコード: ${code}、ブラウザを開いてアドレスを貼り付けて原因を確認してください',
   SERVER_ERROR: 'サーバーエラーが発生しました。後でもう一度お試しください',
   AUTH_FAILED: '認証失敗',
-  CONFIG_INVALID_FORMAT: '設定形式が無効です。オブジェクトを指定してください。',
+  CONFIG_INVALID_FORMAT: '設定形式が無効です。再設定してください。',
   CONFIG_KEY_READ_ONLY: 'config.${name}は変更できません。',
   CONFIG_KEY_CANNOT_UNSET: 'config.${key}は削除できません。',
   UPLOAD_SELECTION_INVALID_PARAMETER: 'アップロード選択パラメーター「${parameter}」が無効です。空でない文字列を1つ指定してください。',
