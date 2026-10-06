@@ -152,6 +152,33 @@ picgo upload
 
 Thanks to [vs-picgo](https://github.com/Spades-S/vs-picgo) && [Spades-S](https://github.com/Spades-S) for providing the method to upload picture from clipboard.
 
+#### Machine-readable upload output
+
+Use `--format json` when `picgo upload` is called from scripts or AI agents:
+
+```bash
+picgo upload ./a.png ./b.png --format json > result.json
+```
+
+- stdout contains exactly one line: a JSON array with one item per input, each with `imgUrl`, `origin`, `fileName`, `type`, `contentType`, `size`, `width`, `height` and `extname`. Failed items have no `imgUrl`. The result is printed even with `-s` (silent mode).
+- Logs and progress lines go to stderr (logs are still written to the log file as usual), so stdout can be parsed directly.
+- If nothing was uploaded, stdout is empty and stderr ends with a one-line reason.
+
+Example output:
+
+```json
+[{"imgUrl":"https://example.com/a.png","origin":"/path/to/a.png","fileName":"a.png","type":"github","contentType":"image/png","size":1234,"width":100,"height":100,"extname":".png"}]
+```
+
+`picgo upload` exits with `0` only when every input was uploaded successfully. It exits with `1` when:
+
+- any explicitly given path does not exist (the remaining paths are still uploaded);
+- all explicitly given paths do not exist — nothing is uploaded and the clipboard is **not** used as a fallback;
+- the `--uploader` / `--configName` / `--configId` selection cannot be resolved;
+- the upload throws, returns no result, or any result item has no `imgUrl`.
+
+Running `picgo upload` without any input still uploads the clipboard image.
+
 #### Run as a server
 
 ```bash
@@ -290,6 +317,19 @@ Commands:
   copy <type> <configName> <newConfigName>  copy a config (does not switch current uploader)
   rm <type> <configName>                    remove a config
 ```
+
+Use `picgo uploader list [type] --format json` to get the saved configurations as a single parseable line. Only metadata is printed — config values such as tokens are never included. `current` is resolved the same way as uploads (`picBed.uploader` -> `picBed.current` -> `picgo-cloud`), and an uploader type without configs has `"configs": []`:
+
+```bash
+picgo uploader list --format json
+picgo uploader list github --format json
+```
+
+```json
+{"current":"github","uploaders":[{"type":"github","isCurrent":true,"configs":[{"id":"your-config-id","name":"Work","isDefault":true,"createdAt":1700000000000,"updatedAt":1700000000000}]}]}
+```
+
+`picgo uploader list` exits with `1` (and prints nothing to stdout in json mode) when the given type is not registered. `picgo uploader rename/copy/rm` exit with `1` when the operation fails.
 
 
 #### Init a picgo plugin template

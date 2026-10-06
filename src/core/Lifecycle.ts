@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events'
-import { ILifecyclePlugins, IPicGo, IPlugin, OutputFormat, Undefinable, UploadOptions } from '../types'
+import { ILifecyclePlugins, IPicGo, IPlugin, Undefinable, UploadOptions } from '../types'
 import { handleUrlEncode } from '../utils/common'
 import { applyUrlRewriteToOutput } from '../utils/urlRewrite'
 import { IBuildInEvent, LifecycleStep } from '../utils/enum'
@@ -45,7 +45,7 @@ export class Lifecycle extends EventEmitter {
       step = LifecycleStep.UPLOAD
       await this.doUpload(ctx)
       step = LifecycleStep.AFTER_UPLOAD
-      await this.afterUpload(ctx, options)
+      await this.afterUpload(ctx)
       return ctx
     } catch (e: any) {
       // If error came from doUpload and some items already uploaded successfully,
@@ -54,7 +54,7 @@ export class Lifecycle extends EventEmitter {
       if (step === LifecycleStep.UPLOAD && ctx.output.some(item => item.imgUrl !== undefined)) {
         try {
           step = LifecycleStep.AFTER_UPLOAD
-          await this.afterUpload(ctx, options)
+          await this.afterUpload(ctx)
         } catch {
           // afterUpload failed too — don't mask the original upload error
         }
@@ -119,7 +119,7 @@ export class Lifecycle extends EventEmitter {
     return ctx
   }
 
-  private async afterUpload (ctx: IPicGo, options?: UploadOptions): Promise<IPicGo> {
+  private async afterUpload (ctx: IPicGo): Promise<IPicGo> {
     ctx.emit(IBuildInEvent.AFTER_UPLOAD, ctx)
     ctx.emit(IBuildInEvent.UPLOAD_PROGRESS, 100)
 
@@ -127,7 +127,7 @@ export class Lifecycle extends EventEmitter {
 
     await this.handlePlugins(ctx.helper.afterUploadPlugins, ctx)
 
-    const msg = this.buildSuccessMessage(ctx, options)
+    const msg = this.buildSuccessMessage(ctx)
     for (const outputImg of ctx.output) {
       delete outputImg.base64Image
       delete outputImg.buffer
@@ -139,21 +139,9 @@ export class Lifecycle extends EventEmitter {
     return ctx
   }
 
-  private buildSuccessMessage (ctx: IPicGo, options?: UploadOptions): string {
-    if (options?.outputFormat === OutputFormat.JSON) {
-      return JSON.stringify(ctx.output.map(item => ({
-        imgUrl: item.imgUrl,
-        origin: item.origin,
-        fileName: item.fileName,
-        type: item.type,
-        contentType: item.contentType,
-        size: item.size,
-        width: item.width,
-        height: item.height,
-        extname: item.extname
-      })))
-    }
-
+  private buildSuccessMessage (ctx: IPicGo): string {
+    // JSON output (`outputFormat: json`) is printed by the CLI command layer so stdout carries exactly one line. The
+    // lifecycle only logs the human-readable URL list here, regardless of the output format.
     let msg = ''
     const length = ctx.output.length
     const isEncodeOutputURL = ctx.getConfig<Undefinable<boolean>>('settings.encodeOutputURL') === true

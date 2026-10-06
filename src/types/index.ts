@@ -440,6 +440,12 @@ export enum OutputFormat {
   JSON = 'json'
 }
 
+/** Which standard stream a logger writes its console output to. */
+export enum LogConsoleStream {
+  STDOUT = 'stdout',
+  STDERR = 'stderr'
+}
+
 export interface UploadOption {
   /** Registered uploader type. Omit to search all registered types by configuration name or ID. */
   uploader?: string
@@ -1058,6 +1064,8 @@ export interface ILogger {
     logPath?: string
     consoleOutput?: boolean
     respectSilent?: boolean
+    /** Stream used for console output. Defaults to `LogConsoleStream.STDOUT`. */
+    consoleStream?: LogConsoleStream
   }) => ILogger
 }
 
