@@ -1,6 +1,7 @@
 import { EventEmitter } from 'events'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { IPicGo, IProgress } from '../../types'
+import { LogConsoleStream } from '../../types'
 import { IBuildInEvent } from '../../utils/enum'
 
 const spinnerStubs: Array<{
@@ -112,6 +113,30 @@ describe('createProgressRenderer', () => {
     expect(handle.spinner.start).not.toHaveBeenCalled()
     expect(logSpy).toHaveBeenCalledWith('piped-output')
     handle.dispose()
+  })
+
+  it('Non-TTY mode with lineStream=STDERR: prints progress lines to stderr, never to stdout', async () => {
+    setTTY(false)
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    try {
+      const { createProgressRenderer } = await importRenderer()
+      const ctx = makeCtx()
+      const handle = createProgressRenderer<IProgress>({
+        ctx,
+        event: IBuildInEvent.FILE_UPLOAD_PROGRESS,
+        verbose: false,
+        lineStream: LogConsoleStream.STDERR,
+        formatBarText: () => 'unused',
+        formatVerboseText: (p) => `stderr-line ${p.current}/${p.total}`
+      })
+      ;(ctx as unknown as EventEmitter).emit(IBuildInEvent.FILE_UPLOAD_PROGRESS, sample())
+      expect(handle.spinner.start).not.toHaveBeenCalled()
+      expect(errorSpy).toHaveBeenCalledWith('stderr-line 5/10')
+      expect(logSpy).not.toHaveBeenCalled()
+      handle.dispose()
+    } finally {
+      errorSpy.mockRestore()
+    }
   })
 
   it('dispose removes the event listener and stops a running spinner', async () => {

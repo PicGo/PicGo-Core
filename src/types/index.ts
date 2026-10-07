@@ -440,6 +440,12 @@ export enum OutputFormat {
   JSON = 'json'
 }
 
+/** Which standard stream a logger writes its console output to. */
+export enum LogConsoleStream {
+  STDOUT = 'stdout',
+  STDERR = 'stderr'
+}
+
 export interface UploadOption {
   /** Registered uploader type. Omit to search all registered types by configuration name or ID. */
   uploader?: string
@@ -456,7 +462,11 @@ export interface ResolvedUploadOption {
 }
 
 export interface UploadOptions extends UploadOption {
-  /** Output format for the success message. Defaults to 'pretty'. */
+  /**
+   * Output format of the `picgo upload` CLI command. Defaults to 'pretty'. Only the CLI command layer reads it: with
+   * 'json' it prints the result as a single JSON line on stdout. `ctx.upload` itself does not change its logs or its
+   * return value based on this option, so SDK callers should read the returned `IImgInfo[]` instead of parsing logs.
+   */
   outputFormat?: OutputFormat
 }
 
@@ -1058,6 +1068,8 @@ export interface ILogger {
     logPath?: string
     consoleOutput?: boolean
     respectSilent?: boolean
+    /** Stream used for console output. Defaults to `LogConsoleStream.STDOUT`. */
+    consoleStream?: LogConsoleStream
   }) => ILogger
 }
 

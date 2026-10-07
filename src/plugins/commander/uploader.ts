@@ -1,5 +1,7 @@
-import { IPicGo, IPlugin, Undefinable } from '../../types'
+import { IPicGo, IPlugin, IUploaderConfigItem, OutputFormat, Undefinable } from '../../types'
+import type { ILocalesKey } from '../../i18n/zh-CN'
 import chalk from 'chalk'
+import { resolveUploader } from './get'
 
 type UploaderOperation = 'list' | 'rename' | 'copy' | 'delete'
 
@@ -59,6 +61,68 @@ const buildListOutput = (ctx: IPicGo, types: string[]): string => {
   }
 
   return `\n${lines.join('\n')}`
+}
+
+interface UploaderListOptions {
+  format?: string
+}
+
+interface UploaderListJsonConfig {
+  id: string
+  name: string
+  isDefault: boolean
+  createdAt: number
+  updatedAt: number
+}
+
+interface UploaderListJsonEntry {
+  type: string
+  isCurrent: boolean
+  configs: UploaderListJsonConfig[]
+}
+
+interface UploaderListJson {
+  current: string
+  uploaders: UploaderListJsonEntry[]
+}
+
+// Only metadata is exposed. Config values (tokens, secret keys, ...) must never be printed, so fields are picked
+// explicitly instead of spreading the config item.
+const toJsonConfig = (cfg: IUploaderConfigItem, defaultId: Undefinable<string>): UploaderListJsonConfig => ({
+  id: cfg._id,
+  name: cfg._configName,
+  isDefault: cfg._id === defaultId,
+  createdAt: cfg._createdAt,
+  updatedAt: cfg._updatedAt
+})
+
+const buildListJson = (ctx: IPicGo, types: string[]): UploaderListJson => {
+  // Same resolution as the real upload path: picBed.uploader -> picBed.current -> picgo-cloud.
+  const current = resolveUploader(ctx)
+  return {
+    current,
+    uploaders: types.map((type: string) => {
+      const defaultId = ctx.getConfig<Undefinable<string>>(`uploader.${type}.defaultId`)
+      return {
+        type,
+        isCurrent: type === current,
+        configs: ctx.uploaderConfig.getConfigList(type).map(cfg => toJsonConfig(cfg, defaultId))
+      }
+    })
+  }
+}
+
+const handleSubcommandError = (ctx: IPicGo, e: unknown, isJson = false): void => {
+  process.exitCode = 1
+  if (isJson) {
+    // ctx.log writes to stdout, which json mode reserves for the result.
+    console.error(e instanceof Error ? e.message : String(e))
+  } else {
+    ctx.log.error(e instanceof Error ? e : new Error(String(e)))
+  }
+  if (process.argv.includes('--debug')) {
+    throw e
+  }
 }
 
 export const uploader: IPlugin = {
@@ -176,34 +240,37 @@ export const uploader: IPlugin = {
 
           ctx.uploaderConfig.remove(type, targetName)
           ctx.log.success('Delete config successfully!')
-        } catch (e: any) {
-          ctx.log.error(e)
-          if (process.argv.includes('--debug')) {
-            throw e
-          }
+        } catch (e: unknown) {
+          handleSubcommandError(ctx, e)
         }
       })
 
     uploaderCmd
       .command('list [type]')
       .description('list uploader configurations')
-      .action(async (type?: string) => {
+      .option('--format <format>', 'output format: pretty | json', 'pretty')
+      .action(async (type: string | undefined, options: UploaderListOptions) => {
+        const isJson = options.format === OutputFormat.JSON
         try {
-          const types = ctx.uploaderConfig.listUploaderTypes()
+          const allTypes = ctx.uploaderConfig.listUploaderTypes()
+          let types = allTypes
           if (typeof type === 'string' && type) {
-            if (!types.includes(type)) {
-              ctx.log.error(`Type ${type} not found`)
+            if (!allTypes.includes(type)) {
+              process.exitCode = 1
+              // stderr in both modes; in json mode stdout must stay empty.
+              console.error(chalk.red(ctx.i18n.translate<ILocalesKey>('CLI_UPLOADER_TYPE_NOT_FOUND', { type })))
               return
             }
-            console.log(buildListOutput(ctx, [type]))
+            types = [type]
+          }
+          if (isJson) {
+            // json 模式只许输出一行可 JSON.parse 的内容，用裸 console.log，不走 ctx.log。
+            console.log(JSON.stringify(buildListJson(ctx, types)))
             return
           }
           console.log(buildListOutput(ctx, types))
-        } catch (e: any) {
-          ctx.log.error(e)
-          if (process.argv.includes('--debug')) {
-            throw e
-          }
+        } catch (e: unknown) {
+          handleSubcommandError(ctx, e, isJson)
         }
       })
 
@@ -214,11 +281,8 @@ export const uploader: IPlugin = {
         try {
           ctx.uploaderConfig.rename(type, oldName, newName)
           ctx.log.success('Rename config successfully!')
-        } catch (e: any) {
-          ctx.log.error(e)
-          if (process.argv.includes('--debug')) {
-            throw e
-          }
+        } catch (e: unknown) {
+          handleSubcommandError(ctx, e)
         }
       })
 
@@ -229,11 +293,8 @@ export const uploader: IPlugin = {
         try {
           ctx.uploaderConfig.copy(type, configName, newConfigName)
           ctx.log.success('Copy config successfully!')
-        } catch (e: any) {
-          ctx.log.error(e)
-          if (process.argv.includes('--debug')) {
-            throw e
-          }
+        } catch (e: unknown) {
+          handleSubcommandError(ctx, e)
         }
       })
 
@@ -244,11 +305,8 @@ export const uploader: IPlugin = {
         try {
           ctx.uploaderConfig.remove(type, configName)
           ctx.log.success('Delete config successfully!')
-        } catch (e: any) {
-          ctx.log.error(e)
-          if (process.argv.includes('--debug')) {
-            throw e
-          }
+        } catch (e: unknown) {
+          handleSubcommandError(ctx, e)
         }
       })
   }

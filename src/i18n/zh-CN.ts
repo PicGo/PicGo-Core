@@ -60,6 +60,11 @@ export const ZH_CN = {
 
   // get command
   GET_PLUGINS_EMPTY: '没有已安装的插件。',
+  CLI_UPLOAD_INPUT_NOT_EXIST: '${path} 不存在。',
+  CLI_UPLOAD_NO_VALID_INPUT: '没有可上传的文件：传入的路径都不存在。',
+  CLI_UPLOAD_FAILED: '上传失败：${reason}',
+  CLI_UPLOAD_FAILED_NO_RESULT: '没有任何文件上传成功，详情请查看日志。',
+  CLI_UPLOADER_TYPE_NOT_FOUND: '图床类型 ${type} 不存在。',
   CLOUD_ALBUM_IMPORT_PROMPT_ENABLE_AUTO_IMPORT: '云端相册导入功能未开启，是否立即开启？',
   CLOUD_ALBUM_IMPORT_ENABLING_AUTO_IMPORT: '正在开启云端相册自动导入...',
   CLOUD_ALBUM_IMPORT_AUTO_IMPORT_ENABLED: '已开启云端相册自动导入。',

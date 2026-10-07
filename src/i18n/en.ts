@@ -62,6 +62,11 @@ export const EN: ILocales = {
 
   // get command
   GET_PLUGINS_EMPTY: 'No installed plugins.',
+  CLI_UPLOAD_INPUT_NOT_EXIST: '${path} does not exist.',
+  CLI_UPLOAD_NO_VALID_INPUT: 'Nothing to upload: none of the given paths exist.',
+  CLI_UPLOAD_FAILED: 'Upload failed: ${reason}',
+  CLI_UPLOAD_FAILED_NO_RESULT: 'No file was uploaded successfully. See the log for details.',
+  CLI_UPLOADER_TYPE_NOT_FOUND: 'Uploader type ${type} not found.',
   CLOUD_ALBUM_IMPORT_PROMPT_ENABLE_AUTO_IMPORT: 'Cloud album auto import is disabled. Enable it now?',
   CLOUD_ALBUM_IMPORT_ENABLING_AUTO_IMPORT: 'Enabling cloud album auto import...',
   CLOUD_ALBUM_IMPORT_AUTO_IMPORT_ENABLED: 'Cloud album auto import has been enabled.',

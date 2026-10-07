@@ -10,7 +10,8 @@ import {
   Undefinable,
   ILogColor,
   ILogger,
-  IPicGo
+  IPicGo,
+  LogConsoleStream
 } from '../types'
 import { forceNumber, isDev } from '../utils/common'
 
@@ -26,6 +27,7 @@ export class Logger implements ILogger {
   private readonly ctx: IPicGo
   private readonly consoleOutput: boolean
   private readonly respectSilent: boolean
+  private readonly consoleStream: LogConsoleStream
   private logLevel!: string | string[]
   private logPath!: string
   private logPathOverride?: string
@@ -44,12 +46,26 @@ export class Logger implements ILogger {
       respectSilent?: boolean
       /** Override the log file path. Defaults to `settings.logPath` or `ctx.baseDir/picgo.log`. */
       logPath?: string
+      /**
+       * Which stream console output goes to. Defaults to `LogConsoleStream.STDOUT`. Use `STDERR` when stdout must stay
+       * machine-readable (e.g. `picgo upload --format json`). Log file writes are not affected.
+       */
+      consoleStream?: LogConsoleStream
     } = {}
   ) {
     this.ctx = ctx
     this.consoleOutput = options.consoleOutput ?? true
     this.respectSilent = options.respectSilent ?? true
     this.logPathOverride = options.logPath
+    this.consoleStream = options.consoleStream ?? LogConsoleStream.STDOUT
+  }
+
+  private writeConsole (...args: unknown[]): void {
+    if (this.consoleStream === LogConsoleStream.STDERR) {
+      console.error(...args)
+    } else {
+      console.log(...args)
+    }
   }
 
   private handleLog (type: ILogType, ...msg: ILogArgvTypeWithError[]): void {
@@ -59,7 +75,7 @@ export class Logger implements ILogger {
     if (shouldWrite) {
       const logHeader = chalk[this.level[type] as ILogColor](`[PicGo ${type.toUpperCase()}]:`)
       if (this.consoleOutput && !isSilent) {
-        console.log(logHeader, ...msg)
+        this.writeConsole(logHeader, ...msg)
       }
       this.logPath = this.logPathOverride || this.ctx.getConfig<Undefinable<string>>('settings.logPath') || path.join(this.ctx.baseDir, './picgo.log')
       setTimeout(() => {
@@ -69,7 +85,7 @@ export class Logger implements ILogger {
           if (result.isLarge) {
             const warningMsg = `Log file is too large (> ${(result.logFileSizeLimit!) / 1024 / 1024 || '10'} MB), recreate log file`
             if (this.consoleOutput && !isSilent) {
-              console.log(chalk.yellow('[PicGo WARN]:'), warningMsg)
+              this.writeConsole(chalk.yellow('[PicGo WARN]:'), warningMsg)
             }
             this.recreateLogFile(this.logPath)
             msg.unshift(warningMsg)
@@ -174,6 +190,8 @@ export class Logger implements ILogger {
      * - false: file writes always happen, useful for audit/diagnostic logs.
      */
     respectSilent?: boolean
+    /** Stream used for console output. Defaults to `LogConsoleStream.STDOUT`. */
+    consoleStream?: LogConsoleStream
   } = {}): Logger {
     return new Logger(this.ctx, options)
   }

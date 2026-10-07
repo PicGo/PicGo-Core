@@ -62,6 +62,11 @@ export const ZH_TW: ILocales = {
 
   // get command
   GET_PLUGINS_EMPTY: '沒有已安裝的外掛。',
+  CLI_UPLOAD_INPUT_NOT_EXIST: '${path} 不存在。',
+  CLI_UPLOAD_NO_VALID_INPUT: '沒有可上傳的檔案：傳入的路徑都不存在。',
+  CLI_UPLOAD_FAILED: '上傳失敗：${reason}',
+  CLI_UPLOAD_FAILED_NO_RESULT: '沒有任何檔案上傳成功，詳情請查看日誌。',
+  CLI_UPLOADER_TYPE_NOT_FOUND: '圖床類型 ${type} 不存在。',
   CLOUD_ALBUM_IMPORT_PROMPT_ENABLE_AUTO_IMPORT: '雲端相簿匯入功能未開啟，是否立即開啟？',
   CLOUD_ALBUM_IMPORT_ENABLING_AUTO_IMPORT: '正在開啟雲端相簿自動匯入...',
   CLOUD_ALBUM_IMPORT_AUTO_IMPORT_ENABLED: '已開啟雲端相簿自動匯入。',
