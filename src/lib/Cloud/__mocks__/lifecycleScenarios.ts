@@ -225,7 +225,7 @@ export function buildMockOverview (scenario: MockLifecycleScenario): CloudBillin
         pendingSubscription: null
       }
     case 'subscription-with-redemption':
-      // 年付 pro 订阅续费中（250 天后续费），同时兑换的 max 还剩 40 天，二者并行计时。
+      // 先兑换了 max（还剩 40 天），之后又订阅了年付 pro（250 天后续费）。订阅期间不能再兑换，只有这个顺序会出现二者并行计时。
       return {
         plan: { paid: 'max', capability: 'max', billingPeriod: 'yearly', subscription: 'pro', source: 'entitlement' },
         lifecycle: {
