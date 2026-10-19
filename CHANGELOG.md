@@ -1,3 +1,23 @@
+# :tada: 3.2.0 (2026-10-19)
+
+
+### :sparkles: Features
+
+* **cloud:** expose stacked redemption terms in billing overview ([#205](https://github.com/PicGo/PicGo-Core/issues/205)) ([23ca758](https://github.com/PicGo/PicGo-Core/commit/23ca758))
+
+
+### :package: Chore
+
+* bump node version to 24 ([a510cec](https://github.com/PicGo/PicGo-Core/commit/a510cec))
+
+
+### :pencil: Documentation
+
+* prefix sponsor descriptions with brand names ([c1ffec3](https://github.com/PicGo/PicGo-Core/commit/c1ffec3))
+* update sponsor table with Modelflare and Castaly ([c4f1d8d](https://github.com/PicGo/PicGo-Core/commit/c4f1d8d))
+
+
+
 # :tada: 3.1.0 (2026-09-22)
 
 
