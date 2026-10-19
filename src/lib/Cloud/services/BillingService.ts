@@ -12,9 +12,13 @@ interface BillingUsageEnvelope {
   data: BillingUsagePayload
 }
 
+/** `/api/billing/me` 的原始载荷：叠加兑换相关字段旧服务端不下发，因此在这里是可选的。 */
+type BillingOverviewPayload = Omit<CloudBillingOverview, 'redemptionQueue' | 'fixedTerms' | 'pendingSubscription'> &
+  Partial<Pick<CloudBillingOverview, 'redemptionQueue' | 'fixedTerms' | 'pendingSubscription'>>
+
 interface BillingOverviewEnvelope {
   success: boolean
-  data: CloudBillingOverview
+  data: BillingOverviewPayload
 }
 
 class BillingService {
@@ -67,7 +71,11 @@ class BillingService {
     return {
       plan: payload.plan,
       lifecycle: payload.lifecycle,
-      subscription: payload.subscription
+      // plan.subscription 与 subscription.standing 随整个对象透传，旧服务端缺省时保持 undefined
+      subscription: payload.subscription,
+      redemptionQueue: payload.redemptionQueue ?? [],
+      fixedTerms: payload.fixedTerms ?? [],
+      pendingSubscription: payload.pendingSubscription ?? null
     }
   }
 }
