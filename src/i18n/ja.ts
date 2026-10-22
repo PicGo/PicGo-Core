@@ -62,6 +62,11 @@ export const JA: ILocales = {
 
   // get command
   GET_PLUGINS_EMPTY: 'インストール済みのプラグインはありません。',
+  CLI_UPLOAD_INPUT_NOT_EXIST: '${path} は存在しません。',
+  CLI_UPLOAD_NO_VALID_INPUT: 'アップロードするファイルがありません：指定されたパスはいずれも存在しません。',
+  CLI_UPLOAD_FAILED: 'アップロードに失敗しました：${reason}',
+  CLI_UPLOAD_FAILED_NO_RESULT: 'アップロードに成功したファイルはありません。詳細はログを確認してください。',
+  CLI_UPLOADER_TYPE_NOT_FOUND: 'アップローダーの種類 ${type} が見つかりません。',
   CLOUD_ALBUM_IMPORT_PROMPT_ENABLE_AUTO_IMPORT: 'クラウドアルバムの自動インポートが無効です。今すぐ有効にしますか？',
   CLOUD_ALBUM_IMPORT_ENABLING_AUTO_IMPORT: 'クラウドアルバムの自動インポートを有効にしています...',
   CLOUD_ALBUM_IMPORT_AUTO_IMPORT_ENABLED: 'クラウドアルバムの自動インポートが有効になりました。',

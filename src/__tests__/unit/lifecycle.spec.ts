@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { Lifecycle } from '../../core/Lifecycle'
 import type { IPicGo } from '../../types'
+import { OutputFormat } from '../../types'
 import { IBuildInEvent } from '../../utils/enum'
 
 vi.mock('ora', () => {
@@ -218,5 +219,21 @@ describe('Lifecycle partial upload failure', () => {
     expect(emit).not.toHaveBeenCalledWith(IBuildInEvent.FINISHED, expect.anything())
     // FAILED should fire
     expect(emit).toHaveBeenCalledWith(IBuildInEvent.FAILED, expect.any(Error))
+  })
+})
+
+describe('Lifecycle json output format', () => {
+  it('does not hand the JSON result to the logger; the CLI command prints it instead', async () => {
+    const ctx = createTestCtx()
+    const lifecycle = new Lifecycle(ctx)
+
+    const result = await lifecycle.start(['/path/a.png'], { outputFormat: OutputFormat.JSON })
+
+    expect(result.output[0].imgUrl).toBe('https://uploaded.com/a.png')
+    const successLog = getLogSuccess(ctx)
+    expect(successLog).toHaveBeenCalledWith(expect.stringContaining('https://uploaded.com/a.png'))
+    for (const call of successLog.mock.calls) {
+      expect(String(call[0]).trim().startsWith('[')).toBe(false)
+    }
   })
 })

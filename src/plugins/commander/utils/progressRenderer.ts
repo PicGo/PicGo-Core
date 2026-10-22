@@ -1,5 +1,6 @@
 import ora from 'ora'
 import type { Ora } from 'ora'
+import { LogConsoleStream } from '../../../types'
 import type { IPicGo, IProgress } from '../../../types'
 import type { IBuildInEvent } from '../../../utils/enum'
 import { renderProgressBar } from '../../../utils/progressBar'
@@ -26,6 +27,12 @@ export interface IProgressRendererOptions<TProgress extends IProgress> {
   formatBarText: (payload: TProgress) => string
   /** Full line text printed in verbose / non-TTY modes. */
   formatVerboseText: (payload: TProgress) => string
+  /**
+   * Stream for the per-event lines in verbose / non-TTY modes. Defaults to `LogConsoleStream.STDOUT`. Use `STDERR`
+   * when stdout must only carry machine-readable output (e.g. `--format json`). The TTY spinner always writes to
+   * stderr (ora's default) and is not affected.
+   */
+  lineStream?: LogConsoleStream
 }
 
 export interface IProgressRendererHandle {
@@ -44,7 +51,12 @@ export const createProgressRenderer = <TProgress extends IProgress>(
       if (spinner.isSpinning) {
         spinner.stop()
       }
-      console.log(options.formatVerboseText(payload))
+      const line = options.formatVerboseText(payload)
+      if (options.lineStream === LogConsoleStream.STDERR) {
+        console.error(line)
+      } else {
+        console.log(line)
+      }
       return
     }
 

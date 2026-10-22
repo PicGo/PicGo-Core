@@ -62,6 +62,11 @@ export const KO: ILocales = {
 
   // get command
   GET_PLUGINS_EMPTY: '설치된 플러그인이 없습니다.',
+  CLI_UPLOAD_INPUT_NOT_EXIST: '${path}이(가) 존재하지 않습니다.',
+  CLI_UPLOAD_NO_VALID_INPUT: '업로드할 파일이 없습니다: 지정한 경로가 모두 존재하지 않습니다.',
+  CLI_UPLOAD_FAILED: '업로드 실패: ${reason}',
+  CLI_UPLOAD_FAILED_NO_RESULT: '업로드에 성공한 파일이 없습니다. 자세한 내용은 로그를 확인하세요.',
+  CLI_UPLOADER_TYPE_NOT_FOUND: '업로더 유형 ${type}을(를) 찾을 수 없습니다.',
   CLOUD_ALBUM_IMPORT_PROMPT_ENABLE_AUTO_IMPORT: '클라우드 앨범 자동 가져오기가 비활성화되어 있습니다. 지금 활성화하시겠습니까?',
   CLOUD_ALBUM_IMPORT_ENABLING_AUTO_IMPORT: '클라우드 앨범 자동 가져오기를 활성화하는 중...',
   CLOUD_ALBUM_IMPORT_AUTO_IMPORT_ENABLED: '클라우드 앨범 자동 가져오기가 활성화되었습니다.',
